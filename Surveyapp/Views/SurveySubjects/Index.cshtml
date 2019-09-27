@@ -1,0 +1,81 @@
+﻿@model IEnumerable<Surveyapp.Models.SurveySubject>
+
+@{
+    ViewData["Title"] = "Survey Subject";
+}
+
+<h1>Survey Subject</h1>
+
+<p>
+    <a asp-action="Create" asp-route-id="@ViewBag.CategoryId">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.SubjectName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StateCorporation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Chairpersion)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AppointmentDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EndofTerm)
+            </th>
+            <th>@*
+                @Html.DisplayNameFor(model => model.SubjectTypeId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Category)
+            </th>*@
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubjectName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StateCorporation)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Chairpersion)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AppointmentDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndofTerm)
+            </td>@*
+            <td>
+                @Html.DisplayFor(modelItem => item.SubjectTypeId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Category.Id)
+            </td>*@
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+                <a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id">Response options</a> |
+                @if (item.ResponseTypes.Count > 0)
+                {
+                    <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id">Add question</a>
+                }
+                else
+                {
+                    <p><small>Add Response to add questions</small></p>
+                }
+                
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

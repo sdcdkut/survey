@@ -1,0 +1,45 @@
+﻿@inject SurveyContext _context
+@using System.Linq
+@using Surveyapp.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject RoleManager<IdentityRole> roleManagers;
+@{
+    if (await roleManagers.RoleExistsAsync("Admin") == false)
+    {
+        IdentityResult Admin = await roleManagers
+            .CreateAsync(new IdentityRole
+            {
+                Name = "Admin",
+            });
+    }
+
+    if (await roleManagers.RoleExistsAsync("Employer") == false)
+    {
+        IdentityResult Surveyor = await roleManagers
+            .CreateAsync(new IdentityRole
+            {
+                Name = "Surveyor",
+            });
+    }
+
+    if (await roleManagers.RoleExistsAsync("Freelancer") == false)
+    {
+
+        IdentityResult Surveyee = await roleManagers
+            .CreateAsync(new IdentityRole
+            {
+                Name = "Surveyee",
+            });
+    }
+    /*if (await roleManagers.RoleExistsAsync("Support") == false)
+    {
+
+        IdentityResult Support = await roleManagers
+            .CreateAsync(new IdentityRole
+            {
+                Name = "Support",
+            });
+    }*/
+    Layout = "_Layout";
+}

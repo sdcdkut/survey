@@ -1,0 +1,29 @@
+@model IEnumerable<Surveyapp.Models.SurveySubject>
+
+@{
+    ViewBag.Title = "Survey Subject";
+    Layout = "_Layout";
+}
+
+<h2>Choose Survey Subject</h2>
+<table class="table">
+    <thead>
+    <tr>
+        <th>Subject name</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubjectName)
+            </td>
+            <td>
+                @*@Html.DisplayFor(modelItem => item.EndDate)*@
+                <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

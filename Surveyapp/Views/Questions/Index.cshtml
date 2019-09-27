@@ -1,0 +1,53 @@
+﻿@model IEnumerable<Surveyapp.Models.Question>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create" asp-route-id="@ViewBag.subjectid">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.question)
+            </th>
+            @*<th>
+                @Html.DisplayNameFor(model => model.Subject)
+            </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model.ResponseType.ResponseName)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.question)
+            </td>
+            @*<td>
+                @Html.DisplayFor(modelItem => item.Subject.Id)
+            </td>*@
+            <td>
+                @*@foreach (var respnses in item.ResponseType.ResponseDictionary)
+                {
+                    <label>@respnses.Value: 
+                        <input type="radio" value="@respnses.Key" name="checklist" required />
+                    </label>
+                }*@
+                @Html.DisplayFor(modelItem => item.ResponseType.ResponseName)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -1,0 +1,98 @@
+@model IEnumerable<Surveyapp.Models.Question>
+@inject SurveyContext _context
+
+@{
+    ViewBag.Title = "Survey Questions";
+    Layout = "_Layout";
+}
+
+<h2>Survey Questions</h2>
+@*<table class="table">
+    <thead>
+    <tr>
+        <th>fdf</th>
+        <th>ds</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.question)
+                @foreach(var itemed in item.ResponseType.ResponseDictionary)
+                {
+                    <label>@itemed.Value 
+                        <input type="radio" value="@itemed.Key" required="required"/>
+                    </label>
+                        $1$<p>@itemed.Value</p>
+                        $2$<h1>itemed.Value</h1>#2##1#
+                }
+            </td>
+            <td>
+                Submit Survey
+                @#1#Html.DisplayFor(modelItem => item.EndDate)#1#
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>*@
+<div class="row">
+    <div class="col-md-8">
+        <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @{
+                var quizSerial = 0;
+            }
+            
+            @foreach (var item in Model) {
+                quizSerial++;
+                <div class="question-div">
+                    <input type="hidden" required="required" name="quizresponse" id="quizresponse"/>
+                        <p>@quizSerial)@Html.DisplayFor(modelItem => item.question)</p>
+                        
+                        <div class="container" style="display: flex;">
+                            @foreach(var itemed in item.ResponseType.ResponseDictionary)
+                            {
+                                <div class="form-group">
+                                    <label class="control-label">@itemed.Value
+                                        <input type="radio" name="@item.question" value="@itemed.Key|@item.Id" required="required"/>
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                </div>
+                
+            }
+            
+            <div class="form-group">
+                <input type="submit" value="Submit Survey" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script>
+$('form input:radio').on('input',function(e) {
+    var quizeresponse = $(this).parent().parent().parent().parent().find("#quizresponse");
+    quizeresponse.val($(this).val());
+  console.log(quizeresponse.val())
+      
+})
+/*$("#SurveyResponses").submit(function(e) {
+  e.preventDefault();
+  var thisform=this;
+  var formDataArray=[];
+  var formData = new FormData;
+  var formsdata= $('form input:radio').serializeArray();
+  $.each(formsdata,function(key,value) {
+      formDataArray.push(value.value);
+      formsdata.append('array_php_side[]', value.value)
+  });
+  $("#quizresponse").val((formsdata));
+    console.log(($("#quizresponse").val()));
+    if ($("#quizresponse").val()!=null) {
+        $(thisform).submit();
+    }
+  
+})*/
+</script>

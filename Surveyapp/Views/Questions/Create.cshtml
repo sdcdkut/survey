@@ -1,0 +1,70 @@
+﻿@model Surveyapp.Models.Question
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Question</h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="wrapper">
+                <div class="form-group">
+                    <input type="hidden" required="required" name="SubjectId" value="@ViewBag.subjectid">
+                    @*<label asp-for="SubjectId" class="control-label"></label>
+                    <select asp-for="SubjectId" class ="form-control" asp-items="ViewBag.SubjectId"></select>*@
+                </div>
+                <div class="form-group col-md-4">
+                    @*<input type="hidden" required="required" name="ResponseTypeId" value="@ViewBag.responseTypeId">*@
+                    <label asp-for="ResponseTypeId" class="control-label"></label>
+                    <select asp-for="ResponseTypeId" class ="form-control" asp-items="ViewBag.ResponseTypeId"></select>
+                </div>
+                <div class="form-group col-md-12" style="display: flex;">
+                    <label asp-for="question" class="control-label"></label>
+                    <div class="form-group col-md-4">
+                    <textarea placeholder="Input question" rows="4" cols="50" @*asp-for="question"*@ type="text" required="required" name="quiz" class="form-control"></textarea>
+                        <span asp-validation-for="question" class="text-danger"></span>
+                    </div>
+                    <p class="col-md-8"><button class="add_fields btn btn-secondary btn-sm">Add another question</button></p>
+                </div>
+            </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            
+            
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var max_fields = 10;
+        var x = 1; //Initial input field is set to 1
+        $(".add_fields").click(function(e){
+                e.preventDefault();
+         //Check maximum allowed input fields
+                if(x < max_fields){ 
+                    x++; //input field increment
+         //add input field
+                    $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;"><label class="control-label">question</label><div class="form-group col-md-4"><textarea rows="4" cols="50" class="form-control" name="quiz" placeholder="Input question" ></textarea></div><p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove question</a></p></div>');
+                }
+            });
+         
+            //when user click on remove button
+            $(".wrapper").on("click",".remove_field", function(e){ 
+                    e.preventDefault();
+             $(this).parent().parent('div.form-group').remove(); //remove inout field
+             x--; //inout field decrement
+                });
+    </script>
+}
