@@ -38,7 +38,7 @@ namespace Surveyapp.Models
                     v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));
 
                 entity.HasOne(d => d.Subject)
-                    .WithMany(p => p.ResponseTypes)
+                    .WithOne(p => p.ResponseTypes)
                     //.HasForeignKey(d => d.SubjectId)
                     .OnDelete(DeleteBehavior.ClientSetNull);
 

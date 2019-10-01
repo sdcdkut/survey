@@ -1,0 +1,61 @@
+@model IEnumerable<Surveyapp.Models.SurveySubject> 
+@inject SurveyContext Context
+
+@{
+    ViewBag.Title = "Subject Result";
+    Layout = "_Layout";
+}
+
+<h2>Subject Result</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @*@Html.DisplayNameFor(model => model.suject)*@
+                Subject name
+            </th>
+            <th>
+                Total Score
+            </th>
+            <th>
+                Avarage Score
+            </th>
+            <th>
+                Result
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        var scoreResponse = Context.SurveyResponse.Where(a => a.question.SubjectId == item.Id).Sum(x=> int.Parse(x.Response));
+        //var questioncount = Context.Question.Where(x=>x.SubjectId ==item.Id).Count(a => a.SubjectId == item.Id);
+        //var questionResponsesCount = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id)?.Count();
+        var totalResponse = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id).Count(a => a.question.SubjectId == item.Id);
+        var maxRespondType = Context.ResponseType.Where(x=>x.SubjectId == item.Id).SelectMany(x=>x.ResponseDictionary.Keys).Max();
+        var avgScore = scoreResponse/totalResponse;
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubjectName)
+            </td>
+            <td>
+                @scoreResponse
+            </td>
+            <td>
+                @avgScore
+            </td>
+            <td>
+                @foreach (var scores in Context.ResponseType.Where(x=>x.SubjectId == item.Id).SelectMany(x=>x.ResponseDictionary))
+                {
+                    if (avgScore == int.Parse(scores.Key))
+                    {
+                        <p> @scores.Value</p>
+                    }
+                }
+            </td>
+            <td><a href="#">Indiviual Question performnce</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -188,16 +188,20 @@ namespace Surveyapp.Controllers
         {
             return _context.SurveyResponse.Any(e => e.Id == id);
         }
-        public IActionResult SurveyResults(int? id)
+        public async Task<IActionResult> SurveyResults (int? id)
+        {
+            var subjects = _context.Survey.Include(x=>x.SurveyCategorys);
+            return  View(subjects);
+        }
+
+        public async Task<IActionResult> SubjectsResult(int? id)
         {
             if (id == null)
             {
-                return NotFound();
+                return Content("Subject category not specified");
             }
-
-            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id);
-            //throw new NotImplementedException();
-            return View(subjects);
+            var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes).Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id);
+            return View(questionResults);
         }
     }
 }

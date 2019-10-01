@@ -4,6 +4,8 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @inject RoleManager<IdentityRole> roleManagers;
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 @{
     if (await roleManagers.RoleExistsAsync("Admin") == false)
     {

@@ -220,7 +220,8 @@ namespace Surveyapp.Migrations
 
                     b.HasIndex("Id");
 
-                    b.HasIndex("SubjectId");
+                    b.HasIndex("SubjectId")
+                        .IsUnique();
 
                     b.ToTable("ResponseType");
                 });
@@ -310,7 +311,8 @@ namespace Surveyapp.Migrations
 
                     b.Property<string>("StateCorporation");
 
-                    b.Property<string>("SubjectName");
+                    b.Property<string>("SubjectName")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -381,8 +383,8 @@ namespace Surveyapp.Migrations
             modelBuilder.Entity("Surveyapp.Models.ResponseType", b =>
                 {
                     b.HasOne("Surveyapp.Models.SurveySubject", "Subject")
-                        .WithMany("ResponseTypes")
-                        .HasForeignKey("SubjectId");
+                        .WithOne("ResponseTypes")
+                        .HasForeignKey("Surveyapp.Models.ResponseType", "SubjectId");
                 });
 
             modelBuilder.Entity("Surveyapp.Models.Survey", b =>

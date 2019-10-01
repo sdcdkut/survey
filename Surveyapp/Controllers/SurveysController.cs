@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
@@ -59,6 +60,7 @@ namespace Surveyapp.Controllers
         // POST: Surveys/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,name,Startdate,EndDate,status")] Survey survey)
@@ -76,6 +78,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -95,15 +98,17 @@ namespace Surveyapp.Controllers
         // POST: Surveys/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,name,Startdate,EndDate,status")] Survey survey)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,name,Startdate,EndDate,status,SurveyerId")] Survey survey)
         {
             if (id != survey.Id)
             {
                 return NotFound();
             }
-            survey.SurveyerId = _usermanager.GetUserId(User);
+            //ModelState.Remove<Survey>(x => x.SurveyerId);
+            /*survey.SurveyerId = _usermanager.GetUserId(User);*/
             if (ModelState.IsValid)
             {
                 try
@@ -129,6 +134,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -165,10 +171,11 @@ namespace Surveyapp.Controllers
 
         public async Task<IActionResult> Surveys()
         {
-            IQueryable<Survey> surveyContext = _context.Survey.Include(s => s.Surveyer);
+            IQueryable<Survey> surveyContext = _context.Survey.Include(s => s.Surveyer).Include(x=>x.SurveyCategorys);
             if (User.Identity.IsAuthenticated)
             {
-                surveyContext = surveyContext.Where(x=>x.SurveyerId == _usermanager.GetUserId(User));
+                //display surveys not created by current logged in user
+                surveyContext = surveyContext.Where(x=>x.SurveyerId != _usermanager.GetUserId(User));
             }
             return View(await surveyContext.ToListAsync());
             //throw new NotImplementedException();

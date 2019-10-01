@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions
+        [Authorize]
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
@@ -26,11 +28,16 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
             ViewBag.subjectid = id;
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x=>x.SurveySubjects.Any(y=>y.Id==id))?.SurveyId;
+            ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.CategoryId;
+            ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
+            ViewBag.ResponType = _context.ResponseType.Count(x=>x.Subject.Id == id);
             var surveyContext = _context.Question.Include(q => q.ResponseType).Include(q => q.Subject).Where(x=>x.SubjectId == id);
             return View(await surveyContext.ToListAsync());
         }
 
         // GET: Questions/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -51,6 +58,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Create
+        [Authorize]
         public IActionResult Create(int? id)
         {
             if (id == null)
@@ -59,8 +67,8 @@ namespace Surveyapp.Controllers
             }
             ViewBag.subjectid = id;
             var responseTypeId = _context.SurveySubject.SingleOrDefault(x => x.Id == id)?.Id;
-            ViewBag.responseTypeId = responseTypeId;
-            ViewData["ResponseTypeId"] = new SelectList(_context.ResponseType.Where(x=>x.SubjectId == id), "Id", "ResponseName");
+            ViewBag.ResponseTypeId = responseTypeId;
+            //ViewData["ResponseTypeId"] = new SelectList(_context.ResponseType.Where(x=>x.SubjectId == id), "Id", "ResponseName");
             /*ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id");*/
             return View();
         }
@@ -70,6 +78,7 @@ namespace Surveyapp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Create([Bind("Id,SubjectId,ResponseTypeId,question")] Question question, int SubjectId, int ResponseTypeId,string[] quiz)
         {
             //var stns = new {question.question,question.ResponseTypeId,question.SubjectId};
@@ -98,6 +107,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -118,6 +128,7 @@ namespace Surveyapp.Controllers
         // POST: Questions/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,ResponseTypeId,question,SubjectId")] Question newquestion,int Id,int ResponseTypeId,string question)
@@ -156,6 +167,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -176,6 +188,7 @@ namespace Surveyapp.Controllers
         }
 
         // POST: Questions/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -197,7 +210,8 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-
+            ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
+            ViewBag.SurveyId = _context.SurveySubject.Include(x=>x.Category).SingleOrDefault(x => x.Id == id)?.Category.Id;
             var questions = _context.Question.Include(x=>x.ResponseType).Where(x => x.SubjectId == id);
             //throw new NotImplementedException();
             return View(questions);

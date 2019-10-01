@@ -1,11 +1,20 @@
 @model IEnumerable<Surveyapp.Models.Survey>
 @inject SurveyContext _context
+@using System.Text.RegularExpressions;
 
 @{
     ViewBag.Title = "Available Surveys";
     Layout = "_Layout";
 }
-
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Open Surveys</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 <h2>Open Surveys</h2>
 <table class="table">
     <thead>
@@ -14,17 +23,18 @@
                 @Html.DisplayNameFor(model => model.name)
             </th>
             @*<th>
-                @Html.DisplayNameFor(model => model.Startdate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.EndDate)
-            </th>*@
+            @Html.DisplayNameFor(model => model.Startdate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.EndDate)
+        </th>*@
             <th>
                 @Html.DisplayNameFor(model => model.status)
             </th>
             @*<th>
-                @Html.DisplayNameFor(model => model.Surveyer)
-            </th>*@
+            @Html.DisplayNameFor(model => model.Surveyer)
+        </th>*@
+            <th></th>
             <th></th>
         </tr>
     </thead>
@@ -35,31 +45,40 @@
                 @Html.DisplayFor(modelItem => item.name)
             </td>
             @*<td>
-                @Html.DisplayFor(modelItem => item.Startdate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
-            </td>*@
+            @Html.DisplayFor(modelItem => item.Startdate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.EndDate)
+        </td>*@
             <td>
                 @Html.DisplayFor(modelItem => item.status)
             </td>
             @*<td>
-                @Html.DisplayFor(modelItem => item.Surveyer.Id)
-            </td>*@
+            @Html.DisplayFor(modelItem => item.Surveyer.Id)
+        </td>*@
             <td>
-                <button @*asp-action="TakeSurvey" asp-route-id="@item.Id"*@ data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
-                <div id="collapseExample" class="collapse">
-                    <ul>
-                        @{
-                            var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id);
-                            foreach (var category in surveyCategory)
-                            {
-                                <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                <button @*asp-action="TakeSurvey" asp-route-id="@item.Id"*@ class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace( item.name, @"\s", "" )" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
+                <div id="@Regex.Replace( item.name, @"\s", "" )" class="collapse" style="width:80%">
+                    @if (item.SurveyCategorys.Count > 0)
+                    {
+                        <p>Choose Survey categories</p>
+                        <ul style="width:inherit">
+                            @{
+                                var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id);
+                                foreach (var category in surveyCategory)
+                                {
+                                    <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                                }
                             }
-                        }
-                    </ul>
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Survey categories Not set</p>
+                    }
+
                 </div>
-                
+
             </td>
         </tr>
 }

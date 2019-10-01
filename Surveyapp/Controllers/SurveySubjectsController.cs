@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects
+        [Authorize]
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
@@ -27,11 +29,13 @@ namespace Surveyapp.Controllers
             }
 
             ViewBag.CategoryId = id;
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x=>x.Id == id)?.SurveyId;
             var surveyContext = _context.SurveySubject.Include(s => s.Category).Include(x=>x.ResponseTypes).Where(x=>x.CategoryId==id);
             return View(await surveyContext.ToListAsync());
         }
 
         // GET: SurveySubjects/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -51,6 +55,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects/Create
+        [Authorize]
         public IActionResult Create(int? id)
         {
             if (id == null)
@@ -65,6 +70,7 @@ namespace Surveyapp.Controllers
         // POST: SurveySubjects/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId,SubjectTypeId")] SurveySubject surveySubject)
@@ -80,6 +86,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -92,13 +99,14 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId);
+            ViewData["CategoryId"] = surveySubject.CategoryId/*new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId)*/;
             return View(surveySubject);
         }
 
         // POST: SurveySubjects/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId,SubjectTypeId")] SurveySubject surveySubject)
@@ -133,6 +141,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -152,6 +161,7 @@ namespace Surveyapp.Controllers
         }
 
         // POST: SurveySubjects/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

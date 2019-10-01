@@ -3,6 +3,26 @@
 @{
     ViewData["Title"] = "Survey Subject";
 }
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+    
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Survey Subject</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <h1>Survey Subject</h1>
 
@@ -65,13 +85,13 @@
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
                 <a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id">Response options</a> |
-                @if (item.ResponseTypes.Count > 0)
+                @if (item.ResponseTypes.ResponseName!= null)
                 {
                     <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id">Add question</a>
                 }
                 else
                 {
-                    <p><small>Add Response to add questions</small></p>
+                    <p><small>Add Response subject options</small></p>
                 }
                 
             </td>

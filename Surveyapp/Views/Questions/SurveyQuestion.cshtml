@@ -5,8 +5,26 @@
     ViewBag.Title = "Survey Questions";
     Layout = "_Layout";
 }
-
-<h2>Survey Questions</h2>
+<nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" asp-controller="Surveys">
+                    <span>Surveys</span>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a asp-action="SurveySubjects" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
+                    <span>Survey Subjects</span>
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <a>
+                    <span>Survey Questions</span>
+                </a>
+            </li>
+        </ol>
+    </nav>
+<h2>@ViewBag.SubjectName Survey Questions</h2>
 @*<table class="table">
     <thead>
     <tr>
@@ -36,40 +54,43 @@
     }
     </tbody>
 </table>*@
-<div class="row">
-    <div class="col-md-8">
-        <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            @{
-                var quizSerial = 0;
-            }
-            
-            @foreach (var item in Model) {
-                quizSerial++;
-                <div class="question-div">
-                    <input type="hidden" required="required" name="quizresponse" id="quizresponse"/>
-                        <p>@quizSerial)@Html.DisplayFor(modelItem => item.question)</p>
-                        
-                        <div class="container" style="display: flex;">
-                            @foreach(var itemed in item.ResponseType.ResponseDictionary)
+@if (Model.Any())
+{
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                @{
+                    var quizSerial = 0;
+                }
+                @foreach (var item in Model)
+                {
+                    quizSerial++;
+                    <div class="question-div">
+                        <input type="hidden" required="required" name="quizresponse" id="quizresponse"/>
+                        <p>@quizSerial) @Html.DisplayFor(modelItem => item.question)</p>
+
+                        <div class="container" style="display: flex;margin: 5px">
+                            @foreach (var itemed in item.ResponseType.ResponseDictionary)
                             {
-                                <div class="form-group">
+                                <div class="form-group" style="margin-left: 15px">
                                     <label class="control-label">@itemed.Value
-                                        <input type="radio" name="@item.question" value="@itemed.Key|@item.Id" required="required"/>
+                                        <input type="radio" name="quize @item.Id" value="@itemed.Key|@item.Id" required="required"/>
                                     </label>
                                 </div>
                             }
                         </div>
+                    </div>
+                }
+
+
+                <div class="form-group">
+                    <input type="submit" value="Submit Survey" class="btn btn-primary"/>
                 </div>
-                
-            }
-            
-            <div class="form-group">
-                <input type="submit" value="Submit Survey" class="btn btn-primary" />
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
-</div>
+
 <script src="~/lib/jquery/dist/jquery.js"></script>
 <script>
 $('form input:radio').on('input',function(e) {
@@ -96,3 +117,4 @@ $('form input:radio').on('input',function(e) {
   
 })*/
 </script>
+}

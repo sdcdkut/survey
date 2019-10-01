@@ -8,8 +8,9 @@
 
 <h4>ResponseType</h4>
 <hr />
+<h2 style="color:red">Not the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-7">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
@@ -22,12 +23,46 @@
                 <label asp-for="SubjectId" class="control-label"></label>
                 <select asp-for="SubjectId" class="form-control" asp-items="ViewBag.SubjectId"></select>
                 <span asp-validation-for="SubjectId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ResponseDictionary" class="control-label"></label>
-                <input asp-for="ResponseDictionary" class="form-control" />
-                <span asp-validation-for="ResponseDictionary" class="text-danger"></span>
             </div>*@
+        <div class="wrapper">
+                    @foreach (var responses in Model.ResponseDictionary.OrderBy(x=>x.Key))
+                    {
+                        if ((int.Parse(responses.Key))==1)
+                        {
+                            <div class="col-md-12" style="display: flex;">
+                                <label class="control-label">Response Options</label>
+                                <div class="form-group col-md-4">
+                                    <input required="required" name="responseDictionary" value="@responses.Value" placeholder="Input response option" class="form-control"/>
+                                </div>
+                                <p class="col-md-8"><button class="add_fields btn btn-secondary btn-sm">Add response option</button></p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group col-md-12" style="display: flex;">
+                                <label class="control-label">Response Options</label>
+                                <div class="form-group col-md-4">
+                                    <input class="form-control" value="@responses.Value" name="responseDictionary" placeholder="Input response option"/>
+                                </div>
+                                <p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>
+                            </div>
+                            @*<div class="form-group">
+                                <div class="col-md-12" style="display: flex;">
+                                    <label class="control-label">Response Options</label>
+                                    <div class="form-group col-md-4">
+                                        <input required="required" name="responseDictionary" value="@responses.Value" placeholder="Input response option" class="form-control"/>
+                                    </div>
+                                    <p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>
+                                </div>
+                            </div>*@
+                        }
+                        
+
+                    }
+                @*<label asp-for="ResponseDictionary" class="control-label"></label>
+                <input asp-for="ResponseDictionary" class="form-control"/>*@
+                <span asp-validation-for="ResponseDictionary" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -36,9 +71,30 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" asp-route-id="@Model.SubjectId">Back to List</a>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        var max_fields = 10;
+        var x = 1; //Initial input field is set to 1
+        $(".add_fields").click(function(e){
+                e.preventDefault();
+         //Check maximum allowed input fields
+                if(x < max_fields){ 
+                    x++; //input field increment
+         //add input field
+                    $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;"><label class="control-label">Response Options</label><div class="form-group col-md-4"><input class="form-control" name="responseDictionary" placeholder="Input response option" /></div><p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p></div>');
+                }
+            });
+         
+            //when user click on remove button
+            $(".wrapper").on("click",".remove_field", function(e){ 
+                    e.preventDefault();
+                    console.log($(this).parent().parent('div.form-group').html())
+             $(this).parent().parent('div.form-group').remove(); //remove inout field
+             x--; //inout field decrement
+                });
+    </script>
 }

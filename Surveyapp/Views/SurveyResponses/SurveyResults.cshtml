@@ -1,47 +1,67 @@
-﻿@model IEnumerable<Surveyapp.Models.SurveyResponse>
+﻿@model IEnumerable<Surveyapp.Models.Survey>
+@inject SurveyContext _Context
 
 @{
     ViewData["Title"] = "SurveyResults";
 }
 
 <h1>SurveyResults</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<h4>Choose Survey</h4>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Response)
+                @Html.DisplayNameFor(model => model.name)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Respondant)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.question)
-            </th>
+            
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+    @{
+        var resultCounter = 0;
+    }
+    @foreach (var item in Model)
+    {
+        resultCounter++;
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Response)
+                @Html.DisplayFor(modelItem => item.name)
             </td>
-            <td>
+            @*<td>
                 @Html.DisplayFor(modelItem => item.Respondant.Id)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.question.question)
-            </td>
+            </td>*@
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <button @*asp-action="TakeSurvey" asp-route-id="@item.Id"*@ class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#Result-@resultCounter" aria-expanded="false" aria-controls="collapseExample">Result</button>
+                <div id="Result-@resultCounter" class="collapse" style="width:80%">
+                    @if (item.SurveyCategorys.Count > 0)
+                    {
+                        <p>Choose Survey categories</p>
+                        <ul style="width:inherit">
+                            @{
+                                var surveyCategory = _Context.SurveyCategory.Where(x => x.SurveyId == item.Id);
+                                foreach (var category in surveyCategory)
+                                {
+                                    <li><a asp-controller="SurveyResponses" asp-action="SubjectsResult" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                                }
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Survey categories Not set</p>
+                    }
+
+                </div>
+                @*<a asp-action="Edit" asp-route-id="@item.Id">Result</a> |
+                
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>*@
             </td>
         </tr>
-}
+    }
     </tbody>
 </table>

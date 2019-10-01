@@ -1,7 +1,7 @@
 ﻿@model Surveyapp.Models.Question
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Question";
 }
 
 <h1>Create</h1>
@@ -12,17 +12,18 @@
     <div class="col-md-12">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" required="required" name="SubjectId" value="@ViewBag.subjectid">
+            <input type="hidden" asp-for="ResponseTypeId" value="@ViewBag.ResponseTypeId">
             <div class="wrapper">
-                <div class="form-group">
-                    <input type="hidden" required="required" name="SubjectId" value="@ViewBag.subjectid">
-                    @*<label asp-for="SubjectId" class="control-label"></label>
-                    <select asp-for="SubjectId" class ="form-control" asp-items="ViewBag.SubjectId"></select>*@
+                @*<div class="form-group">
+                    $1$<label asp-for="SubjectId" class="control-label"></label>
+                    <select asp-for="SubjectId" class ="form-control" asp-items="ViewBag.SubjectId"></select>#1#
                 </div>
                 <div class="form-group col-md-4">
-                    @*<input type="hidden" required="required" name="ResponseTypeId" value="@ViewBag.responseTypeId">*@
+                    $1$<input type="hidden" required="required" name="ResponseTypeId" value="@ViewBag.responseTypeId">#1#
                     <label asp-for="ResponseTypeId" class="control-label"></label>
                     <select asp-for="ResponseTypeId" class ="form-control" asp-items="ViewBag.ResponseTypeId"></select>
-                </div>
+                </div>*@
                 <div class="form-group col-md-12" style="display: flex;">
                     <label asp-for="question" class="control-label"></label>
                     <div class="form-group col-md-4">
@@ -42,7 +43,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" asp-route-id="@ViewBag.subjectid">Back to List</a>
 </div>
 
 @section Scripts {

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using Surveyapp.Models;
 
 namespace Surveyapp.Controllers
 {
+    [Authorize]
     public class ResponseTypesController : Controller
     {
         private readonly SurveyContext _context;
@@ -27,7 +30,10 @@ namespace Surveyapp.Controllers
             }
 
             ViewBag.SubjectId = id;
-            var surveyContext = _context.ResponseType.Include(r => r.Subject).Where(x=>x.SubjectId == id);
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x=>x.SurveySubjects.Any(y=>y.Id==id))?.SurveyId;
+            ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.CategoryId;
+            ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
+            var surveyContext = _context.ResponseType.Include(r => r.Subject.Category).Where(x=>x.SubjectId == id);
             /*var responses =*/
             return View(await surveyContext.ToListAsync());
         }
@@ -76,9 +82,9 @@ namespace Surveyapp.Controllers
             var respDictonary = new Dictionary<string, string>();
             if (responseDictionary.Length>0)
             {
-                for (int i = 1; i < responseDictionary.Length; i++)
+                for (int i = 0; i < responseDictionary.Length; i++)
                 {
-                    respDictonary.Add(i.ToString(), responseDictionary[i]);
+                    respDictonary.Add((i+1).ToString(), responseDictionary[i]);
                 }
                 /*var dictionary = responseDictionary.ToDictionary(item => item.Key,
                     item => item.Value);*/
@@ -116,6 +122,8 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+
+            ViewBag.typeDictonary = responseType.ResponseDictionary;
             ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", responseType.SubjectId);
             return View(responseType);
         }
@@ -125,16 +133,16 @@ namespace Surveyapp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ResponseName")] ResponseType responseType)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ResponseName")] ResponseType responseType, string[] responseDictionary, string ResponseName)
         {
             if (id != responseType.Id)
             {
                 return NotFound();
             }
             //ModelState.Remove("ResponseDictionary");
-            if (/*ModelState.IsValid*/responseType.Id != null && !string.IsNullOrEmpty(responseType.ResponseName))
+            if (responseDictionary.Any())
             {
-                var resposUpdate = _context.ResponseType.SingleOrDefault(x=>x.Id == responseType.Id);
+                /*var resposUpdate = _context.ResponseType.SingleOrDefault(x=>x.Id == responseType.Id);
                 try
                 {
                     resposUpdate.ResponseName=responseType.ResponseName;
@@ -151,8 +159,21 @@ namespace Surveyapp.Controllers
                     {
                         throw;
                     }
-                }
-                return RedirectToAction(nameof(Index),new{id=resposUpdate.SubjectId});
+                }*/
+                var respDictonary = new Dictionary<string, string>();
+                    for (int i = 0; i < responseDictionary.Length; i++)
+                    {
+                        respDictonary.Add((i+1).ToString(), responseDictionary[i]);
+                    }
+                    ResponseType responseTypes = await _context.ResponseType.FindAsync(id);
+
+                    responseTypes.ResponseName = ResponseName;
+                    responseTypes.ResponseDictionary = respDictonary;
+
+                    _context.Update(responseTypes);
+                    await _context.SaveChangesAsync();
+                  
+                return RedirectToAction(nameof(Index),new{id=responseTypes.SubjectId});
             }
             ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", responseType.SubjectId);
             return View(responseType);

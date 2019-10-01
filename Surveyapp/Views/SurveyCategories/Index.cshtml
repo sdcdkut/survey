@@ -1,10 +1,24 @@
 ﻿@model IEnumerable<Surveyapp.Models.SurveyCategory>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Survey Categories";
 }
-
-<h1>Index</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+    
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Survey Categories</span>
+            </a>
+        </li>
+    </ol>
+</nav>
+<h1>Survey Categories</h1>
 
 <p>
     <a asp-action="Create" asp-route-id="@ViewBag.SurveyId">Create New</a>
@@ -32,7 +46,7 @@
             </td>*@
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> |*@
                 <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
                 <a asp-controller="SurveySubjects" asp-action="Index" asp-route-id="@item.Id">Subjects</a>
             </td>
