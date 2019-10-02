@@ -34,7 +34,7 @@
         //var questionResponsesCount = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id)?.Count();
         var totalResponse = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id).Count(a => a.question.SubjectId == item.Id);
         var maxRespondType = Context.ResponseType.Where(x=>x.SubjectId == item.Id).SelectMany(x=>x.ResponseDictionary.Keys).Max();
-        var avgScore = scoreResponse/totalResponse;
+        var avgScore = Math.Round((decimal)scoreResponse/totalResponse,0);
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.SubjectName)

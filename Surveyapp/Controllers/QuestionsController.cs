@@ -66,7 +66,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
             ViewBag.subjectid = id;
-            var responseTypeId = _context.SurveySubject.SingleOrDefault(x => x.Id == id)?.Id;
+            var responseTypeId = _context.ResponseType.SingleOrDefault(x => x.SubjectId == id)?.Id;
             ViewBag.ResponseTypeId = responseTypeId;
             //ViewData["ResponseTypeId"] = new SelectList(_context.ResponseType.Where(x=>x.SubjectId == id), "Id", "ResponseName");
             /*ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id");*/
