@@ -25,31 +25,37 @@
         </tr>
     </thead>
     <tbody>
-    @foreach (var item in Model.OrderBy(x=>x.ResponseType))
-    {
-        var questionResponseSum = Context.SurveyResponse.Where(a => a.QuestionId == item.Id).Sum(x=> int.Parse(x.Response));
-        var totalQuestionCountResponse = Context.SurveyResponse.Count(x => x.QuestionId ==item.Id)>0?Context.SurveyResponse.Count(x => x.QuestionId ==item.Id):1;
-        var avgScore = Math.Round((decimal)questionResponseSum/(decimal)totalQuestionCountResponse,0);
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.question)
-            </td>
-            <td>
-                @questionResponseSum
-            </td>
-            <td>
-                @avgScore
-            </td>
-            <td>
-                @foreach (var scores in Context.ResponseType.Where(x=>x.SubjectId == item.SubjectId).SelectMany(x=>x.ResponseDictionary))
-                    {
-                        if (avgScore == int.Parse(scores.Key))
+    @{
+        var surveyResponse = Context.SurveyResponse;
+        var responseType = Context.ResponseType;
+        foreach (var item in Model.OrderBy(x=>x.ResponseType))
+            {
+                var questionResponseSum = surveyResponse.Where(a => a.QuestionId == item.Id).Sum(x=> int.Parse(x.Response));
+                var totalQuestionCountResponse = surveyResponse.Count(x => x.QuestionId ==item.Id)>0?Context.SurveyResponse.Count(x => x.QuestionId ==item.Id):1;
+                var avgScore = Math.Round((decimal)questionResponseSum/(decimal)totalQuestionCountResponse,0);
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.question)
+                    </td>
+                    <td>
+                        @questionResponseSum
+                    </td>
+                    <td>
+                        @avgScore
+                    </td>
+                    <td>
+                        @responseType.Where(x=>x.SubjectId == item.SubjectId).SelectMany(x=>x.ResponseDictionary).SingleOrDefault(x=>int.Parse(x.Key) == avgScore).Value
+                        @*@foreach (var scores in Context.ResponseType.Where(x => x.SubjectId == item.SubjectId).SelectMany(x => x.ResponseDictionary))
                         {
-                            <p> @scores.Value</p>
-                        }
-                    }
-            </td>
-        </tr>
+                            if (avgScore == int.Parse(scores.Key))
+                            {
+                                <p> @scores.Value</p>
+                            }
+                        }*@
+                    </td>
+                </tr>
+            }
     }
+    
     </tbody>
 </table>
