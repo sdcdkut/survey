@@ -12,7 +12,7 @@ namespace Surveyapp.Models
         public SurveySubject()
         {
             Questions = new HashSet<Question>();
-            ResponseTypes = new ResponseType();
+            //ResponseTypes = new ResponseType();
         }
         [Key]
         public int Id { get; set; }

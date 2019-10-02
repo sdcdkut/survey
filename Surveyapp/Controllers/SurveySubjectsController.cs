@@ -73,7 +73,7 @@ namespace Surveyapp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId,SubjectTypeId")] SurveySubject surveySubject)
+        public async Task<IActionResult> Create([Bind("SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId")] SurveySubject surveySubject)
         {
             if (ModelState.IsValid)
             {
@@ -109,7 +109,7 @@ namespace Surveyapp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId,SubjectTypeId")] SurveySubject surveySubject)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId")] SurveySubject surveySubject)
         {
             if (id != surveySubject.Id)
             {

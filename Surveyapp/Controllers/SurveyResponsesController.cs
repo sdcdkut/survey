@@ -67,6 +67,7 @@ namespace Surveyapp.Controllers
         {
             if (/*ModelState.IsValid*/quizresponse.Length>0)
             {
+                int? categoryId= null;
                 foreach (var quizeAndResponse in quizresponse)
                 {
                     string[] ids = quizeAndResponse.Split(new char[] { '|' });
@@ -87,10 +88,11 @@ namespace Surveyapp.Controllers
                     {
                         var sd = id;
                     }*/
+                    categoryId = _context.SurveySubject.SingleOrDefault(x => x.Questions.Any(y=>y.Id == newResponse.QuestionId))?.CategoryId;
                     _context.Add(newResponse);
                 }
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("SurveySubjects","SurveySubjects", new{id = categoryId});
             }
             ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id", surveyResponse.RespondantId);
             ViewData["QuestionId"] = new SelectList(_context.Question, "Id", "Id", surveyResponse.QuestionId);
@@ -190,7 +192,11 @@ namespace Surveyapp.Controllers
         }
         public async Task<IActionResult> SurveyResults (int? id)
         {
-            var subjects = _context.Survey.Include(x=>x.SurveyCategorys);
+            IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys);
+            if (User.Identity.IsAuthenticated)
+            {
+                subjects = subjects.Where(x => x.SurveyerId == _usermanager.GetUserId(User));
+            }
             return  View(subjects);
         }
 
@@ -201,6 +207,17 @@ namespace Surveyapp.Controllers
                 return Content("Subject category not specified");
             }
             var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes).Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id);
+           
+            return View(questionResults);
+        }
+
+        public async Task<IActionResult> QuestionResults(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var questionResults = _context.Question.Where(z=>z.SubjectId==id);
             return View(questionResults);
         }
     }
