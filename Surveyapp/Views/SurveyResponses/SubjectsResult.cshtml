@@ -30,11 +30,11 @@
     @foreach (var item in Model)
     {
         var scoreResponse = Context.SurveyResponse.Where(a => a.question.SubjectId == item.Id).Sum(x=> int.Parse(x.Response));
-        //var questioncount = Context.Question.Where(x=>x.SubjectId ==item.Id).Count(a => a.SubjectId == item.Id);
+        var question = Context.Question.Where(x=>x.SubjectId ==item.Id).Count(a => a.SubjectId == item.Id);
         //var questionResponsesCount = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id)?.Count();
         var totalResponse = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id).Count(a => a.question.SubjectId == item.Id);
         var maxRespondType = Context.ResponseType.Where(x=>x.SubjectId == item.Id).SelectMany(x=>x.ResponseDictionary.Keys).Max();
-        var avgScore = Math.Round((decimal)scoreResponse/totalResponse,0);
+        var avgScore = Math.Round((decimal)scoreResponse/(decimal)totalResponse,0);
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.SubjectName)
@@ -54,7 +54,7 @@
                     }
                 }
             </td>
-            <td><a href="#">Indiviual Question performnce</a></td>
+            <td><a asp-action="QuestionResults" asp-route-id="@item.Id">Indiviual Question performnce</a></td>
         </tr>
     }
     </tbody>
