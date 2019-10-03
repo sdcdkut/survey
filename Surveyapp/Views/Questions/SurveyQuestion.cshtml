@@ -64,12 +64,14 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 @{
                     var quizSerial = 0;
+                    var formSubmitBtn=false;
                 }
                 @foreach (var item in Model)
                 {
                     if (item.Subject.Category.Survey.status == "Open")
                     {
                         quizSerial++;
+                        formSubmitBtn = true;
                         <div class="question-div">
                             <input type="hidden" required="required" name="quizresponse" id="quizresponse"/>
                             <p style="background-color:Lavender;">@quizSerial) @Html.DisplayFor(modelItem => item.question)</p>
@@ -85,9 +87,6 @@
                                 }
                             </div>
                         </div>
-                        <div class="form-group">
-                            <input type="submit" value="Submit Survey" class="btn btn-primary"/>
-                        </div>
                     }
                     if (item.Subject.Category.Survey.status == "Closed")
                     {
@@ -96,6 +95,7 @@
                             if (!_context.SurveyResponse.Where(x=>x.QuestionId == item.Id).Any(x=>x.RespondantId==_usermanager.GetUserId(User)))
                             {
                                 quizSerial++;
+                                formSubmitBtn = true;
                                 <div class="question-div">
                                     <input type="hidden" required="required" name="quizresponse" id="quizresponse"/>
                                     <p style="background-color:Lavender;">@quizSerial) @Html.DisplayFor(modelItem => item.question)</p>
@@ -111,9 +111,6 @@
                                         }
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <input type="submit" value="Submit Survey" class="btn btn-primary"/>
-                                </div>
                             }
                             else
                             {
@@ -127,6 +124,13 @@
                         }
                     }
                 }
+                @if (formSubmitBtn)
+                {
+                    <div class="form-group">
+                        <input type="submit" value="Submit Survey" class="btn btn-primary"/>
+                    </div>
+                }
+                
             </form>
         </div>
     </div>
