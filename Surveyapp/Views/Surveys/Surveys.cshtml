@@ -74,7 +74,7 @@
                 <td>
                     @dateStatus
                 </td>
-                <td>
+                <td width="30%">
                 @*Check if survey date is available for take*@
                     @if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)>0&& EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)>0)
                     {
@@ -133,7 +133,7 @@
                         }
                         else
                         {
-                            <a class="btn-block btn-sm btn btn-danger" asp-area="Identity" asp-page="/Account/Login">take survey</a>
+                            <a class="btn-block btn-sm btn btn-danger" asp-area="Identity" asp-page="/Account/Login">take survey <small>(Login required)</small></a>
                         }
                     }
                 }/*else the suveydate has not started or has ended*/

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace Surveyapp.Controllers
     public class QuestionsController : Controller
     {
         private readonly SurveyContext _context;
+        private readonly UserManager<ApplicationUser> _usermanager;
 
-        public QuestionsController(SurveyContext context)
+        public QuestionsController(SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
         // GET: Questions
@@ -212,8 +215,18 @@ namespace Surveyapp.Controllers
             }
             ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
             ViewBag.SurveyId = _context.SurveySubject.Include(x=>x.Category).SingleOrDefault(x => x.Id == id)?.Category.Id;
-            var questions = _context.Question.Include(x=>x.ResponseType).Where(x => x.SubjectId == id);
-            //throw new NotImplementedException();
+            var questions = _context.Question.Include(x=>x.ResponseType).Include(x=>x.Subject.Category.Survey).Where(x => x.SubjectId == id);
+            /*//if user is logged in
+            if (User.Identity.IsAuthenticated)
+            {
+                //if user has answered the question
+                if (_context.SurveyResponse.Where(x=>x.question.Subject.Id == id).Any(x=>x.RespondantId==_usermanager.GetUserId(User)))
+                {
+                    questions = questions.Where(x =>
+                                        x.SurveyResponses.Any(z => z.RespondantId != _usermanager.GetUserId(User)));
+                }
+                
+            }*/
             return View(questions);
         }
     }
