@@ -4,6 +4,7 @@
 @{
     ViewBag.Title = "Question Result";
     Layout = "_Layout";
+   int res=0;
 }
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -51,6 +52,7 @@
                 var questionResponseSum = surveyResponse.Where(a => a.QuestionId == item.Id).Sum(x=> int.Parse(x.Response));
                 var totalQuestionCountResponse = surveyResponse.Count(x => x.QuestionId ==item.Id)>0?Context.SurveyResponse.Count(x => x.QuestionId ==item.Id):1;
                 var avgScore = Math.Round((decimal)questionResponseSum/(decimal)totalQuestionCountResponse,0);
+                res = totalQuestionCountResponse;
                 <tr>
                     <td>
                         @Html.DisplayFor(modelItem => item.question)
@@ -77,3 +79,7 @@
     
     </tbody>
 </table>
+<div align="center" style="background-color:Beige; color:aqua">
+Number of responses per question <Strong> @res</Strong>
+</div>
+ 

@@ -68,7 +68,7 @@
                     quizSerial++;
                     <div class="question-div">
                         <input type="hidden" required="required" name="quizresponse" id="quizresponse"/>
-                        <p>@quizSerial) @Html.DisplayFor(modelItem => item.question)</p>
+                        <p style="background-color:Lavender;">@quizSerial) @Html.DisplayFor(modelItem => item.question)</p>
 
                         <div class="container" style="display: flex;margin: 5px">
                             @foreach (var itemed in item.ResponseType.ResponseDictionary)

@@ -4,6 +4,7 @@
 @{
     ViewBag.Title = "Subject Result";
     Layout = "_Layout";
+    int res=1;
 }
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -52,6 +53,7 @@
                 var totalResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Count(a => a.question.SubjectId == item.Id);
                 var maxRespondType = responseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary.Keys).Max();
                 var avgScore = Math.Round((decimal) scoreResponse / (decimal) totalResponse, 0);
+                res=totalResponse;
                 <tr>
                     <td>
                         @Html.DisplayFor(modelItem => item.SubjectName)
@@ -79,3 +81,6 @@
     
     </tbody>
 </table>
+<div align="center" style="background-color:Lavender; color:DeepSkyBlue">
+Number of responses per question <Strong> @res</Strong>
+</div>
