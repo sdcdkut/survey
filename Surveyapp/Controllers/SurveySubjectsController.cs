@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace Surveyapp.Controllers
     public class SurveySubjectsController : Controller
     {
         private readonly SurveyContext _context;
+        private readonly UserManager<ApplicationUser> _usermanager;
 
-        public SurveySubjectsController(SurveyContext context)
+        public SurveySubjectsController(SurveyContext context, UserManager<ApplicationUser>userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
         // GET: SurveySubjects
@@ -184,7 +187,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id);
+            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id).Where(x=>x.Questions.Any()).Where(x=>EF.Functions.DateDiffDay(x.Category.Survey.Startdate,DateTime.Now)>0&& EF.Functions.DateDiffDay(DateTime.Now,x.Category.Survey.EndDate)>0);
             //throw new NotImplementedException();
             return View(subjects);
         }

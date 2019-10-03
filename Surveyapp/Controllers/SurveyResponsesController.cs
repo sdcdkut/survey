@@ -24,6 +24,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyResponses
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var surveyContext = _context.SurveyResponse.Include(s => s.Respondant).Include(s => s.question);
@@ -31,6 +32,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyResponses/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -51,6 +53,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyResponses/Create
+        [Authorize]
         public IActionResult Create()
         {
             ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id");
@@ -61,6 +64,7 @@ namespace Surveyapp.Controllers
         // POST: SurveyResponses/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,RespondantId,QuestionId,Response")] SurveyResponse surveyResponse, string[] quizresponse)
@@ -100,6 +104,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyResponses/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -120,6 +125,7 @@ namespace Surveyapp.Controllers
         // POST: SurveyResponses/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,RespondantId,QuestionId,Response")] SurveyResponse surveyResponse)
@@ -155,6 +161,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyResponses/Delete/5
+        [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -190,34 +197,40 @@ namespace Surveyapp.Controllers
         {
             return _context.SurveyResponse.Any(e => e.Id == id);
         }
+        [Authorize]
         public async Task<IActionResult> SurveyResults (int? id)
         {
-            IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys);
+            IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys).Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any(c=>c.SurveyResponses.Any()))));
             if (User.Identity.IsAuthenticated)
             {
                 subjects = subjects.Where(x => x.SurveyerId == _usermanager.GetUserId(User));
             }
             return  View(subjects);
         }
-
+        [Authorize]
         public async Task<IActionResult> SubjectsResult(int? id)
         {
             if (id == null)
             {
                 return Content("Subject category not specified");
             }
-            var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes).Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id);
+            var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes)
+                                    .Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id)
+                                    .Where(x=>x.Category.Survey.SurveyerId == _usermanager.GetUserId(User));
            
             return View(questionResults);
         }
-
+        [Authorize]
         public async Task<IActionResult> QuestionResults(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var questionResults = _context.Question.Where(z=>z.SubjectId==id);
+
+            ViewBag.Time = EF.Functions.DateDiffMinute(DateTime.Now, DateTime.Now);
+            ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(z=>z.Id == id)?.CategoryId;
+            var questionResults = _context.Question.Where(z=>z.SubjectId==id).Where(x=>x.SurveyResponses.Any());
             return View(questionResults);
         }
     }

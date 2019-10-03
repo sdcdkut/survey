@@ -177,8 +177,8 @@ namespace Surveyapp.Controllers
                 //display surveys not created by current logged in user
                 surveyContext = surveyContext.Where(x=>x.SurveyerId != _usermanager.GetUserId(User));
             }
+            surveyContext = surveyContext.Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any())));
             return View(await surveyContext.ToListAsync());
-            //throw new NotImplementedException();
         }
 
         public IActionResult TakeSurvey(int? id)

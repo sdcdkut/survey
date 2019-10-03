@@ -1,6 +1,7 @@
 @model IEnumerable<Surveyapp.Models.Survey>
 @inject SurveyContext _context
 @using System.Text.RegularExpressions;
+@using Microsoft.EntityFrameworkCore
 
 @{
     ViewBag.Title = "Available Surveys";
@@ -15,72 +16,149 @@
         </li>
     </ol>
 </nav>
-<h2>Open Surveys</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.name)
+<h2>Surveys</h2>
+@*check if there is available surveys*@
+@if (Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    Survey @Html.DisplayNameFor(model => model.name)
+                </th>
+                @*<th>
+                @Html.DisplayNameFor(model => model.Startdate)
             </th>
-            @*<th>
-            @Html.DisplayNameFor(model => model.Startdate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EndDate)
-        </th>*@
             <th>
-                @Html.DisplayNameFor(model => model.status)
-            </th>
-            @*<th>
-            @Html.DisplayNameFor(model => model.Surveyer)
-        </th>*@
-            <th></th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.name)
+                @Html.DisplayNameFor(model => model.EndDate)
+            </th>*@
+                <th>
+                    @Html.DisplayNameFor(model => model.status)
+                </th>
+                <th>
+                    Availability
+                </th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+    @foreach (var item in Model)
+    {
+        string dateStatus =null; 
+        if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)<0)
+        {
+            dateStatus=Math.Abs(EF.Functions.DateDiffDay(item.Startdate,DateTime.Now))+ " Day(s) left to start";
+        }
+        if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)>0 && EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)>0)
+        {
+            dateStatus= EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)+" Day(s) left to Expire" ;
+        }
+        if (EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)<=0)
+        {
+            dateStatus=" Survey Expired" ;
+        }
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.name)
+                </td>
+                @*<td>
+                @Html.DisplayFor(modelItem => item.Startdate)
             </td>
-            @*<td>
-            @Html.DisplayFor(modelItem => item.Startdate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EndDate)
-        </td>*@
             <td>
-                @Html.DisplayFor(modelItem => item.status)
-            </td>
-            @*<td>
-            @Html.DisplayFor(modelItem => item.Surveyer.Id)
-        </td>*@
-            <td>
-                <button @*asp-action="TakeSurvey" asp-route-id="@item.Id"*@ class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace( item.name, @"\s", "" )" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
-                <div id="@Regex.Replace( item.name, @"\s", "" )" class="collapse" style="width:80%">
-                    @if (item.SurveyCategorys.Count > 0)
+                @Html.DisplayFor(modelItem => item.EndDate)
+            </td>*@
+                <td>
+                    @Html.DisplayFor(modelItem => item.status)
+                </td>
+                <td>
+                    @dateStatus
+                </td>
+                <td>
+                @*Check if survey date is available for take*@
+                    @if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)>0&& EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)>0)
                     {
-                        <p>Choose Survey categories</p>
-                        <ul style="width:inherit">
-                            @{
-                                var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id);
-                                foreach (var category in surveyCategory)
-                                {
-                                    <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
-                                }
+                        @*if survey is open for anonymous take*@
+                    @if (item.status == "Open")
+                    {
+                        <button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
+                        <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
+                            @if (item.SurveyCategorys.Count > 0)
+                            {
+                                <p>Choose Survey Subject categories</p>
+                                <ul style="width:inherit">
+                                    @{
+                                        var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x => x.SurveySubjects.Any(a => a.Questions.Any()));
+                                        foreach (var category in surveyCategory)
+                                        {
+                                            <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                                        }
+                                    }
+                                </ul>
                             }
-                        </ul>
+                            else
+                            {
+                                <p>Survey Subject categories Not set</p>
+                            }
+                        </div>
+
                     }
+                    @*if survey is closed and require login for anonymous take*@
+                    @if (item.status == "Closed")
+                    {
+                        //check if user is logged in
+                        if (User.Identity.IsAuthenticated)
+                        {
+                            <button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
+                            <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
+                                @if (item.SurveyCategorys.Count > 0)
+                                {
+                                    <p>Choose Survey Subject categories</p>
+                                    <ul style="width:inherit">
+                                        @{
+                                            var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x => x.SurveySubjects.Any(a => a.Questions.Any()));
+                                            foreach (var category in surveyCategory)
+                                            {
+                                                <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                                            }
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p>Survey Subject categories Not set</p>
+                                }
+
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn-block btn-sm btn btn-danger" asp-area="Identity" asp-page="/Account/Login">take survey</a>
+                        }
+                    }
+                }/*else the suveydate has not started or has ended*/
                     else
                     {
-                        <p>Survey categories Not set</p>
+                        /*if survey startdate has not been attained*/
+                        if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)<=0)
+                        {
+                            <button class="btn btn-sm btn-info" disabled="disabled"> Survey Not open</button>
+                        }
+                        /*if survey enddate has passed*/
+                        if (EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)<=0)
+                        {
+                            <button class="btn btn-sm btn-info" disabled="disabled"> Survey Expired</button>
+                        }
                     }
-
-                </div>
-
-            </td>
-        </tr>
+                    
+                </td>
+            </tr>
+    }
+        </tbody>
+    </table>
 }
-    </tbody>
-</table>
+else
+{
+    <h2>No Open Sureys are availale</h2>
+}
+

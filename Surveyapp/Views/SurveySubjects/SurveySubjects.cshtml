@@ -1,4 +1,6 @@
 @model IEnumerable<Surveyapp.Models.SurveySubject>
+@inject SurveyContext _context
+@inject UserManager<ApplicationUser> _usermanager
 
 @{
     ViewBag.Title = "Survey Subject";
@@ -28,13 +30,30 @@
     </thead>
     <tbody>
     @foreach (var item in Model) {
+        
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.SubjectName)
             </td>
             <td>
+                @if(User.Identity.IsAuthenticated)
+                {
+                    // check if user has taken survey on subject
+                    if (_context.SurveyResponse.Where(x=>x.question.Subject.Id == item.Id).Any(x=>x.RespondantId==_usermanager.GetUserId(User)))
+                    {
+                        <button class="btn-block btn-sm btn btn-danger" disabled="disabled" >survey Already taken</button>
+                    }
+                    else
+                    {
+                        <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                }
                 @*@Html.DisplayFor(modelItem => item.EndDate)*@
-                <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                
             </td>
         </tr>
     }

@@ -5,8 +5,21 @@
     ViewBag.Title = "Subject Result";
     Layout = "_Layout";
 }
-
-<h2>Subject Result</h2>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="SurveyResults" asp-controller="SurveyResponses">
+                <span>Survey Results</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Subject Results</span>
+            </a>
+        </li>
+    </ol>
+</nav>
+<h2>Subject Results</h2>
 <table class="table">
     <thead>
         <tr>
