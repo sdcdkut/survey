@@ -4,7 +4,7 @@
 @{
     ViewBag.Title = "Subject Result";
     Layout = "_Layout";
-    int res=1;
+    int? res=1;
 }
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -48,12 +48,12 @@
         foreach (var item in Model)
             {
                 var scoreResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Sum(x => int.Parse(x.Response));
-                var questions = question.Where(x => x.SubjectId == item.Id).Count(a => a.SubjectId == item.Id);
-                //var questionResponsesCount = Context.SurveyResponse.Where(a=>a.question.SubjectId==item.Id)?.Count();
+                //var questions = question.Where(x => x.SubjectId == item.Id).Count(a => a.SubjectId == item.Id);
+                var questionResponsesCount = question.Where(a=>a.SubjectId==item.Id).Take(1).SelectMany(x=>x.SurveyResponses)?.Count();
                 var totalResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Count(a => a.question.SubjectId == item.Id);
-                var maxRespondType = responseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary.Keys).Max();
+                //var maxRespondType = responseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary.Keys).Max();
                 var avgScore = Math.Round((decimal) scoreResponse / (decimal) totalResponse, 0);
-                res=totalResponse;
+                res=questionResponsesCount;
                 <tr>
                     <td>
                         @Html.DisplayFor(modelItem => item.SubjectName)

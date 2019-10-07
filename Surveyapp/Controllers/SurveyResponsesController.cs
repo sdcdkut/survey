@@ -125,7 +125,7 @@ namespace Surveyapp.Controllers
         // POST: SurveyResponses/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize]
+        /*[Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,RespondantId,QuestionId,Response")] SurveyResponse surveyResponse)
@@ -158,7 +158,7 @@ namespace Surveyapp.Controllers
             ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id", surveyResponse.RespondantId);
             ViewData["QuestionId"] = new SelectList(_context.Question, "Id", "Id", surveyResponse.QuestionId);
             return View(surveyResponse);
-        }
+        }*/
 
         // GET: SurveyResponses/Delete/5
         [Authorize]
@@ -200,7 +200,8 @@ namespace Surveyapp.Controllers
         [Authorize]
         public async Task<IActionResult> SurveyResults (int? id)
         {
-            IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys).Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any(c=>c.SurveyResponses.Any()))));
+            IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys)
+                .Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any(c=>c.SurveyResponses.Any()))));
             if (User.Identity.IsAuthenticated)
             {
                 subjects = subjects.Where(x => x.SurveyerId == _usermanager.GetUserId(User));

@@ -26,6 +26,7 @@ namespace Surveyapp.Models
         public DateTime EndDate { get; set; }
         [Required]
         public string status { get; set; }
+        public string approvalStatus { get; set; }
         [Required]
         public string SurveyerId { get; set; }
         [ForeignKey("SurveyerId")]
