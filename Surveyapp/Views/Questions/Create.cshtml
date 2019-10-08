@@ -54,7 +54,7 @@
         $(".add_fields").click(function(e){
                 e.preventDefault();
          //Check maximum allowed input fields
-                if(x < max_fields){ 
+                if(x < max_fields){
                     x++; //input field increment
          //add input field
                     $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;"><label class="control-label">question</label><div class="form-group col-md-4"><textarea rows="4" cols="50" class="form-control" name="quiz" placeholder="Input question" ></textarea></div><p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove question</a></p></div>');

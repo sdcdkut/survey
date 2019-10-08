@@ -6,7 +6,25 @@
     Layout = "_Layout";
    int res=0;
 }
-
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="SurveyResults" asp-controller="SurveyResponses">
+                <span>Survey Results</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="SubjectsResult" asp-controller="SurveyResponses" asp-route-id="@ViewBag.CategoryId">
+                <span>Subject Results</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Question Result</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 <h2>Question Result</h2>
 <table class="table">
     <thead>

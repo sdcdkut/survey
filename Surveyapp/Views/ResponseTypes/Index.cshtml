@@ -32,6 +32,7 @@
 
 @if (Model.Any())
 {
+    <a asp-controller="Questions" asp-action="Create" asp-route-id="@ViewBag.subjectId">Add question </a>
     <h3>@ViewBag.SubjectName Options Types</h3>
 }
 else

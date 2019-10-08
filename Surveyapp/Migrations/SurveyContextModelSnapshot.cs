@@ -239,6 +239,8 @@ namespace Surveyapp.Migrations
                     b.Property<string>("SurveyerId")
                         .IsRequired();
 
+                    b.Property<string>("approvalStatus");
+
                     b.Property<string>("name")
                         .IsRequired();
 

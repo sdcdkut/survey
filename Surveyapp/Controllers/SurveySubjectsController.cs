@@ -1,25 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
+using Surveyapp.Services;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Surveyapp.Controllers
 {
     public class SurveySubjectsController : Controller
     {
         private readonly SurveyContext _context;
+        private readonly UserManager<ApplicationUser> _usermanager;
 
-        public SurveySubjectsController(SurveyContext context)
+        public SurveySubjectsController(SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
-        // GET: SurveySubjects
+        // GET: SurveySubjects 
         [Authorize]
         public async Task<IActionResult> Index(int? id)
         {
@@ -29,12 +32,13 @@ namespace Surveyapp.Controllers
             }
 
             ViewBag.CategoryId = id;
-            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x=>x.Id == id)?.SurveyId;
-            var surveyContext = _context.SurveySubject.Include(s => s.Category).Include(x=>x.ResponseTypes).Where(x=>x.CategoryId==id);
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
+            var surveyContext = _context.SurveySubject.Include(s => s.Category).Include(x => x.ResponseTypes).Where(x => x.CategoryId == id);
             return View(await surveyContext.ToListAsync());
         }
 
         // GET: SurveySubjects/Details/5
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
@@ -55,6 +59,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects/Create
+        [NoDirectAccess]
         [Authorize]
         public IActionResult Create(int? id)
         {
@@ -70,6 +75,7 @@ namespace Surveyapp.Controllers
         // POST: SurveySubjects/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [NoDirectAccess]
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -79,13 +85,14 @@ namespace Surveyapp.Controllers
             {
                 _context.Add(surveySubject);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index),new{ id=surveySubject.CategoryId });
+                return RedirectToAction(nameof(Index), new { id = surveySubject.CategoryId });
             }
             ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId);
             return View(surveySubject);
         }
 
         // GET: SurveySubjects/Edit/5
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -106,6 +113,7 @@ namespace Surveyapp.Controllers
         // POST: SurveySubjects/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [NoDirectAccess]
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -134,7 +142,7 @@ namespace Surveyapp.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index),new{ id=surveySubject.CategoryId });
+                return RedirectToAction(nameof(Index), new { id = surveySubject.CategoryId });
             }
             ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId);
             return View(surveySubject);
@@ -161,6 +169,7 @@ namespace Surveyapp.Controllers
         }
 
         // POST: SurveySubjects/Delete/5
+        [NoDirectAccess]
         [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -169,7 +178,7 @@ namespace Surveyapp.Controllers
             var surveySubject = await _context.SurveySubject.FindAsync(id);
             _context.SurveySubject.Remove(surveySubject);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index),new{ id=surveySubject.CategoryId });
+            return RedirectToAction(nameof(Index), new { id = surveySubject.CategoryId });
         }
 
         private bool SurveySubjectExists(int id)
@@ -177,6 +186,7 @@ namespace Surveyapp.Controllers
             return _context.SurveySubject.Any(e => e.Id == id);
         }
 
+        [NoDirectAccess]
         public IActionResult SurveySubjects(int? id)
         {
             if (id == null)
@@ -184,10 +194,21 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id);
+            var surveyStatus = _context.Survey.Find(id).status;
+            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id)
+                .Where(x => x.Questions.Any()).Where(x => EF.Functions.DateDiffDay(x.Category.Survey.Startdate, DateTime.Now) > 0 && EF.Functions.DateDiffDay(DateTime.Now, x.Category.Survey.EndDate) > 0);
+            /*if (surveyStatus == "Open")
+            {
+                subjects = subjects;
+            }
+
+            if (surveyStatus == "Closed")
+            {
+                
+            }*/
             //throw new NotImplementedException();
             return View(subjects);
         }
-        
+
     }
 }

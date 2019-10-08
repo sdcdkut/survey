@@ -10,8 +10,8 @@ using Surveyapp.Models;
 namespace Surveyapp.Migrations
 {
     [DbContext(typeof(SurveyContext))]
-    [Migration("20190925192123_datefix")]
-    partial class datefix
+    [Migration("20191005095722_adminapprovsurvey")]
+    partial class adminapprovsurvey
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -222,7 +222,8 @@ namespace Surveyapp.Migrations
 
                     b.HasIndex("Id");
 
-                    b.HasIndex("SubjectId");
+                    b.HasIndex("SubjectId")
+                        .IsUnique();
 
                     b.ToTable("ResponseType");
                 });
@@ -239,6 +240,8 @@ namespace Surveyapp.Migrations
 
                     b.Property<string>("SurveyerId")
                         .IsRequired();
+
+                    b.Property<string>("approvalStatus");
 
                     b.Property<string>("name")
                         .IsRequired();
@@ -312,7 +315,8 @@ namespace Surveyapp.Migrations
 
                     b.Property<string>("StateCorporation");
 
-                    b.Property<string>("SubjectName");
+                    b.Property<string>("SubjectName")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -383,8 +387,8 @@ namespace Surveyapp.Migrations
             modelBuilder.Entity("Surveyapp.Models.ResponseType", b =>
                 {
                     b.HasOne("Surveyapp.Models.SurveySubject", "Subject")
-                        .WithMany("ResponseTypes")
-                        .HasForeignKey("SubjectId");
+                        .WithOne("ResponseTypes")
+                        .HasForeignKey("Surveyapp.Models.ResponseType", "SubjectId");
                 });
 
             modelBuilder.Entity("Surveyapp.Models.Survey", b =>

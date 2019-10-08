@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
+using Surveyapp.Services;
 
 namespace Surveyapp.Controllers
 {
@@ -75,8 +76,10 @@ namespace Surveyapp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ResponseName,SubjectId")] ResponseType responseType,int SubjectId,string ResponseName,string[] responseDictionary)
+        [NoDirectAccess]
+        public async Task<IActionResult> Create([Bind("Id,ResponseName,SubjectId")] ResponseType responseType,int SubjectId,string ResponseName,string[] responseDictionary,string returnUrl = null)
         {
+            returnUrl = returnUrl ?? Url.Content("~/");
             /*if (ModelState.IsValid)
             {*/
             var respDictonary = new Dictionary<string, string>();
@@ -110,6 +113,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: ResponseTypes/Edit/5
+        [NoDirectAccess]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -131,6 +135,7 @@ namespace Surveyapp.Controllers
         // POST: ResponseTypes/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [NoDirectAccess]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,ResponseName")] ResponseType responseType, string[] responseDictionary, string ResponseName)
@@ -180,6 +185,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: ResponseTypes/Delete/5
+        [NoDirectAccess]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -199,6 +205,7 @@ namespace Surveyapp.Controllers
         }
 
         // POST: ResponseTypes/Delete/5
+        [NoDirectAccess]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -208,7 +215,7 @@ namespace Surveyapp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index),new{id=responseType.SubjectId});
         }
-
+        [NoDirectAccess]
         private bool ResponseTypeExists(int id)
         {
             return _context.ResponseType.Any(e => e.Id == id);

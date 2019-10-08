@@ -4,9 +4,16 @@
 @{
     ViewData["Title"] = "SurveyResults";
 }
-
-<h1>SurveyResults</h1>
-<h4>Choose Survey</h4>
+<nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">
+                <a>
+                    <span>Survey Result</span>
+                </a>
+            </li>
+        </ol>
+    </nav>
+<h4>Choose Subject Survey</h4>
 <table class="table">
     <thead>
         <tr>
@@ -34,18 +41,15 @@
             <td>
                 @Html.DisplayFor(modelItem => item.question.question)
             </td>*@
-            <td>
-                <button @*asp-action="TakeSurvey" asp-route-id="@item.Id"*@ 
-                    class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" 
-                    data-target="#Result-@resultCounter" aria-expanded="false" 
-                    aria-controls="collapseExample">Result</button>
+            <td width="40%">
+                <button @*asp-action="TakeSurvey" asp-route-id="@item.Id"*@ class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#Result-@resultCounter" aria-expanded="false" aria-controls="collapseExample">Result</button>
                 <div id="Result-@resultCounter" class="collapse" style="width:80%">
                     @if (item.SurveyCategorys.Count > 0)
                     {
-                        <p>Choose Survey categories</p>
+                        <p>Choose Survey Subject categories</p>
                         <ul style="width:inherit">
                             @{
-                                var surveyCategory = _Context.SurveyCategory.Where(x => x.SurveyId == item.Id);
+                                var surveyCategory = _Context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x=>x.SurveySubjects.Any(a=>a.Questions.Any(s=>s.SurveyResponses.Any())));
                                 foreach (var category in surveyCategory)
                                 {
                                     <li><a asp-controller="SurveyResponses" asp-action="SubjectsResult" 
@@ -56,7 +60,7 @@
                     }
                     else
                     {
-                        <p>Survey categories Not set</p>
+                        <p>Survey Subject categories Not set</p>
                     }
 
                 </div>

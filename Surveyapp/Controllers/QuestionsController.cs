@@ -3,20 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
+using Surveyapp.Services;
 
 namespace Surveyapp.Controllers
 {
     public class QuestionsController : Controller
     {
         private readonly SurveyContext _context;
+        private readonly UserManager<ApplicationUser> _usermanager;
 
-        public QuestionsController(SurveyContext context)
+        public QuestionsController(SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
         // GET: Questions
@@ -37,6 +41,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Details/5
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
@@ -58,7 +63,9 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Create
+        [NoDirectAccess]
         [Authorize]
+        [NoDirectAccess]
         public IActionResult Create(int? id)
         {
             if (id == null)
@@ -76,6 +83,7 @@ namespace Surveyapp.Controllers
         // POST: Questions/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [NoDirectAccess]
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -107,6 +115,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Edit/5
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -120,7 +129,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-            ViewData["ResponseTypeId"] = new SelectList(_context.ResponseType, "Id", "ResponseName", question.ResponseTypeId);
+            ViewData["ResponseTypeId"] = new SelectList(_context.ResponseType.Where(x=>x.SubjectId == question.SubjectId), "Id", "ResponseName", question.ResponseTypeId);
             //ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", question.SubjectId);
             return View(question);
         }
@@ -129,6 +138,7 @@ namespace Surveyapp.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [Authorize]
+        [NoDirectAccess]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,ResponseTypeId,question,SubjectId")] Question newquestion,int Id,int ResponseTypeId,string question)
@@ -188,6 +198,7 @@ namespace Surveyapp.Controllers
         }
 
         // POST: Questions/Delete/5
+        [NoDirectAccess]
         [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -204,6 +215,7 @@ namespace Surveyapp.Controllers
             return _context.Question.Any(e => e.Id == id);
         }
 
+        [NoDirectAccess]
         public IActionResult SurveyQuestion(int? id)
         {
             if (id == null)
@@ -211,9 +223,19 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
             ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
-            ViewBag.SurveyId = _context.SurveySubject.Include(x=>x.Category).SingleOrDefault(x => x.Id == id)?.Category.Id;
-            var questions = _context.Question.Include(x=>x.ResponseType).Where(x => x.SubjectId == id);
-            //throw new NotImplementedException();
+            ViewBag.SurveyId = _context.SurveySubject.Include(x=>x.Category).SingleOrDefault(x => x.Id == id)?.CategoryId;
+            var questions = _context.Question.Include(x=>x.ResponseType).Include(x=>x.Subject.Category.Survey).Where(x => x.SubjectId == id);
+            //if user is logged in
+            if (User.Identity.IsAuthenticated)
+            {
+                //if user has answered the question
+                if (_context.SurveyResponse.Where(x=>x.question.Subject.Id == id).Any(x=>x.RespondantId==_usermanager.GetUserId(User)))
+                {
+                    questions = questions.Where(x =>
+                                        x.SurveyResponses.Any(z => z.RespondantId != _usermanager.GetUserId(User)));
+                }
+                
+            }
             return View(questions);
         }
     }

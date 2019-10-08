@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
+using Surveyapp.Services;
 
 namespace Surveyapp.Controllers
 {
@@ -32,6 +33,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Details/5
+        [NoDirectAccess]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -78,6 +80,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Edit/5
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -98,6 +101,7 @@ namespace Surveyapp.Controllers
         // POST: Surveys/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [NoDirectAccess]
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -134,6 +138,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Delete/5
+        [NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -154,6 +159,7 @@ namespace Surveyapp.Controllers
         }
 
         // POST: Surveys/Delete/5
+        [NoDirectAccess]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -177,8 +183,8 @@ namespace Surveyapp.Controllers
                 //display surveys not created by current logged in user
                 surveyContext = surveyContext.Where(x=>x.SurveyerId != _usermanager.GetUserId(User));
             }
+            surveyContext = surveyContext.Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any())));
             return View(await surveyContext.ToListAsync());
-            //throw new NotImplementedException();
         }
 
         public IActionResult TakeSurvey(int? id)
