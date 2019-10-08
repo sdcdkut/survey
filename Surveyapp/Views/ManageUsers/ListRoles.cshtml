@@ -1,0 +1,59 @@
+﻿@model IEnumerable<IdentityRole>
+@{
+    ViewData["Title"] = "All Roles";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>All Roles</h1>
+<hr />
+
+@if (Model.Any())
+{
+    <div>
+        <a class="btn btn-primary"
+           asp-action="CreateRole" asp-controller="ManageUsers">
+            Create Role
+        </a>
+    </div>
+    foreach (var role in Model)
+    {
+        <br />
+        <div class="card">
+            <div class="card-header">
+                Role Id: @role.Id
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">
+                    @role.Name
+                </h5>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-primary"
+                   asp-action="EditRole" asp-controller="ManageUsers" asp-route-id="@role.Id">
+                    Edit
+                </a>
+                <a class="btn btn-danger"
+                   @*asp-action="CreateRole" asp-controller="ManageUsers"*@>
+                    Delete
+                </a>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            No Roles Created yet
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">
+                Use the button below to create a new Role
+            </h5>
+            <a class="btn btn-primary"
+               asp-action="CreateRole" asp-controller="ManageUsers">
+                Create Role
+            </a>
+        </div>
+    </div>
+}
+

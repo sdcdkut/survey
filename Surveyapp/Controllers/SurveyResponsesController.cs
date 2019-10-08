@@ -190,7 +190,7 @@ namespace Surveyapp.Controllers
         {
             return _context.SurveyResponse.Any(e => e.Id == id);
         }
-        public async Task<IActionResult> SurveyResults (int? id)
+        public IActionResult SurveyResults (int? id)
         {
             IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys);
             if (User.Identity.IsAuthenticated)
@@ -200,7 +200,7 @@ namespace Surveyapp.Controllers
             return  View(subjects);
         }
 
-        public async Task<IActionResult> SubjectsResult(int? id)
+        public  IActionResult SubjectsResult(int? id)
         {
             if (id == null)
             {
@@ -211,7 +211,7 @@ namespace Surveyapp.Controllers
             return View(questionResults);
         }
 
-        public async Task<IActionResult> QuestionResults(int? id)
+        public IActionResult QuestionResults(int? id)
         {
             if (id == null)
             {

@@ -1,0 +1,75 @@
+﻿@model IEnumerable<ApplicationUser>
+
+@{
+    ViewData["Title"] = "All Users";
+}
+
+<h1>All Users</h1>
+@if (Model.Any())
+{
+    <a class="btn btn-primary mb-3"
+       asp-area="Identity" asp-page="/Account/Register">
+        Add new Users
+    </a>
+    foreach (var user in Model)
+    {
+        <div class="card mb-3">
+            <div class="card-header">
+                Role Id: @user.Id
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">
+                    @user.UserName
+                </h5>
+            </div>
+            <div class="card-footer">
+                <a class="btn btn-warning"
+                   @*asp-action="EditRole" asp-controller="ManageUsers" asp-route-id="@user.Id" *@>
+                    Edit
+                </a>
+                <a class="btn btn-danger"
+                   @*asp-action="CreateRole" asp-controller="ManageUsers" *@>
+                    Delete
+                </a>
+            </div>
+        </div>
+
+    }
+}
+else
+{
+    <div class="card">
+        <div class="card-header">
+            No users created yet
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">
+                Use the button below to create a user
+            </h5>
+            <a class="btn btn-primary"
+               asp-area="Identity" asp-page="/Account/Register">
+                Add new Users
+            </a>
+        </div>
+    </div>
+}
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink"
+        data-toggle="dropdown" aria-haspopup="true" 
+        aria-expanded="false">
+        Manage
+    </a>
+    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item"
+           asp-controller="ManageUsers"
+           asp-action="ListRoles">
+            Roles
+        </a>
+        <a class="dropdown-item"
+           asp-controller="ManageUsers"
+           asp-action="ListUsers">
+            Users
+        </a>
+    </div>
+</li>
