@@ -33,9 +33,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                       <!--  <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li> -->
+                        <!--  <li class="nav-item">
+         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+     </li> -->
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
@@ -45,6 +45,27 @@
                                 <a class="nav-link text-dark" asp-controller="SurveyResponses" asp-action="SurveyResults">Survey Results</a>
                             </li>
                         }
+
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink"
+                                   data-toggle="dropdown" aria-haspopup="true"
+                                   aria-expanded="false">
+                                    Manage
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                    <a class="dropdown-item"
+                                       asp-controller="ManageUsers"
+                                       asp-action="ListRoles">
+                                        Roles
+                                    </a>
+                                    <a class="dropdown-item"
+                                       asp-controller="ManageUsers"
+                                       asp-action="ListUsers">
+                                        Users
+                                    </a>
+                                </div>
+                            </li>
 
 
                     </ul>
