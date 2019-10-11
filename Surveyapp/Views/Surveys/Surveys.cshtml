@@ -79,35 +79,7 @@
                     @if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)>0&& EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)>0)
                     {
                         @*if survey is open for anonymous take*@
-                    @if (item.status == "Open")
-                    {
-                        <button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
-                        <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
-                            @if (item.SurveyCategorys.Count > 0)
-                            {
-                                <p>Choose Survey Subject categories</p>
-                                <ul style="width:inherit">
-                                    @{
-                                        var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x => x.SurveySubjects.Any(a => a.Questions.Any()));
-                                        foreach (var category in surveyCategory)
-                                        {
-                                            <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
-                                        }
-                                    }
-                                </ul>
-                            }
-                            else
-                            {
-                                <p>Survey Subject categories Not set</p>
-                            }
-                        </div>
-
-                    }
-                    @*if survey is closed and require login for anonymous take*@
-                    @if (item.status == "Closed")
-                    {
-                        //check if user is logged in
-                        if (User.Identity.IsAuthenticated)
+                        @if (item.status == "Open")
                         {
                             <button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
                             <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
@@ -128,15 +100,42 @@
                                 {
                                     <p>Survey Subject categories Not set</p>
                                 }
-
                             </div>
                         }
-                        else
+                        @*if survey is closed and require login for anonymous take*@
+                        @if (item.status == "Closed")
                         {
-                            <a class="btn-block btn-sm btn btn-danger" asp-area="Identity" asp-page="/Account/Login">take survey <small>(Login required)</small></a>
+                            //check if user is logged in
+                            if (User.Identity.IsAuthenticated)
+                            {
+                                <button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
+                                <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
+                                    @if (item.SurveyCategorys.Count > 0)
+                                    {
+                                        <p>Choose Survey Subject categories</p>
+                                        <ul style="width:inherit">
+                                            @{
+                                                var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x => x.SurveySubjects.Any(a => a.Questions.Any()));
+                                                foreach (var category in surveyCategory)
+                                                {
+                                                    <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                                                }
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <p>Survey Subject categories Not set</p>
+                                    }
+
+                                </div>
+                            }
+                            else
+                            {
+                                <a class="btn-block btn-sm btn btn-danger" asp-area="Identity" asp-page="/Account/Login">take survey <small>(Login required)</small></a>
+                            }
                         }
-                    }
-                }/*else the suveydate has not started or has ended*/
+                    }/*else the suveydate has not started or has ended*/
                     else
                     {
                         /*if survey startdate has not been attained*/

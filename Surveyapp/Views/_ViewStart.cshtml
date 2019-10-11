@@ -16,7 +16,7 @@
             });
     }
 
-    if (await roleManagers.RoleExistsAsync("Employer") == false)
+    if (await roleManagers.RoleExistsAsync("Surveyor") == false)
     {
         IdentityResult Surveyor = await roleManagers
             .CreateAsync(new IdentityRole
@@ -25,7 +25,7 @@
             });
     }
 
-    if (await roleManagers.RoleExistsAsync("Freelancer") == false)
+    if (await roleManagers.RoleExistsAsync("Surveyee") == false)
     {
 
         IdentityResult Surveyee = await roleManagers
@@ -34,14 +34,21 @@
                 Name = "Surveyee",
             });
     }
-    /*if (await roleManagers.RoleExistsAsync("Support") == false)
+    //add default admin
+    var adminUser = UserManager.FindByEmailAsync("admin@gmail.com");
+    if (adminUser.Result ==null)
     {
-
-        IdentityResult Support = await roleManagers
-            .CreateAsync(new IdentityRole
-            {
-                Name = "Support",
-            });
-    }*/
+        var newAdminUser = new ApplicationUser()
+        {
+            UserName = "admin@gmail.com",
+            Email = "admin@gmail.com",
+            EmailConfirmed = true,
+        };
+        var creatNewUser = await UserManager.CreateAsync(newAdminUser, "Password12#");
+        if (creatNewUser.Succeeded)
+        {
+            await UserManager.AddToRoleAsync(newAdminUser, "Admin");
+        }
+    }
     Layout = "_Layout";
 }

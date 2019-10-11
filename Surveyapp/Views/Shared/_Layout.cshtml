@@ -38,15 +38,22 @@
      </li> -->
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Surveys" asp-action="Index">My surveys</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="SurveyResponses" asp-action="SurveyResults">Survey Results</a>
-                            </li>
+                            if (User.IsInRole("Surveyor"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Surveys" asp-action="Index">My surveys</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="SurveyResponses" asp-action="SurveyResults">Survey Results</a>
+                                </li>
+                            }
+                            
                         }
-
-
+                        @if(User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Surveys" asp-action="ApproveSurveys">Approve Surveys</a>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink"
                                    data-toggle="dropdown" aria-haspopup="true"
@@ -66,6 +73,8 @@
                                     </a>
                                 </div>
                             </li>
+                        }
+                        
 
 
                     </ul>

@@ -60,36 +60,36 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-        public async void OnGet(string returnUrl = null)
+        public void OnGet(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
-            if (await _roleManager.RoleExistsAsync("Admin") == false)
-            {
-                IdentityResult Admin = await _roleManager
-                    .CreateAsync(new IdentityRole
-                    {
-                        Name = "Admin",
-                    });
-            }
+            // if (await _roleManager.RoleExistsAsync("Admin") == false)
+            // {
+            //     IdentityResult Admin = await _roleManager
+            //         .CreateAsync(new IdentityRole
+            //         {
+            //             Name = "Admin",
+            //         });
+            // }
 
-            if (await _roleManager.RoleExistsAsync("Employer") == false)
-            {
-                IdentityResult Surveyor = await _roleManager
-                    .CreateAsync(new IdentityRole
-                    {
-                        Name = "Surveyor",
-                    });
-            }
+            // if (await _roleManager.RoleExistsAsync("Employer") == false)
+            // {
+            //     IdentityResult Surveyor = await _roleManager
+            //         .CreateAsync(new IdentityRole
+            //         {
+            //             Name = "Surveyor",
+            //         });
+            // }
 
-            if (await _roleManager.RoleExistsAsync("Freelancer") == false)
-            {
+            // if (await _roleManager.RoleExistsAsync("Freelancer") == false)
+            // {
 
-                IdentityResult Surveyee = await _roleManager
-                    .CreateAsync(new IdentityRole
-                    {
-                        Name = "Surveyee",
-                    });
-            }
+            //     IdentityResult Surveyee = await _roleManager
+            //         .CreateAsync(new IdentityRole
+            //         {
+            //             Name = "Surveyee",
+            //         });
+            // }
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -102,7 +102,8 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-
+                    //add user to Surveyor role
+                    await _userManager.AddToRoleAsync(user, "Surveyor");
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
@@ -111,7 +112,7 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                         protocol: Request.Scheme);
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                        $"<h3>Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.<h3>");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect(returnUrl);

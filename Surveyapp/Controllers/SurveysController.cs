@@ -25,7 +25,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Index()
         {
             var surveyContext = _context.Survey.Include(s => s.Surveyer).Where(x=>x.SurveyerId == _usermanager.GetUserId(User));
@@ -62,12 +62,13 @@ namespace Surveyapp.Controllers
         // POST: Surveys/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,name,Startdate,EndDate,status")] Survey survey)
         {
             survey.SurveyerId = _usermanager.GetUserId(User);
+            survey.approvalStatus = "NotApproved";
             //survey.status = survey.status.ToString();
             /*if (ModelState.IsValid)
             {*/
@@ -81,7 +82,7 @@ namespace Surveyapp.Controllers
 
         // GET: Surveys/Edit/5
         [NoDirectAccess]
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -102,11 +103,15 @@ namespace Surveyapp.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [NoDirectAccess]
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,name,Startdate,EndDate,status,SurveyerId")] Survey survey)
         {
+            if (true)
+            {
+                
+            }
             if (id != survey.Id)
             {
                 return NotFound();
@@ -139,7 +144,7 @@ namespace Surveyapp.Controllers
 
         // GET: Surveys/Delete/5
         [NoDirectAccess]
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -160,6 +165,7 @@ namespace Surveyapp.Controllers
 
         // POST: Surveys/Delete/5
         [NoDirectAccess]
+        [Authorize(Roles = "Surveyor")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -183,13 +189,37 @@ namespace Surveyapp.Controllers
                 //display surveys not created by current logged in user
                 surveyContext = surveyContext.Where(x=>x.SurveyerId != _usermanager.GetUserId(User));
             }
-            surveyContext = surveyContext.Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any())));
+            surveyContext = surveyContext.Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any()))).Where(x=>x.approvalStatus=="Approved");
             return View(await surveyContext.ToListAsync());
         }
+        [NoDirectAccess]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ApproveSurveys()
+        {
+            var surveyContext = _context.Survey.Include(s => s.Surveyer);
+            return View(await surveyContext.ToListAsync());
+        }
+        
+        [NoDirectAccess]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangeApproval(int? id, string Approvalstate)
+        {
+            if (id == null) return NotFound();
+            var surveyEdit = _context.Survey.SingleOrDefault(x => x.Id == id);
+            if (surveyEdit != null)
+            {
+                surveyEdit.approvalStatus = Approvalstate;
+                _context.Survey.Update(surveyEdit );
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(ApproveSurveys));
+            }
 
+            return RedirectToAction(nameof(ApproveSurveys));
+        }
         public IActionResult TakeSurvey(int? id)
         {
             throw new NotImplementedException();
         }
+        
     }
 }

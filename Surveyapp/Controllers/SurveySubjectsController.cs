@@ -6,8 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
 using Surveyapp.Services;
 using System;
+using System.Collections;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+using Microsoft.AspNetCore.Hosting;
+using MimeKit;
 
 namespace Surveyapp.Controllers
 {
@@ -15,15 +21,17 @@ namespace Surveyapp.Controllers
     {
         private readonly SurveyContext _context;
         private readonly UserManager<ApplicationUser> _usermanager;
+        private readonly IHostingEnvironment _IHostingEnvironment;
 
-        public SurveySubjectsController(SurveyContext context, UserManager<ApplicationUser> userManager)
+        public SurveySubjectsController(IHostingEnvironment IHostingEnvironment,SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _usermanager = userManager;
+            _IHostingEnvironment = IHostingEnvironment;
         }
 
         // GET: SurveySubjects 
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
@@ -194,7 +202,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var surveyStatus = _context.Survey.Find(id).status;
+            var surveyStatus = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id)).status;
             var subjects = _context.SurveySubject.Where(x => x.CategoryId == id)
                 .Where(x => x.Questions.Any()).Where(x => EF.Functions.DateDiffDay(x.Category.Survey.Startdate, DateTime.Now) > 0 && EF.Functions.DateDiffDay(DateTime.Now, x.Category.Survey.EndDate) > 0);
             /*if (surveyStatus == "Open")
@@ -209,6 +217,60 @@ namespace Surveyapp.Controllers
             //throw new NotImplementedException();
             return View(subjects);
         }
+
+        public IActionResult Page_Load()
+        {
+            //create document
+            Document document = new Document();
+            try
+            {
+                //writer - have our own path!!! and see you have write permissions...
+                string filefolder = Path.Combine(_IHostingEnvironment.WebRootPath, "Files");
+                PdfWriter.GetInstance(document,
+                    new FileStream(Path.Combine(filefolder, "parsetest.pdf"), FileMode.Create));
+                document.Open();
+                //html -text - kan be from database or editor too
+                String htmlText = $"<font " +
+                                  " color=\"#0000FF\"><b><i>Title One</i></b></font><font " +
+                                  " color=\"black\"><br><br>Some text here<br><br><br><font  " +
+                                  " color=\"#0000FF\"><b><i>Another title here " +
+                                  " </i></b></font><font  " +
+                                  " color=\"black\"><br><br>Text1<br>Text2<br><OL><LI>hi</LI><LI>how are u</LI></OL>";
+
+                //make an arraylist ....with STRINGREADER since its no IO reading file...
+                ArrayList htmlarraylist =
+                    iTextSharp.text.html.simpleparser.HtmlWorker.ParseToList(new StringReader(htmlText), null);
+                //add the collection to the document
+                for (int k = 0; k < htmlarraylist.Count; k++)
+                {
+                    document.Add((IElement) htmlarraylist[k]);
+                }
+
+                document.Add(new Paragraph("And the same with indentation...."));
+
+                // or add the collection to an paragraph
+                // if you add it to an existing non emtpy paragraph it will insert it from
+                //the point youwrite -
+                Paragraph mypara = new Paragraph(); //make an emtphy paragraph as "holder"
+                mypara.IndentationLeft = 36;
+                mypara.InsertRange(0, htmlarraylist);
+                document.Add(mypara);
+                document.Close();
+                string filepath = Path.Combine(filefolder, "parsetest.pdf");
+                return PhysicalFile(filepath, MimeTypes.GetMimeType("parsetest.pdf"), Path.GetFileName(filepath));
+
+
+
+            }
+            catch (Exception exx)
+            {
+                Console.Error.WriteLine(exx.StackTrace);
+                Console.Error.WriteLine(exx.Message);
+            }
+
+            return Content("some staff");
+        }
+
 
     }
 }
