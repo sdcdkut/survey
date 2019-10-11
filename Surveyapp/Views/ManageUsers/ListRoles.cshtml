@@ -3,17 +3,11 @@
     ViewData["Title"] = "All Roles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h1>All Roles</h1>
-<hr />
+<h1 class="text-success">All Roles</h1>
 
 @if (Model.Any())
 {
-    <div>
-        <a class="btn btn-primary"
-           asp-action="CreateRole" asp-controller="ManageUsers">
-            Create Role
-        </a>
-    </div>
+
     foreach (var role in Model)
     {
         <br />
@@ -27,14 +21,17 @@
                 </h5>
             </div>
             <div class="card-footer">
-                <a class="btn btn-primary"
-                   asp-action="EditRole" asp-controller="ManageUsers" asp-route-id="@role.Id">
-                    Edit
-                </a>
-                <a class="btn btn-danger"
-                   @*asp-action="CreateRole" asp-controller="ManageUsers"*@>
-                    Delete
-                </a>
+                <form asp-action="DeleteRole" asp-route-id="@role.Id" method="post">
+                    <a class="btn btn-warning"
+                       asp-action="EditRole" asp-controller="ManageUsers"
+                       asp-route-id="@role.Id">
+                        Edit
+                    </a>
+                    <button type="submit" class="btn btn-outline-danger"
+                            onclick="return confirm('Are you sure that you want to delete role : @role.Name')">
+                        Delete
+                    </button>
+                </form>
             </div>
         </div>
     }
@@ -57,3 +54,10 @@ else
     </div>
 }
 
+<hr />
+<div class="mt-3">
+    <a class="btn btn-primary"
+       asp-action="CreateRole" asp-controller="ManageUsers">
+        Add New Role
+    </a>
+</div>

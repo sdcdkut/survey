@@ -2,13 +2,13 @@
 @{
     ViewData["Title"] = "EditUsersInRole";
     var roleId = ViewBag.roleId;
+    var roleName = ViewBag.roleName;
 }
 
-<h1>EditUsersInRole</h1>
 <form method="post">
     <div class="card">
         <div class="card-header">
-            <h2>Add or Remove User from this Role</h2>
+            <h2 class="text-warning">Add or Remove User from <span class="text-success font-weight-bold">@roleName</span>  Role</h2>
         </div>
         <div class="card-body">
             @for (int i= 0; i < Model.Count; i++){
@@ -24,8 +24,8 @@
         </div>
 
         <div class="card-footer">
-            <input type="submit" value="Update" class="btn btn-primary" style="width:auto"/>
-            <a asp-action="EditRole" asp-route-id="@roleId" class="btn btn-warning" style="width:auto">Cancel</a>
+            <input type="submit" value="Update" class="btn btn-outline-warning" style="width:auto"/>
+            <a asp-action="EditRole" asp-route-id="@roleId" class="btn btn-success" style="width:auto">Cancel</a>
         </div>
     </div>
 </form>
