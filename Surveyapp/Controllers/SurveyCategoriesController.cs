@@ -11,7 +11,7 @@ using Surveyapp.Services;
 
 namespace Surveyapp.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Surveyor")]
     public class SurveyCategoriesController : Controller
     {
         private readonly SurveyContext _context;

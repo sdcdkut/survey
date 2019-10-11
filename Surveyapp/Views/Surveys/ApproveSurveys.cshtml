@@ -1,0 +1,83 @@
+@using System.Text.RegularExpressions
+@model IEnumerable<Surveyapp.Models.Survey>
+
+@{
+    ViewBag.Title = "Approve Surveys";
+    //Layout = "_Layout";
+}
+
+<h2>Approve Surveys</h2>
+<table class="table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Startdate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.EndDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.status)
+        </th>
+        <th>
+            Surveyer 
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.approvalStatus)
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Startdate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Surveyer.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.approvalStatus)
+            </td>
+            <td>
+                @if (item.approvalStatus == "NotApproved")
+                {
+                    <a class="btn btn-info btn-sm" asp-action="ChangeApproval" asp-route-id="@item.Id" asp-route-Approvalstate="Approved">Approve</a>
+                    @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> <span>|</span>
+                    <a asp-controller="SurveyCategories" asp-action="Index" asp-route-id="@item.Id">Survey Subject categories</a>*@
+                }
+                @if (item.approvalStatus == "Approved")
+                {
+                    <a class="btn btn-danger btn-sm" asp-action="ChangeApproval" asp-route-id="@item.Id" asp-route-Approvalstate="NotApproved">Disapprove</a>
+                }
+                @if (item.approvalStatus == null)
+                {
+                    <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Change Approval state</button>
+                    <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
+                        <ul style="width:inherit">
+                            <li><a asp-action="ChangeApproval" asp-route-id="@item.Id" asp-route-Approvalstate="Approved">Approve</a></li>
+                            <li><a asp-action="ChangeApproval" asp-route-id="@item.Id" asp-route-Approvalstate="NotApproved">Disapprove</a></li>
+                        </ul>
+                    </div>
+                }
+
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
