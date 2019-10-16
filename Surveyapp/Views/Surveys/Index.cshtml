@@ -33,9 +33,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.status)
             </th>
-            @*<th>
-                    @Html.DisplayNameFor(model => model.Surveyer)
-                </th>*@
+            <th>
+                    @Html.DisplayNameFor(model => model.approvalStatus)
+                </th>
             <th></th>
         </tr>
     </thead>
@@ -55,9 +55,9 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.status)
                 </td>
-                @*<td>
-                        @Html.DisplayFor(modelItem => item.Surveyer.Id)
-                    </td>*@
+                <td>
+                        @Html.DisplayFor(modelItem => item.approvalStatus)
+                    </td>
                 <td>
                     @if (item.SurveyerId == _userManager.GetUserId(User))
                      {
