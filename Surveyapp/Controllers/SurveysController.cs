@@ -106,7 +106,7 @@ namespace Surveyapp.Controllers
         [Authorize(Roles = "Surveyor")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,name,Startdate,EndDate,status,SurveyerId")] Survey survey)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,name,Startdate,EndDate,status,SurveyerId,approvalStatus")] Survey survey)
         {
             if (true)
             {

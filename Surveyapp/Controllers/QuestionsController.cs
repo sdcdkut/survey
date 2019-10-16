@@ -177,7 +177,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Delete/5
-        [Authorize]
+        [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -209,7 +209,7 @@ namespace Surveyapp.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index),new{id=question.SubjectId});
         }
-
+    
         private bool QuestionExists(int id)
         {
             return _context.Question.Any(e => e.Id == id);

@@ -202,8 +202,8 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var surveyStatus = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id)).status;
-            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id)
+            var surveyStatus = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id))?.status;
+            var subjects = _context.SurveySubject.Where(x => x.CategoryId == id).Include(x=>x.Category.Survey)
                 .Where(x => x.Questions.Any()).Where(x => EF.Functions.DateDiffDay(x.Category.Survey.Startdate, DateTime.Now) > 0 && EF.Functions.DateDiffDay(DateTime.Now, x.Category.Survey.EndDate) > 0);
             /*if (surveyStatus == "Open")
             {

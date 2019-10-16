@@ -7,7 +7,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @{
-    if (await roleManagers.RoleExistsAsync("Admin") == false)
+    /*if (await roleManagers.RoleExistsAsync("Admin") == false)
     {
         IdentityResult Admin = await roleManagers
             .CreateAsync(new IdentityRole
@@ -49,6 +49,20 @@
         {
             await UserManager.AddToRoleAsync(newAdminUser, "Admin");
         }
+    }*/
+    //remove users from other roles if has many roles
+    if (User.Identity.IsAuthenticated)
+    {
+        var currentUser = UserManager.FindByNameAsync(User.Identity.Name);
+        var rolesuser = await UserManager.GetRolesAsync(currentUser.Result);
+        if (rolesuser.Count()>1)
+        {
+            for (var i =1; i<=(rolesuser.Count()-1);i++)
+            {
+                await UserManager.RemoveFromRoleAsync(currentUser.Result,rolesuser[i]);
+            }
+        }
     }
+    
     Layout = "_Layout";
 }
