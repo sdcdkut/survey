@@ -37,11 +37,19 @@ namespace Surveyapp
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+            var LockOutOption = new LockoutOptions()
+            {
+                AllowedForNewUsers=true,
+                MaxFailedAccessAttempts=5,
+                DefaultLockoutTimeSpan=TimeSpan.FromMinutes(5)
 
+            };
             services.AddDbContext<SurveyContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(Options=>{
+                Options.Lockout = LockOutOption;
+            })
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<SurveyContext>().AddDefaultTokenProviders();
             
