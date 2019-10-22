@@ -145,7 +145,7 @@
         <thead>
         <tr style="height: 5px!important;line-height: 2%;">
             <th colspan="2"></th>
-            <th colspan="@Model.Take(1).SelectMany(x=>x.ResponseType.ResponseDictionary).Count()" style="text-align: center;">Response options</th>
+            <th colspan="@Model.Take(1).SelectMany(x=>x.ResponseType.ResponseDictionary).Count()" style="text-align: center;">Scores</th>
         </tr>
         <tr style="height: 5px!important;line-height: 2%;">
             <th>
@@ -243,6 +243,7 @@ $('form input:radio').on('input',function(e) {
 $('form input:radio.tableradio').on('input',function(e) {
     var quizeresponse = $(this).parent().parent().find("#quizresponseTable");
     quizeresponse.val($(this).val());
+    /*console.log($(this).closest("tr").find("#quizresponseTable").val())*/
       
 })
 /*$("#SurveyResponses").submit(function(e) {

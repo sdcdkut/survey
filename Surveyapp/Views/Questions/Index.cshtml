@@ -1,10 +1,59 @@
 ﻿@model IEnumerable<Surveyapp.Models.Question>
+@inject SurveyContext _context
 
 @{
     ViewData["Title"] = "Index";
 }
 
-    <nav aria-label="breadcrumb">
+<style>
+    .select{
+      height:20px;
+      width:auto;
+      overflow:hidden;
+      background-color:#FFFFFF;
+      border:1px solid #CCCCCC;
+      padding:0px;
+      margin:0px;
+      cursor:pointer;
+      border-radius: 5px;
+    }
+    
+    .select:hover{
+      height:auto;
+    }
+    
+    .select li{
+      height:20px;
+      line-height:20px;
+      /*padding-left:5px;*/
+    }
+    .select li:after{
+    background-image: url('https://cdn2.iconfinder.com/data/icons/ios-7-icons/50/down4-24.png');
+    }
+    .select li:hover{
+      background-color:#EEEEFF;
+    }
+    
+    .select li a{
+      text-decoration:none;
+      color:#000000;
+      font-family:calibri;
+    }
+    
+    .select li:first-child a:after{
+      content:' ';
+      background-size:16px 16px;
+      background-position:center center;
+      background-repeat:no-repeat;
+      float:right;
+      height:20px;
+      width:auto;
+      text-align:center;
+      line-height:20px;
+    }
+</style>
+
+<nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a asp-action="Index" asp-controller="Surveys">
@@ -23,18 +72,54 @@
             </li>
             <li class="breadcrumb-item active">
                 <a>
-                    <span>Options Types</span>
+                    <span>Questions</span>
                 </a>
             </li>
         </ol>
     </nav>
 
 <h1>@ViewBag.SubjectName Questions</h1>
+@*check if survey question has respond options*@
 @if (ViewBag.ResponType>0)
 {
-    <p>
-        <a asp-action="Create" asp-route-id="@ViewBag.subjectid">Create New</a>
-    </p>
+    int catgId = ViewBag.CategoryId;
+    var otherQuiz = _context.Question.Any(x => x.Subject.CategoryId == catgId);
+    <div style="display: flex;">
+        @*check if there are not questions and add quize from other subjects option*@
+        @if (!Model.Any())
+        {
+            <p>
+                <a asp-action="Create" asp-route-id="@ViewBag.subjectid">Create New</a>
+            </p>
+            /*if there are questions on subject category*/
+            @if (otherQuiz)
+             {
+                 <h5 style="margin-left: 5px;margin-right: 5px">OR</h5>
+                 var quizes = _context.SurveySubject.Where(x => x.CategoryId == catgId && x.Questions.Any());
+                 <div style="margin-left: 10px">
+                     <ul class="select">
+                         <li>
+                             Choose other subject questions
+                             <ul style="list-style: none;">
+                                 @foreach (var quizoptions in quizes)
+                                 {
+                                     <li ><a asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</a></li>
+                                 }
+                             </ul>
+                         </li>
+                     </ul>
+                 </div>
+             }
+        }
+        @*if there are questions for this subject*@
+        @if (Model.Any())
+        {
+            <p>
+                <a asp-action="Create" asp-route-id="@ViewBag.subjectid">Create New</a>
+            </p>
+        }
+
+    </div>
 }
 else
 {

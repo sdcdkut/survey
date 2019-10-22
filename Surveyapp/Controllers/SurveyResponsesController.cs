@@ -96,6 +96,7 @@ namespace Surveyapp.Controllers
                     _context.Add(newResponse);
                 }
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Survey Taken successfully";
                 return RedirectToAction("SurveySubjects","SurveySubjects", new{id = categoryId});
             }
             ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id", surveyResponse.RespondantId);

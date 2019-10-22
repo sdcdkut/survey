@@ -3,7 +3,29 @@
 @{
     ViewData["Title"] = "Create Question";
 }
-
+<style>
+    .new_add_field_button{
+    border-radius: 50%;
+    background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 5%;
+      zoom: 200%;
+      /*text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px*/
+    }
+    .new_minus_field_button{
+        border-radius: 50%;
+        background-color: #4CAF50;
+          border: none;
+          color: white;
+          padding: 5%;
+          zoom: 200%;
+        }
+</style>
 <h1>Create</h1>
 
 <h4>Question</h4>
@@ -30,7 +52,7 @@
                     <textarea placeholder="Input question" rows="4" cols="50" @*asp-for="question"*@ type="text" required="required" name="quiz" class="form-control"></textarea>
                         <span asp-validation-for="question" class="text-danger"></span>
                     </div>
-                    <p class="col-md-8"><button class="add_fields btn btn-secondary btn-sm">Add another question</button></p>
+                    <p class="col-md-8"><button onclick="addquestionfield(this)" class="add_fields btn btn-secondary btn-sm">Add another question field</button></p>
                 </div>
             </div>
                 <div class="form-group">
@@ -49,22 +71,49 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        var max_fields = 10;
+        var max_fields = 50;
         var x = 1; //Initial input field is set to 1
-        $(".add_fields").click(function(e){
+        function addquestionfield(element){
+            //Check maximum allowed input fields
+            if(x < max_fields){
+                x++; //input field increment
+                //add input field
+                $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
+                 '<label class="control-label">question</label>' +
+                  '<div class="form-group col-md-7">' +
+                  '<textarea rows="4" cols="50" class="form-control" name="quiz" placeholder="Input question" ></textarea>' +
+                   '</div>' +
+                   '<div class="col-md-7">'+
+                   '<p class="col-md-3"><a href="javascript:void(0);" onclick="addquestionfield(this)" title="Add another question field" class="add_fields new_add_field_button fas fa-plus-circle"></a></p>'+
+                   '<p class="col-md-3"><a href="javascript:void(0);" title="Remove question field" class="remove_field new_minus_field_button fas fa-minus-circle"></a></p>' +
+                   '</div>'+
+                   '</div>');
+             //add focus on last textarea
+            $(element).closest(".wrapper").find('.form-group:last-child textarea').focus()
+            //console.log($(element).closest(".wrapper").find('.form-group:last-child').html())
+            }
+        }
+        /*$(".add_fields").click(function(e){
                 e.preventDefault();
          //Check maximum allowed input fields
                 if(x < max_fields){
                     x++; //input field increment
          //add input field
-                    $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;"><label class="control-label">question</label><div class="form-group col-md-4"><textarea rows="4" cols="50" class="form-control" name="quiz" placeholder="Input question" ></textarea></div><p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove question</a></p></div>');
+                    $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
+                     '<label class="control-label">question</label>' +
+                      '<div class="form-group col-md-4">' +
+                      '<textarea rows="4" cols="50" class="form-control" name="quiz" placeholder="Input question" ></textarea>' +
+                       '</div>' +
+                       '<p class="col-md-3"><button onclick="addquestionfield(this)" class="add_fields btn btn-secondary btn-sm">Add another question</button></p>'+
+                        '<p class="col-md-9"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove question</a></p>' +
+                       '</div>');
                 }
-            });
+            });*/
          
             //when user click on remove button
             $(".wrapper").on("click",".remove_field", function(e){ 
                     e.preventDefault();
-             $(this).parent().parent('div.form-group').remove(); //remove inout field
+             $(this).closest('div.form-group').remove(); //remove inout field
              x--; //inout field decrement
                 });
     </script>

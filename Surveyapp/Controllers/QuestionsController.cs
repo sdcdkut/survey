@@ -113,6 +113,34 @@ namespace Surveyapp.Controllers
             ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", question.SubjectId);
             return View(question);
         }
+        
+        [NoDirectAccess]
+        public async Task<IActionResult> AssociateQuestion(int? subId, int? id)
+        {
+            if (subId != null && id != null)
+            {
+                var questionAssociate = _context.SurveySubject.Include(x=>x.Questions).SingleOrDefault(x => x.Id == subId);
+               //var responseType = _context.ResponseType.SingleOrDefault(x => x.SubjectId == subId);
+               if (questionAssociate?.Questions != null)
+               {
+                   foreach (var newquiz in questionAssociate.Questions)
+                   {
+                       var newQuiz = new Question()
+                       {
+                           SubjectId = (int) id,
+                           ResponseTypeId = (int) newquiz.ResponseTypeId,
+                           question = newquiz.question
+                       };
+                       _context.Add(newQuiz);
+                   }
+   
+                   await _context.SaveChangesAsync();
+                   return RedirectToAction(nameof(Index),new {id=id});
+               }
+                   
+            }
+            return RedirectToAction(nameof(Index),new {id=id});
+        }
 
         // GET: Questions/Edit/5
         [NoDirectAccess]
@@ -238,5 +266,6 @@ namespace Surveyapp.Controllers
             }
             return View(questions);
         }
+
     }
 }

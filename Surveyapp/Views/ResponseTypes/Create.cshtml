@@ -3,12 +3,30 @@
 @{
     ViewData["Title"] = "Create";
 }
+<style>
+    .new_add_response_field_button {
+    border-radius: 50%;
+    background-color: #0062cc;
+      border: none;
+      color: white;
+      /*padding: 5%;*/
+      zoom: 200%;
+    }
+    .new_minus_response_field_button{
+        border-radius: 50%;
+        background-color: #0062cc;
+          border: none;
+          color: white;
+          /*padding: 5%;*/
+          zoom: 200%;
+          margin-left: 5%;
+        } 
+</style>
+@*<h1>Create</h1>*@
 
-<h1>Create</h1>
-
-<h4>ResponseType</h4>
+<h4>Create Response options</h4>
 <hr />
-<h2 style="color:red">Not the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
+<h2 style="color:red">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
 <div class="row">
     <div class="col-md-8">
         <form asp-action="Create">
@@ -16,7 +34,7 @@
             <div class="wrapper">
                 <div class="form-group">
                     <label asp-for="ResponseName" class="control-label"></label>
-                    <input asp-for="ResponseName" class="form-control" />
+                    <input asp-for="ResponseName" placeholder="eg poor to good option or yes no option" class="form-control" />
                     <span asp-validation-for="ResponseName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
@@ -34,11 +52,9 @@
                     <div class="form-group col-md-4">
                         <input required="required" name="responseDictionary" placeholder="Input response option" class="form-control"/>
                     </div>
-                    <p class="col-md-8"><button class="add_fields btn btn-secondary btn-sm">Add response option</button></p>
+                    <p class="col-md-8"><a href="javascript:void(0);" onclick="addresponsefield(this)" class="add_fields btn btn-secondary btn-sm">Add response option</a></p>
                 </div>
             </div>
-            
-            
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -55,20 +71,43 @@
     <script>
     var max_fields = 10;
     var x = 1; //Initial input field is set to 1
-    $(".add_fields").click(function(e){
+    function addresponsefield(element){
+        //Check maximum allowed input fields
+        if(x < max_fields){
+            x++; //input field increment
+            //add input field
+            $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
+                         '<label class="control-label">Response Options</label>' +
+                          '<div class="form-group col-md-4">' +
+                          '<input class="form-control" required="required" name="responseDictionary" placeholder="Input response option" />' +
+                           '</div>' +
+                           '<div style="display: flex" class="col-md-8" ' +
+                           '<p ><a href="javascript:void(0);" onclick="addresponsefield(this)" title="Add response option" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>' +
+                           '<p ><a href="javascript:void(0);" title="Remove option field" class="remove_field new_minus_response_field_button fas fa-minus-circle"></a></p>' +
+                           '</div>' +
+                            '</div>');
+         //add focus on last input
+        $(element).closest(".wrapper").find('.form-group:last-child input').focus();
+        }
+            }
+    /*$(".add_fields").click(function(e){
             e.preventDefault();
      //Check maximum allowed input fields
             if(x < max_fields){ 
                 x++; //input field increment
      //add input field
-                $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;"><label class="control-label">Response Options</label><div class="form-group col-md-4"><input class="form-control" name="responseDictionary" placeholder="Input response option" /></div><p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p></div>');
+            $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
+             '<label class="control-label">Response Options</label><div class="form-group col-md-4">' +
+              '<input class="form-control" name="responseDictionary" placeholder="Input response option" /></div>' +
+               '<p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>' +
+                '</div>');
             }
-        });
+        });*/
      
         //when user click on remove button
         $(".wrapper").on("click",".remove_field", function(e){ 
                 e.preventDefault();
-         $(this).parent().parent('div.form-group').remove(); //remove inout field
+         $(this).closest('div.form-group').remove(); //remove inout field
          x--; //inout field decrement
             });
 </script>

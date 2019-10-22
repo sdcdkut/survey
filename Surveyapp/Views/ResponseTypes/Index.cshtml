@@ -1,9 +1,59 @@
 ﻿@using System.Collections
 @model IEnumerable<Surveyapp.Models.ResponseType>
+@inject SurveyContext _context
+@using Microsoft.EntityFrameworkCore;
+@using System.Linq;
 
 @{
     ViewData["Title"] = "Subject Response Options";
 }
+<style>
+    .select{
+      height:20px;
+      width:auto;
+      overflow:hidden;
+      background-color:#FFFFFF;
+      border:1px solid #CCCCCC;
+      padding:0px;
+      margin:0px;
+      cursor:pointer;
+      border-radius: 5px;
+    }
+    
+    .select:hover{
+      height:auto;
+    }
+    
+    .select li{
+      height:20px;
+      line-height:20px;
+      /*padding-left:5px;*/
+    }
+    .select li p:after{
+    background-image: url('https://cdn2.iconfinder.com/data/icons/ios-7-icons/50/down4-24.png');
+    }
+    .select li:hover{
+      background-color:#EEEEFF;
+    }
+    
+    .select li a{
+      text-decoration:none;
+      color:#000000;
+      font-family:calibri;
+    }
+    
+    .select li:first-child a:after{
+      content:' ';
+      background-size:16px 16px;
+      background-position:center center;
+      background-repeat:no-repeat;
+      float:right;
+      height:20px;
+      width:auto;
+      text-align:center;
+      line-height:20px;
+    }
+</style>
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
@@ -29,7 +79,7 @@
     </ol>
 </nav>
 
-
+@*check if subject has questions b4 adding response option*@
 @if (Model.Any())
 {
     <a asp-controller="Questions" asp-action="Create" asp-route-id="@ViewBag.subjectId">Add question </a>
@@ -37,9 +87,34 @@
 }
 else
 {
-   <p>
-       <a asp-action="Create" asp-route-id="@ViewBag.SubjectId">Create New @ViewBag.SubjectName's Options Types</a>
-   </p> 
+    <div style="display: flex;">
+        <p>
+            <a asp-action="Create" asp-route-id="@ViewBag.SubjectId">Create New @ViewBag.SubjectName's Respond Options</a>
+        </p>
+        @*if there are respond type on subject category*@
+        @if (ViewBag.otherSubjectOption)
+        {
+            <h5 style="margin-left: 5px;margin-right: 5px">OR</h5>
+            int catgId = int.Parse(ViewBag.CategoryId.ToString());
+            var sujbects = _context.ResponseType.Where(x=>x.Subject.CategoryId == catgId ).Select(x=>new {x.Subject.Id,x.Subject.SubjectName});
+            <div style="margin-left: 10px">
+                <ul class="select">
+                    <li>
+                        Choose other subject Options responses
+                        <ul style="list-style: none">
+                            @*<option value="">select subject</option>*@
+                            @foreach (var suboptions in sujbects)
+                            {
+                                <li ><a asp-action="AssociateResponse" asp-route-subId="@suboptions.Id" asp-route-id="@ViewBag.SubjectId">@suboptions.SubjectName options</a></li>
+                            }
+                        </ul>
+                    </li>
+                    
+                </ul>
+            </div>
+        }
+    </div>
+    
 }
 
 <table class="table">

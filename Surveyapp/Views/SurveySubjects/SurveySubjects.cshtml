@@ -20,6 +20,15 @@
         </li>
     </ol>
 </nav>
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]!
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+    </div>
+}
 <h2>Choose Survey Subject</h2>
 <table class="table">
     <thead>

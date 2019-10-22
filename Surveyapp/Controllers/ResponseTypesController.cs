@@ -30,10 +30,14 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
+            var categoryId = _context.SurveySubject.SingleOrDefault(z => z.Id == id)?.CategoryId;
             ViewBag.SubjectId = id;
             ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x=>x.SurveySubjects.Any(y=>y.Id==id))?.SurveyId;
             ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.CategoryId;
             ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
+            var otherSubjectOption = _context.ResponseType.Any(x => x.Subject.CategoryId == categoryId);
+            ViewBag.otherSubjectOption = otherSubjectOption;
+            ViewData["Subjects"] =  new SelectList(_context.SurveySubject.Where(x=>x.CategoryId == categoryId),"Id", "SubjectName");
             var surveyContext = _context.ResponseType.Include(r => r.Subject.Category).Where(x=>x.SubjectId == id);
             /*var responses =*/
             return View(await surveyContext.ToListAsync());
@@ -59,6 +63,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: ResponseTypes/Create
+        [NoDirectAccess]
         public IActionResult Create(int? id)
         {
             if (id == null)
@@ -111,6 +116,26 @@ namespace Surveyapp.Controllers
             ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", responseType.SubjectId);
             return View(responseType);
         }
+        
+        [NoDirectAccess]
+        public async Task<IActionResult> AssociateResponse(int? subId, int? id)
+        {
+            if (subId != null && id != null)
+            {
+                var subjectAssociate = _context.ResponseType.SingleOrDefault(x => x.SubjectId == subId);
+                ResponseType responseTypes = new ResponseType()
+                {
+                    SubjectId = (int)id,
+                    ResponseName = subjectAssociate?.ResponseName,
+                    ResponseDictionary = subjectAssociate?.ResponseDictionary
+                };
+                
+                _context.Add(responseTypes);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index),new {id=responseTypes.SubjectId});
+            }
+            return RedirectToAction(nameof(Index),new {id=subId});
+        } 
 
         // GET: ResponseTypes/Edit/5
         [NoDirectAccess]
