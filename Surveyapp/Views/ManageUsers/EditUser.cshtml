@@ -9,7 +9,7 @@
     <div class="form-group row">
         <label asp-for="Id" class="col-sm-2 col col-form-label">User Id</label>
         <div class="col-sm-10">
-            <input asp-for="Id" disabled class ="form-control" />
+            <input asp-for="Id" disabled class="form-control" />
         </div>
     </div>
     <div class="form-group row">
@@ -32,7 +32,34 @@
             <span asp-validation-for="PhoneNumber" class="text-danger"></span>
         </div>
     </div>
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger">
+    </div>
+
+
+     <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <h3 class="text-warning">User Locked?</h3>
+        </div>
+        <div class="card-body">
+            <div class="form-check m-1">
+                <input asp-for="@Model.locked" class="form-check-input"
+                       onchange="return confirm('Are you sure that you want to change lock status of user : @Model.UserName')" />
+                <label class="form-check-label" asp-for="@Model.locked">
+                    Enabled
+                </label>
+            </div>
+            <div style="display:flex">
+                <label asp-for="LockEnd"   class="col-sm-2 col col-form-label">
+                    Lock Until
+                </label>
+                <input  asp-for="LockEnd" id="LockEnd" class="form-control" disabled style="width:auto" />
+                <span asp-validation-for="LockEnd" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+
+
     <div class="form-group row">
         <div class="col-sm-10">
             <button type="submit" class="btn btn-outline-warning">Update</button>
@@ -58,7 +85,7 @@
             }
         </div>
         <div class="card-footer">
-            <a class="btn btn-outline-info" 
+            <a class="btn btn-outline-info"
                asp-action="ManageUserRoles" asp-controller="ManageUsers"
                asp-route-userId="@Model.Id">
                 Manage Roles
@@ -66,29 +93,29 @@
         </div>
     </div>
 
-    <div class="card mt-3">
-        <div class="card-header">
-            <h3>User Claims</h3>
-        </div>
-        <div class="card-body">
-            @if (Model.Claims.Any())
-            {
-                foreach (var claim in Model.Claims)
-                {
-                    <h5>@claim</h5>
-                }
-            }
-            else
-            {
-                <h5>None at the moment</h5>
-            }
-        </div>
-        <div class="card-footer">
-            <a class="btn btn-outline-info"
-               @*asp-action="EditUser" asp-controller="ManageUsers"
-               asp-route-id="@user.Id" *@>
-                Manage Claims
-            </a>
-        </div>
-    </div>
+   
 </form>
+
+   @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+       <script>
+           $(document).ready(function () {
+               if ($('input[type="checkbox"]').is(":checked")) {
+                   $("#LockEnd").removeAttr("disabled");
+               }
+               else if ($('input[type="checkbox"]').is(":not(:checked)")) {
+                   $("#LockEnd").attr("disabled");
+               }
+
+        $('input[type="checkbox"]').click(function () {
+            if ($(this).is(":checked")) {
+                $("#LockEnd").removeAttr("disabled");
+            }
+            else if ($(this).is(":not(:checked)")) {
+                $("#LockEnd").attr("disabled",true);
+            }
+        });
+    });
+</script>
+}
+    

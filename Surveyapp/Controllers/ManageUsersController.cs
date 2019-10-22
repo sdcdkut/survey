@@ -14,148 +14,13 @@ namespace Surveyapp.Controllers
     public class ManageUsersController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;
-        //private readonly SurveyContext _context;
+        private readonly RoleManager<IdentityRole> roleManager;      
         
-
-
-        public ManageUsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager/*,SurveyContext context*/)
+        public ManageUsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
-            //_context = context;
         }
-
-        // GET: ManageUsers
-        //public async Task<IActionResult> Index()
-        //{
-        //    return View(await _context.ManageUsers.ToListAsync());
-        //}
-
-        // GET: ManageUsers/Details/5
-        //public async Task<IActionResult> Details(string id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var manageUsers = await _context.ManageUsers
-        //        .FirstOrDefaultAsync(m => m.ID == id);
-        //    if (manageUsers == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(manageUsers);
-        //}
-
-        // GET: ManageUsers/Create
-        //public IActionResult Create()
-        //{
-        //    return View();
-        //}
-
-        // POST: ManageUsers/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create([Bind("name,ID")] ManageUsers manageUsers)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.Add(manageUsers);
-        //        await _context.SaveChangesAsync();
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(manageUsers);
-        //}
-
-        // GET: ManageUsers/Edit/5
-        //public async Task<IActionResult> Edit(string id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var manageUsers = await _context.ManageUsers.FindAsync(id);
-        //    if (manageUsers == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return View(manageUsers);
-        //}
-
-        // POST: ManageUsers/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-       // [HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(string id, [Bind("name,ID")] ManageUsers manageUsers)
-        //{
-        //    if (id != manageUsers.ID)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(manageUsers);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!ManageUsersExists(manageUsers.ID))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(manageUsers);
-        //}
-
-        // GET: ManageUsers/Delete/5
-        //public async Task<IActionResult> Delete(string id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var manageUsers = await _context.ManageUsers
-        //        .FirstOrDefaultAsync(m => m.ID == id);
-        //    if (manageUsers == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(manageUsers);
-        //}
-
-        // POST: ManageUsers/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(string id)
-        //{
-        //    var manageUsers = await _context.ManageUsers.FindAsync(id);
-        //    _context.ManageUsers.Remove(manageUsers);
-        //    await _context.SaveChangesAsync();
-        //    return RedirectToAction(nameof(Index));
-        //}
-
-        //private bool ManageUsersExists(string id)
-        //{
-        //    return _context.ManageUsers.Any(e => e.ID == id);
-        //}
 
         [HttpGet]
         public async Task<IActionResult> EditUsersInRole(string roleid)
@@ -298,8 +163,6 @@ namespace Surveyapp.Controllers
                 return View(model);
             }
 
-            //result = await userManager.AddToRoleAsync(user,
-            //    (string)model.Where(x=>x.IsSelected).Select(y=>y.RoleName));
             foreach(var role in model.Where(x => x.IsSelected).Select(y => y.RoleName))
             {
                 result = await userManager.AddToRoleAsync(user,role);
@@ -309,8 +172,6 @@ namespace Surveyapp.Controllers
                 ModelState.AddModelError("", "Cannot add selected roles to user");
                 return View(model);
             }
-
-
             return RedirectToAction("EditUser", new { Id = userId });
         }
 
@@ -371,17 +232,20 @@ namespace Surveyapp.Controllers
                 ViewBag.ErrorMessage = $"User with Id {id} cannot be found";
                 return View("NotFound");
             }
-            var userClaims = await userManager.GetClaimsAsync(user);
             var userRoles = await userManager.GetRolesAsync(user);
-
+            var locked = false;
+            var dif = EF.Functions.DateDiffSecond(DateTime.Now,user.LockoutEnd );
+            if (dif > 0) {
+                locked = true;
+            }
             var model = new EditUserViewModel
             {
                 Id=user.Id,
                 Email=user.Email,
                 UserName=user.UserName,
                 PhoneNumber=user.PhoneNumber,
-                Claims=userClaims.Select(c=>c.Value).ToList(),
-                Roles=userRoles
+                Roles=userRoles,
+                locked = locked
             };
 
             return View(model);
@@ -401,6 +265,7 @@ namespace Surveyapp.Controllers
                 user.Email = model.Email;
                 user.UserName = model.UserName;
                 user.PhoneNumber = model.PhoneNumber;
+                user.LockoutEnd = model.LockEnd;
 
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded)

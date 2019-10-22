@@ -10,7 +10,6 @@ namespace Surveyapp.ViewModel
     {
         public EditUserViewModel()
         {
-            Claims = new List<string>();
             Roles = new List<string>();
         }
 
@@ -25,8 +24,14 @@ namespace Surveyapp.ViewModel
         [Phone]
         public string PhoneNumber { get; set; }
 
-        public List<string> Claims { get; set; }
         public IList<string> Roles { get; set; }
+
+        public bool locked { set; get; }
+
+        [Required]
+        [DataType(DataType.DateTime)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
+        public DateTime LockEnd { get; set; }
 
     }
 }
