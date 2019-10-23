@@ -90,6 +90,15 @@
     <div class="container">
         <partial name="_CookieConsentPartial" />
         <main role="main" class="pb-3">
+            @if (TempData["FeedbackMessage"] != null)
+            {
+                <div id="FeedbackMessage" class="alert alert-info alert-dismissible fade show" role="alert">
+                    @TempData["FeedbackMessage"]!
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                </div>
+            }
             @RenderBody()
         </main>
     </div>
@@ -103,6 +112,7 @@
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+        <script src="~/lib/jquery/jquery-ui.js"></script>
         <script src="~/js/select.js"></script>
         <script src="~/js/fontawesome.js"></script>
     </environment>
@@ -119,13 +129,18 @@
                 crossorigin="anonymous"
                 integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o">
         </script>
+        <script src="~/lib/jquery/jquery-ui.js"></script>
         <script src="~/js/select.js"></script>
         <script src="~/js/fontawesome.js"></script>
     </environment>
 <script src="~/js/site.js" asp-append-version="true"></script>
-<script src="~/js/select.js" asp-append-version="true"></script>
-<script src="~/js/fontawesome.js" asp-append-version="true"></script>
-
+@*<script src="~/js/select.js" asp-append-version="true"></script>
+<script src="~/js/fontawesome.js" asp-append-version="true"></script>*@
+<script>
+    setTimeout(function () {
+        $("#FeedbackMessage").hide("slide", { direction: "right" }, 1000);
+    }, 2000);
+</script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

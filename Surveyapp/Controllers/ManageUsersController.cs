@@ -172,6 +172,11 @@ namespace Surveyapp.Controllers
                 ModelState.AddModelError("", "Cannot add selected roles to user");
                 return View(model);
             }
+
+            if (result.Succeeded)
+            {
+                TempData["FeedbackMessage"] = $"user role edited successfully";
+            }
             return RedirectToAction("EditUser", new { Id = userId });
         }
 
@@ -189,6 +194,7 @@ namespace Surveyapp.Controllers
                 var result = await userManager.DeleteAsync(user);
                 if (result.Succeeded)
                 {
+                    TempData["FeedbackMessage"] = $"user deleted successfully";
                     return RedirectToAction("ListUsers");
                 }
                 foreach (var error in result.Errors)
@@ -213,6 +219,7 @@ namespace Surveyapp.Controllers
                 var result = await roleManager.DeleteAsync(role);
                 if (result.Succeeded)
                 {
+                    TempData["FeedbackMessage"] = $"role deleted successfully";
                     return RedirectToAction("ListRoles");
                 }
                 foreach (var error in result.Errors)
@@ -270,6 +277,7 @@ namespace Surveyapp.Controllers
                 var result = await userManager.UpdateAsync(user);
                 if (result.Succeeded)
                 {
+                    TempData["FeedbackMessage"] = $"user edited successfully";
                     return RedirectToAction("ListUsers");
                 }
 
@@ -295,6 +303,7 @@ namespace Surveyapp.Controllers
 
                 if (result.Succeeded)
                 {
+                    TempData["FeedbackMessage"] = $"role created successfully";
                     return RedirectToAction("ListRoles", "ManageUsers");
                 }
                 foreach(IdentityError error in result.Errors)
@@ -351,6 +360,7 @@ namespace Surveyapp.Controllers
                 var result = await roleManager.UpdateAsync(role);
                 if (result.Succeeded)
                 {
+                    TempData["FeedbackMessage"] = $"role edited successfully";
                     return RedirectToAction("ListRoles", "ManageUsers");
                 }
                 foreach (var error in result.Errors)

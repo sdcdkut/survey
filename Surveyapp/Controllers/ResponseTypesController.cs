@@ -105,6 +105,7 @@ namespace Surveyapp.Controllers
                 
                     _context.Add(responseTypes);
                     await _context.SaveChangesAsync();
+                    TempData["FeedbackMessage"] = $"survey responses added successfully";
                     return RedirectToAction(nameof(Index),new {id=responseTypes.SubjectId});
             }
             /*else
@@ -132,6 +133,7 @@ namespace Surveyapp.Controllers
                 
                 _context.Add(responseTypes);
                 await _context.SaveChangesAsync();
+                TempData["FeedbackMessage"] = $"survey responses added successfully";
                 return RedirectToAction(nameof(Index),new {id=responseTypes.SubjectId});
             }
             return RedirectToAction(nameof(Index),new {id=subId});
@@ -202,7 +204,7 @@ namespace Surveyapp.Controllers
 
                     _context.Update(responseTypes);
                     await _context.SaveChangesAsync();
-                  
+                    TempData["FeedbackMessage"] = $"survey responses edited successfully";
                 return RedirectToAction(nameof(Index),new{id=responseTypes.SubjectId});
             }
             ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", responseType.SubjectId);
@@ -238,6 +240,7 @@ namespace Surveyapp.Controllers
             var responseType = await _context.ResponseType.FindAsync(id);
             _context.ResponseType.Remove(responseType);
             await _context.SaveChangesAsync();
+            TempData["FeedbackMessage"] = $"survey responses deleted successfully";
             return RedirectToAction(nameof(Index),new{id=responseType.SubjectId});
         }
         [NoDirectAccess]

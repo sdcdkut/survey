@@ -106,6 +106,7 @@ namespace Surveyapp.Controllers
                 }
                 
                 await _context.SaveChangesAsync();
+                TempData["FeedbackMessage"] = $"Question(s) added successfully";
                 return RedirectToAction(nameof(Index),new {id=SubjectId});
             }
             //}
@@ -135,6 +136,7 @@ namespace Surveyapp.Controllers
                    }
    
                    await _context.SaveChangesAsync();
+                   TempData["FeedbackMessage"] = $"Question(s) added successfully";
                    return RedirectToAction(nameof(Index),new {id=id});
                }
                    
@@ -197,6 +199,7 @@ namespace Surveyapp.Controllers
                         throw;
                     }
                 }
+                TempData["FeedbackMessage"] = $"Question edited successfully";
                 return RedirectToAction(nameof(Index),new{id=editquiz.SubjectId});
             }
             ViewData["ResponseTypeId"] = new SelectList(_context.ResponseType, "Id", "ResponseName", ResponseTypeId);
@@ -235,6 +238,7 @@ namespace Surveyapp.Controllers
             var question = await _context.Question.FindAsync(id);
             _context.Question.Remove(question);
             await _context.SaveChangesAsync();
+            TempData["FeedbackMessage"] = $"Question deleted successfully";
             return RedirectToAction(nameof(Index),new{id=question.SubjectId});
         }
     

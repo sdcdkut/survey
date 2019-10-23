@@ -8,7 +8,7 @@
 
 <h4>ResponseType</h4>
 <hr />
-<h2 style="color:red">Not the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
+<h2 style="color:red">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
 <div class="row">
     <div class="col-md-7">
         <form asp-action="Edit">
@@ -34,7 +34,7 @@
                                 <div class="form-group col-md-4">
                                     <input required="required" name="responseDictionary" value="@responses.Value" placeholder="Input response option" class="form-control"/>
                                 </div>
-                                <p class="col-md-8"><button class="add_fields btn btn-secondary btn-sm">Add response option</button></p>
+                                <p class="col-md-8"><a href="javascript:void(0);" onclick="addresponsefield(this)" style="zoom: 200%" title="Add response option" class="add_fields fas fa-plus-circle"></a></p>
                             </div>
                         }
                         else
@@ -44,7 +44,12 @@
                                 <div class="form-group col-md-4">
                                     <input class="form-control" value="@responses.Value" name="responseDictionary" placeholder="Input response option"/>
                                 </div>
-                                <p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>
+                                <div style="display: flex" class="col-md-8">
+                                    <p ><a href="javascript:void(0);" onclick="addresponsefield(this)" style="zoom: 200%" title="Add response option" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>
+                                    <p ><a href="javascript:void(0);" title="Remove option field" style="zoom: 200%" class="remove_field new_minus_response_field_button fas fa-minus-circle"></a></p>
+                                    @*<p class="col-md-8"><a href="javascript:void(0);" onclick="addresponsefield(this)" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>*@
+                                </div>
+                                
                             </div>
                             @*<div class="form-group">
                                 <div class="col-md-12" style="display: flex;">
@@ -79,7 +84,26 @@
     <script>
         var max_fields = 10;
         var x = 1; //Initial input field is set to 1
-        $(".add_fields").click(function(e){
+        function addresponsefield(element){
+                //Check maximum allowed input fields
+                if(x < max_fields){
+                    x++; //input field increment
+                    //add input field
+                    $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
+                                 '<label class="control-label">Response Options</label>' +
+                                  '<div class="form-group col-md-4">' +
+                                  '<input class="form-control" required="required" name="responseDictionary" placeholder="Input response option" />' +
+                                   '</div>' +
+                                   '<div style="display: flex" class="col-md-8"> ' +
+                                   '<p ><a href="javascript:void(0);" onclick="addresponsefield(this)" title="Add response option" style="zoom: 200%" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>' +
+                                   '<p ><a href="javascript:void(0);" title="Remove option field" style="zoom: 200%" class="remove_field new_minus_response_field_button fas fa-minus-circle"></a></p>' +
+                                   '</div>' +
+                                    '</div>');
+                 //add focus on last input
+                $(element).closest(".wrapper").find('.form-group:last-child input').focus();
+                }
+                    }
+       /* $(".add_fields").click(function(e){
                 e.preventDefault();
          //Check maximum allowed input fields
                 if(x < max_fields){ 
@@ -87,13 +111,13 @@
          //add input field
                     $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;"><label class="control-label">Response Options</label><div class="form-group col-md-4"><input class="form-control" name="responseDictionary" placeholder="Input response option" /></div><p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p></div>');
                 }
-            });
+            });*/
          
             //when user click on remove button
             $(".wrapper").on("click",".remove_field", function(e){ 
                     e.preventDefault();
                     console.log($(this).parent().parent('div.form-group').html())
-             $(this).parent().parent('div.form-group').remove(); //remove inout field
+             $(this).closest('div.form-group').remove(); //remove inout field
              x--; //inout field decrement
                 });
     </script>

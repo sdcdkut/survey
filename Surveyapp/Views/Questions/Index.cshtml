@@ -103,7 +103,7 @@
                              <ul style="list-style: none;">
                                  @foreach (var quizoptions in quizes)
                                  {
-                                     <li ><a asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</a></li>
+                                     <li asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</li>
                                  }
                              </ul>
                          </li>
