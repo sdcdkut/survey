@@ -31,7 +31,7 @@ namespace Surveyapp.ViewModel
         [Required]
         [DataType(DataType.DateTime)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
-        public DateTime LockEnd { get; set; }
+        public DateTimeOffset LockEnd { get; set; }
 
     }
 }

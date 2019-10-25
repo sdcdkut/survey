@@ -1,0 +1,57 @@
+﻿@model IEnumerable<Surveyapp.Models.Survey>
+@inject UserManager<ApplicationUser> _userManager;
+
+@{
+    ViewData["Title"] = "Survey Owner";
+}
+<h1 class="text-success">Manage survey owners</h1>
+@if (Model.Any())
+{<table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Startdate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EndDate)
+                </th>
+                <th>
+                    Owner
+                </th>
+                <th>
+                    Action
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var survey in Model)
+            {
+                var user = await _userManager.FindByIdAsync(survey.SurveyerId);
+                var owner = user.UserName;
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => survey.name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => survey.Startdate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => survey.EndDate)
+                    </td>
+                    <td>
+                        @owner
+                    </td>
+                    <td>
+                        <a asp-action="ReassignSurvey" asp-route-id="@survey.Id"><strong>Reassign</strong></a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
