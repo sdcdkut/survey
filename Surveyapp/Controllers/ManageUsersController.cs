@@ -1,32 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
 using Surveyapp.ViewModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Surveyapp.Controllers
 {
     public class ManageUsersController : Controller
     {
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly RoleManager<IdentityRole> roleManager;      
-        
-        public ManageUsersController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly RoleManager<IdentityRole> roleManager;
+        private readonly SurveyContext _context;
+        public ManageUsersController(SurveyContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
+            _context = context;
             this.userManager = userManager;
             this.roleManager = roleManager;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserSurvey()
+        {
+            var surveyContext = _context.Survey;
+            return View(await surveyContext.ToListAsync());
+        }
+        [HttpGet]
+        public async Task<IActionResult> ReassignSurvey(string id)
+        {
+            var surveyId = Convert.ToInt32(id);
+            var surveyContext = _context.Survey.Where(x => x.Id == surveyId);
+            return View(await surveyContext.ToListAsync());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReassignSurvey(Survey survey)
+        {
+            var surveyupdate = _context.Survey.SingleOrDefault(x => x.Id == survey.Id);
+            surveyupdate.SurveyerId = survey.SurveyerId;
+            try
+            {
+                _context.Survey.Update(surveyupdate);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SurveyExists(survey.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            TempData["FeedbackMessage"] = $"survey edited successfully";
+            return RedirectToAction(nameof(UserSurvey));
+        }
+
+        private bool SurveyExists(int id)
+        {
+            return _context.Survey.Any(e => e.Id == id);
         }
 
         [HttpGet]
         public async Task<IActionResult> EditUsersInRole(string roleid)
         {
             ViewBag.roleId = roleid;
-            
+
             var role = await roleManager.FindByIdAsync(roleid);
             ViewBag.roleName = role.Name;
             if (role == null)
@@ -59,7 +103,7 @@ namespace Surveyapp.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> EditUsersInRole(List<UserRole> model,string roleId)
+        public async Task<IActionResult> EditUsersInRole(List<UserRole> model, string roleId)
         {
 
             var role = await roleManager.FindByIdAsync(roleId);
@@ -71,7 +115,7 @@ namespace Surveyapp.Controllers
 
             for (int i = 0; i < model.Count; i++)
             {
-                var user= await userManager.FindByIdAsync(model[i].UserId);
+                var user = await userManager.FindByIdAsync(model[i].UserId);
 
                 IdentityResult result = null;
                 if (model[i].IsSelected && !(await userManager.IsInRoleAsync(user, role.Name)))
@@ -113,7 +157,7 @@ namespace Surveyapp.Controllers
             var users = userManager.Users;
             return View(users);
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> ManageUserRoles(string userId)
         {
@@ -126,14 +170,14 @@ namespace Surveyapp.Controllers
                 return View("NotFound");
             }
             var model = new List<UserRolesViewModel>();
-            foreach(var role in roleManager.Roles)
+            foreach (var role in roleManager.Roles)
             {
                 var userRolesViewModel = new UserRolesViewModel
                 {
-                   RoleId=role.Id,
-                   RoleName=role.Name
+                    RoleId = role.Id,
+                    RoleName = role.Name
                 };
-                if(await userManager.IsInRoleAsync(user, role.Name))
+                if (await userManager.IsInRoleAsync(user, role.Name))
                 {
                     userRolesViewModel.IsSelected = true;
                 }
@@ -163,9 +207,9 @@ namespace Surveyapp.Controllers
                 return View(model);
             }
 
-            foreach(var role in model.Where(x => x.IsSelected).Select(y => y.RoleName))
+            foreach (var role in model.Where(x => x.IsSelected).Select(y => y.RoleName))
             {
-                result = await userManager.AddToRoleAsync(user,role);
+                result = await userManager.AddToRoleAsync(user, role);
             }
             if (!result.Succeeded)
             {
@@ -241,18 +285,20 @@ namespace Surveyapp.Controllers
             }
             var userRoles = await userManager.GetRolesAsync(user);
             var locked = false;
-            var dif = EF.Functions.DateDiffSecond(DateTime.Now,user.LockoutEnd );
-            if (dif > 0) {
+            var dif = EF.Functions.DateDiffSecond(DateTime.Now, user.LockoutEnd);
+            if (dif > 0)
+            {
                 locked = true;
             }
             var model = new EditUserViewModel
             {
-                Id=user.Id,
-                Email=user.Email,
-                UserName=user.UserName,
-                PhoneNumber=user.PhoneNumber,
-                Roles=userRoles,
-                locked = locked
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber,
+                Roles = userRoles,
+                locked = locked,
+                LockEnd = (DateTimeOffset)user.LockoutEnd
             };
 
             return View(model);
@@ -281,7 +327,7 @@ namespace Surveyapp.Controllers
                     return RedirectToAction("ListUsers");
                 }
 
-                foreach(var error in result.Errors)
+                foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
@@ -306,7 +352,7 @@ namespace Surveyapp.Controllers
                     TempData["FeedbackMessage"] = $"role created successfully";
                     return RedirectToAction("ListRoles", "ManageUsers");
                 }
-                foreach(IdentityError error in result.Errors)
+                foreach (IdentityError error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
@@ -335,14 +381,14 @@ namespace Surveyapp.Controllers
                 Id = role.Id,
                 RoleName = role.Name
             };
-            foreach(var user in userManager.Users)
+            foreach (var user in userManager.Users)
             {
-                if(await userManager.IsInRoleAsync(user, role.Name))
+                if (await userManager.IsInRoleAsync(user, role.Name))
                 {
                     model.Users.Add(user.UserName);
                 }
             }
-            return View(model); 
+            return View(model);
         }
 
 
@@ -355,7 +401,8 @@ namespace Surveyapp.Controllers
                 ViewBag.ErrorMessage = $"Role with Id {model.Id} cannot be found";
                 return View("NotFound");
             }
-            else{
+            else
+            {
                 role.Name = model.RoleName;
                 var result = await roleManager.UpdateAsync(role);
                 if (result.Succeeded)
@@ -368,7 +415,7 @@ namespace Surveyapp.Controllers
                     ModelState.AddModelError("", error.Description);
                 }
                 return View(model);
-            } 
+            }
         }
     }
 }

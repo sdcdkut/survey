@@ -45,15 +45,15 @@
                 <input asp-for="@Model.locked" class="form-check-input"
                        onchange="return confirm('Are you sure that you want to change lock status of user : @Model.UserName')" />
                 <label class="form-check-label" asp-for="@Model.locked">
-                    Enabled
+                    Locked
                 </label>
             </div>
             <div style="display:flex">
-                <label asp-for="LockEnd"   class="col-sm-2 col col-form-label">
+                <label asp-for="@Model.LockEnd"   class="col-sm-2 col col-form-label">
                     Lock Until
                 </label>
-                <input  asp-for="LockEnd" id="LockEnd" class="form-control" disabled style="width:auto" />
-                <span asp-validation-for="LockEnd" class="text-danger"></span>
+                <input  asp-for="@Model.LockEnd" id="LockEnd" class="form-control" disabled style="width:auto" />
+                <span asp-validation-for="@Model.LockEnd" class="text-danger"></span>
             </div>
         </div>
     </div>
