@@ -27,7 +27,7 @@
 @*<h1>Survey Subject</h1>*@
 
 <p>
-    <a asp-action="Create" asp-route-id="@ViewBag.CategoryId">Create New</a>
+    <a asp-action="Create" asp-route-id="@ViewBag.CategoryId">Create New <i class="fa fa-plus-square"></i></a>
 </p>
 <table class="table">
     <thead>
@@ -35,7 +35,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.SubjectName)
             </th>
-            <th>
+            @*<th>
                 @Html.DisplayNameFor(model => model.StateCorporation)
             </th>
             <th>
@@ -47,7 +47,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.EndofTerm)
             </th>
-            <th>@*
+            <th>
                 @Html.DisplayNameFor(model => model.SubjectTypeId)
             </th>
             <th>
@@ -62,7 +62,7 @@
             <td>
                 @Html.DisplayFor(modelItem => item.SubjectName)
             </td>
-            <td>
+            @*<td>
                 @Html.DisplayFor(modelItem => item.StateCorporation)
             </td>
             <td>
@@ -73,7 +73,7 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.EndofTerm)
-            </td>@*
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.SubjectTypeId)
             </td>
@@ -81,13 +81,13 @@
                 @Html.DisplayFor(modelItem => item.Category.Id)
             </td>*@
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
-                <a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id">Response options</a> |
+                <a asp-action="Edit" asp-route-id="@item.Id" title="edit @item.SubjectName"><i class="fa fa-edit"></i></a> |
+                <a asp-action="Details" asp-route-id="@item.Id" title="view @item.SubjectName details"><i class="fa fa-eye"></i></a> |
+                <a asp-action="Delete" asp-route-id="@item.Id" title="delete @item.SubjectName"><i class="fa fa-trash-alt"></i></a> |
+                <a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id" title="view or add response to @item.SubjectName">Response options</a> |
                 @if (item.ResponseTypes?.ResponseName!= null)
                 {
-                    <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id">Add question</a>
+                    <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="view or add question to @item.SubjectName">Add question</a>
                 }
                 else
                 {

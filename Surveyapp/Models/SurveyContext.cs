@@ -57,6 +57,10 @@ namespace Surveyapp.Models
             {
                 entity.HasIndex(e => e.Id);
 
+                entity.Property(e => e.OtherProperties).IsRequired().
+                    HasConversion(
+                        x => JsonConvert.SerializeObject(x),
+                        v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.SurveySubjects)

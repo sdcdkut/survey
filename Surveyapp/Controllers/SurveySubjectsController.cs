@@ -7,6 +7,7 @@ using Surveyapp.Models;
 using Surveyapp.Services;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -87,13 +88,25 @@ namespace Surveyapp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId")] SurveySubject surveySubject)
+        public async Task<IActionResult> Create([Bind("SubjectName,CategoryId")] SurveySubject surveySubject, string[] otherproperty)
         {
             if (ModelState.IsValid)
             {
+                var propertyDictonary = new Dictionary<string, string>();
+                if (otherproperty.Length>0)
+                {
+                    foreach (var property in otherproperty)
+                    {
+                        string[] ids = property.Split(new char[] { '|' });
+                        string propertyName = ids[0];
+                        string propertyValue = ids[1];
+                        propertyDictonary.Add(propertyName, propertyValue);
+                    }
+                }
+                surveySubject.OtherProperties = propertyDictonary;
                 _context.Add(surveySubject);
                 await _context.SaveChangesAsync();
-                TempData["FeedbackMessage"] = $"survey subject created successfully";
+                TempData["FeedbackMessage"] = $"{surveySubject.SubjectName} subject created successfully";
                 return RedirectToAction(nameof(Index), new { id = surveySubject.CategoryId });
             }
             ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId);
@@ -110,7 +123,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var surveySubject = await _context.SurveySubject.FindAsync(id);
+            var surveySubject = await _context.SurveySubject.SingleOrDefaultAsync(x=>x.Id==id);
             if (surveySubject == null)
             {
                 return NotFound();
@@ -126,7 +139,7 @@ namespace Surveyapp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,SubjectName,StateCorporation,Chairpersion,AppointmentDate,EndofTerm,CategoryId")] SurveySubject surveySubject)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,SubjectName,CategoryId")] SurveySubject surveySubject, string[] otherproperty)
         {
             if (id != surveySubject.Id)
             {
@@ -137,6 +150,18 @@ namespace Surveyapp.Controllers
             {
                 try
                 {
+                    var propertyDictonary = new Dictionary<string, string>();
+                    if (otherproperty.Length>0)
+                    {
+                        foreach (var property in otherproperty)
+                        {
+                            string[] ids = property.Split(new char[] { '|' });
+                            string propertyName = ids[0];
+                            string propertyValue = ids[1];
+                            propertyDictonary.Add(propertyName, propertyValue);
+                        }
+                    }
+                    surveySubject.OtherProperties = propertyDictonary;
                     _context.Update(surveySubject);
                     await _context.SaveChangesAsync();
                 }

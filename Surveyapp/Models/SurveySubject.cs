@@ -18,12 +18,13 @@ namespace Surveyapp.Models
         public int Id { get; set; }
         [Required]
         public string SubjectName { get; set; }
-        public string StateCorporation { get; set; }
+        public Dictionary<string, string> OtherProperties { get; set;}
+        /*public string StateCorporation { get; set; }
         public string Chairpersion { get; set; }
         [DataType(DataType.Date)]
         public DateTime AppointmentDate { get; set; }
         [DataType(DataType.Date)]
-        public DateTime EndofTerm { get; set; }
+        public DateTime EndofTerm { get; set; }*/
         public int CategoryId { get; set; }
         /*public int SubjectTypeId { get; set; }*/
         [ForeignKey("CategoryId")]
