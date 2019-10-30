@@ -11,6 +11,7 @@
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
         <link rel="stylesheet" href="~/css/select.css">
         <link rel="stylesheet" href="~/css/fontawsome.css">
+        <link rel="stylesheet" type="text/css" href="~/lib/Datatables/datatables.css" />
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -18,6 +19,7 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
               crossorigin="anonymous"
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
+        <link rel="stylesheet" type="text/css" href="~/lib/Datatables/datatables.css" />
     </environment>
     <link rel="stylesheet" href="~/css/select.css">
     <link rel="stylesheet" href="~/css/site.css" />
@@ -57,7 +59,7 @@
                         @if(User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Surveys" asp-action="ApproveSurveys">Approve Surveys</a>
+                                <a class="nav-link text-dark" asp-controller="Surveys" asp-action="ApproveSurveys">Manage Surveys</a>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink"
@@ -84,9 +86,6 @@
                                 </div>
                             </li>
                         }
-                        
-
-
                     </ul>
                 </div>
             </div>
@@ -120,6 +119,14 @@
         <script src="~/lib/jquery/jquery-ui.js"></script>
         <script src="~/js/select.js"></script>
         <script src="~/js/fontawesome.js"></script>
+        <script type="text/javascript" src="~/lib/Datatables/datatables.js"></script>
+        <script src="~/lib/Datatables/jszip/jszip.js"></script>
+        <script src="~/lib/Datatables/pdfmake/pdfmake.js"></script>
+        <script src="~/lib/Datatables/pdfmake/vfs_fonts.js"></script>
+        <script src="~/lib/Datatables/Buttons-1.6.1/js/dataTables.buttons.js"></script>
+        <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.html5.js"></script>
+        <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.print.js"></script>
+        <script src="~/lib/Datatables/datatables-fixedheader/dataTables.fixedHeader.js"></script>
     </environment>
     <environment exclude="Development">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
@@ -137,7 +144,16 @@
         <script src="~/lib/jquery/jquery-ui.js"></script>
         <script src="~/js/select.js"></script>
         <script src="~/js/fontawesome.js"></script>
+        <script type="text/javascript" src="~/lib/Datatables/datatables.js"></script>
+        <script src="~/lib/Datatables/jszip/jszip.js"></script>
+        <script src="~/lib/Datatables/pdfmake/pdfmake.js"></script>
+        <script src="~/lib/Datatables/pdfmake/vfs_fonts.js"></script>
+        <script src="~/lib/Datatables/Buttons-1.6.1/js/dataTables.buttons.js"></script>
+        <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.html5.js"></script>
+        <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.print.js"></script>
+        <script src="~/lib/Datatables/datatables-fixedheader/dataTables.fixedHeader.js"></script>
     </environment>
+
 <script src="~/js/site.js" asp-append-version="true"></script>
 @*<script src="~/js/select.js" asp-append-version="true"></script>
 <script src="~/js/fontawesome.js" asp-append-version="true"></script>*@

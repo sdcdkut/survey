@@ -1,11 +1,25 @@
-@model IEnumerable<Surveyapp.Models.SurveySubject> 
+@model IEnumerable<Surveyapp.Models.SurveySubject>
 @inject SurveyContext Context
 
 @{
     ViewBag.Title = "Subject Result";
     Layout = "_Layout";
-    int? res=1;
+    int? res = 1;
 }
+    <style>
+        thead input {
+            width: 100%;
+        }
+
+        button.dt-button.btn-xs {
+            color: white;
+            background: #337AB7 !important;
+            border-radius: 3%;
+            background-color: #337AB7 !important;
+            height: 10%;
+            text-align: center;
+        }
+    </style>
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
@@ -21,11 +35,10 @@
     </ol>
 </nav>
 <h2>Subject Results</h2>
-<table class="table">
+<table class="table table-striped table-hover table-bordered display" id="subject-result-table">
     <thead>
         <tr>
             <th>
-                @*@Html.DisplayNameFor(model => model.suject)*@
                 Subject name
             </th>
             <th>
@@ -41,19 +54,19 @@
         </tr>
     </thead>
     <tbody>
-    @{
-        var surveyResponse = Context.SurveyResponse;
-        var responseType = Context.ResponseType;
-        var question = Context.Question;
-        foreach (var item in Model)
+        @{
+            var surveyResponse = Context.SurveyResponse;
+            var responseType = Context.ResponseType;
+            var question = Context.Question;
+            foreach (var item in Model)
             {
                 var scoreResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Sum(x => int.Parse(x.Response));
                 //var questions = question.Where(x => x.SubjectId == item.Id).Count(a => a.SubjectId == item.Id);
-                var questionResponsesCount = question.Where(a=>a.SubjectId==item.Id).Take(1).SelectMany(x=>x.SurveyResponses)?.Count();
+                var questionResponsesCount = question.Where(a => a.SubjectId == item.Id).Take(1).SelectMany(x => x.SurveyResponses)?.Count();
                 var totalResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Count(a => a.question.SubjectId == item.Id);
                 //var maxRespondType = responseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary.Keys).Max();
-                var avgScore = Math.Round((decimal) scoreResponse / (decimal) totalResponse, 0);
-                res=questionResponsesCount;
+                var avgScore = Math.Round((decimal)scoreResponse / (decimal)totalResponse, 0);
+                res = questionResponsesCount;
                 <tr>
                     <td>
                         @Html.DisplayFor(modelItem => item.SubjectName)
@@ -65,22 +78,85 @@
                         @avgScore
                     </td>
                     <td>
-                        @responseType.Where(x=>x.SubjectId == item.Id).SelectMany(x=>x.ResponseDictionary).SingleOrDefault(x=>int.Parse(x.Key) == avgScore).Value
-                        @*@foreach (var scores in Context.ResponseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary))
-                        {
-                            if (avgScore == int.Parse(scores.Key))
-                            {
-                                <p> @scores.Value</p>
-                            }
-                        }*@
+                        @responseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary).SingleOrDefault(x => int.Parse(x.Key) == avgScore).Value
                     </td>
-                    <td><a asp-action="QuestionResults" asp-route-id="@item.Id">Indiviual Question performnce</a></td>
+                    <td><a asp-action="QuestionResults" asp-route-id="@item.Id">Indiviual Question performnce <i class="fa fa-receipt"></i></a></td>
                 </tr>
             }
-    }
-    
+        }
+
     </tbody>
 </table>
-<div align="center" style="background-color:Lavender; color:DeepSkyBlue">
-Number of responses <Strong> @res</Strong>
-</div>
+<p>@ViewBag.SurveyName</p>
+@*<div align="center" style="background-color:Lavender; color:DeepSkyBlue">
+    Number of responses <Strong> @res</Strong>
+</div>*@
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+            var table = $('#subject-result-table').DataTable( {
+                "pageLength": 50,
+                stateSave: true,
+                orderCellsTop: true,
+                fixedHeader: true,
+                dom: 'Brlftip',
+                buttons: [
+                    {
+                        extend: 'pdf',
+                        text: '<span title="only visible columns will be exported to excel">Export to pdf</span>',
+                        title: "@ViewBag.SurveyName Survey Report",
+                        className: 'btn btn-sm btn-xs',
+                        filename:'@ViewBag.SurveyName Survey Report',
+                        exportOptions: {
+                            columns: 'th:not(:last-child)',
+                            page: 'all'
+                        },
+                        alignment: "center",
+                        customize: function (doc) {
+                            doc['footer'] = (function (page, pages) {
+                                return {
+                                    columns: [
+                                        {
+                                            alignment: 'center',
+                                            text: ['Page ', { text: page.toString(), pageBreak: 'before' }, ' of ', { text: pages.toString() }, '\n genetated by @User.Identity.Name ']
+                                        }
+                                    ],
+                                }
+                            });
+                            doc['header'] = (function (page, pages, pageSize) {
+                                return {
+                                    columns: [
+                                        {
+                                            alignment: 'center',
+                                            text: " DKUT Survey app",
+                                            canvas: [{ type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 }]
+                                        }
+                                    ],
+                                }
+                            });
+                            doc.content[1].table.widths = "*"
+                            //body data alignment
+                            $.each(doc.content[1].table.body, function (key, values) {
+                                $.each(values, function (id, vals) {
+                                vals.alignment = 'center'
+                                })
+                            })
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'export to excel',
+                        filename:'@ViewBag.SurveyName Survey Report',
+                        className: 'btn-xs',
+                        messageBottom:"genetated by @User.Identity.Name",
+                        exportOptions: {
+                            columns: 'th:not(:last-child)',
+                            page: 'all'
+                        },
+                    }
+                ]
+            });
+        } );
+    </script>
+}

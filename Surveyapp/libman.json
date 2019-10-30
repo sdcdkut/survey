@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "jszip@3.2.2",
+      "destination": "wwwroot/lib/Datatables/jszip/"
+    },
+    {
+      "library": "pdfmake@0.1.60",
+      "destination": "wwwroot/lib/Datatables/pdfmake/"
+    },
+    {
+      "library": "datatables-fixedheader@2.1.1",
+      "destination": "wwwroot/lib/Datatables/datatables-fixedheader/"
+    }
+  ]
+}

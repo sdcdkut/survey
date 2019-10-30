@@ -49,6 +49,8 @@ namespace Surveyapp
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddIdentity<ApplicationUser, IdentityRole>(Options=>{
                 Options.Lockout = LockOutOption;
+                Options.SignIn.RequireConfirmedEmail = true;
+                
             })
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<SurveyContext>().AddDefaultTokenProviders();

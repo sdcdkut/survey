@@ -5,9 +5,21 @@
     ViewBag.Title = "Approve Surveys";
     //Layout = "_Layout";
 }
-
-<h2>Approve Surveys</h2>
-<table class="table">
+    <style>
+        thead input {
+        width: 100%;
+    }
+    button.dt-button.btn-xs {
+        color: white;
+        background: #337AB7 !important;
+        border-radius: 3%;
+        background-color: #337AB7 !important;
+        height: 10%;
+        text-align: center;
+    }
+    </style>
+    <h2>Manage Surveys</h2>
+<table class="table table-striped table-hover table-bordered display" id="approveltable">
     <thead>
     <tr>
         <th>
@@ -81,3 +93,83 @@
     }
     </tbody>
 </table>
+@section Scripts
+{
+    <script >
+        $(document).ready(function() {
+            $('#approveltable thead tr').clone(true).appendTo( '#approveltable thead' );
+            $('#approveltable thead tr:eq(1) th').each(function (i) {
+                var title = $(this).text();
+                $(this).html( '<input style="width:100%!important;font-weight:smaller" type="text" placeholder="Search'+title+'" />' );
+                $( 'input', this ).on( 'keyup change', function () {
+                    if ( table.column(i).search() !== this.value ) {
+                        table
+                            .column(i)
+                            .search( this.value )
+                            .draw();
+                    }
+                } );
+            } );
+            var table = $('#approveltable').DataTable( {
+                dom: 'Brltip',
+                stateSave: true,
+                orderCellsTop: true,
+                fixedHeader: true,
+                buttons: [
+                    {
+                        extend: 'pdf',
+                        text: '<span title="only visible columns will be exported to excel">Export to pdf</span>',
+                        title:"Survey app",
+                        filename:'Survey Approval Report',
+                        className: 'btn btn-sm btn-xs',
+                        exportOptions: {
+                            columns: 'th:not(:last-child)',
+                            page: 'all'
+                        },
+                        //messageTop:"<span style='align:center'>Survey Approval status</span>",
+                        customize: function (doc) {
+                            doc['footer'] = (function (page, pages) {
+                                return {
+                                    columns: [
+                                        {
+                                            alignment: 'center',
+                                            text: ['Page \n', { text: page.toString() }, ' of ', { text: pages.toString() }, '\n genetated by @User.Identity.Name ']
+                                        }
+                                    ],
+                                }
+                            });
+                            doc['header'] = (function (page, pages, pageSize) {
+                                console.log(page)
+                                return {
+                                    columns: [
+                                        {
+                                            alignment: 'center',
+                                            text: " DKUT Survey app",
+                                            canvas: [ { type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 } ]
+                                        }
+                                    ],
+                                }
+                            });
+                            doc.content.forEach(function (content) {
+                                console.log(content)
+                                //if (content.style == 'message') {
+                                //content.text = 'this is a late created message'
+                                //}
+                            })
+                        }
+                    },
+                    {
+                        extend: 'excel',
+                        text: 'export to excel',
+                        filename:'Survey Approval Report',
+                        className: 'btn-xs',
+                        exportOptions: {
+                            columns: 'th:not(:last-child)',
+                            page: 'all'
+                        },
+                    }
+                ]
+            });
+        } );
+    </script>
+}

@@ -216,6 +216,7 @@ namespace Surveyapp.Controllers
             {
                 return Content("Subject category not specified");
             }
+            ViewBag.SurveyName = _context.Survey.Where(x=>x.SurveyCategorys.Any(y=>y.Id == id)).SingleOrDefault().name;
             var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes)
                                     .Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id)
                                     .Where(x=>x.Category.Survey.SurveyerId == _usermanager.GetUserId(User));
@@ -229,9 +230,15 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-
+            var scoreResponse = _context.SurveyResponse.Where(a => a.question.SubjectId == id).Sum(x => int.Parse(x.Response));
+            var questionResponsesCount = _context.Question.Where(a => a.SubjectId == id).Take(1).SelectMany(x => x.SurveyResponses)?.Count();
+            var totalResponse = _context.SurveyResponse.Where(a => a.question.SubjectId == id).Count(a => a.question.SubjectId == id);
+            var avgScore = Math.Round((decimal)scoreResponse / (decimal)totalResponse, 0);
             ViewBag.Time = EF.Functions.DateDiffMinute(DateTime.Now, DateTime.Now);
             ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(z=>z.Id == id)?.CategoryId;
+            ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(z => z.Id == id)?.SubjectName;
+            ViewBag.avgScore = avgScore;
+            ViewBag.SubjectResult = _context.ResponseType.Where(x => x.SubjectId == id).SelectMany(x => x.ResponseDictionary).SingleOrDefault(x => int.Parse(x.Key) == avgScore).Value;
             var questionResults = _context.Question.Where(z=>z.SubjectId==id).Where(x=>x.SurveyResponses.Any());
             return View(questionResults);
         }

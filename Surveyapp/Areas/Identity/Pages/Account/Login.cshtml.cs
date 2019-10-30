@@ -19,12 +19,15 @@ namespace Surveyapp.Areas.Identity.Pages.Account
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, RoleManager<IdentityRole>userRole)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger,
+            RoleManager<IdentityRole> userRole, UserManager<ApplicationUser> usermanager)
         {
             _signInManager = signInManager;
             _logger = logger;
             _roleManager = userRole;
+            _userManager = usermanager;
         }
 
         [BindProperty]
@@ -117,6 +120,20 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                 {
                     _logger.LogWarning("User account locked out.");
                     return RedirectToPage("./Lockout");
+                }
+                ApplicationUser userid = _userManager.FindByEmailAsync(Input.Email).Result;
+                if (userid != null)
+                {
+                    if (!_userManager.IsEmailConfirmedAsync(userid).Result)
+                    {
+                        ModelState.AddModelError(string.Empty, "Email not confirmed!");
+                        return Page();
+                    }
+                }
+                if (userid == null)
+                {
+                    ModelState.AddModelError(string.Empty, "User Email not found!");
+                    return Page();
                 }
                 else
                 {

@@ -94,7 +94,8 @@ namespace Surveyapp.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            var login = Url.Page("/Account/Login");
+            returnUrl = returnUrl ?? /*Url.Content("~/")*/login;
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
@@ -114,7 +115,8 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"<h3>Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.<h3>");
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    //await _signInManager.SignInAsync(user, isPersistent: false);
+                    TempData["ConfirmMessage"] = $"{user.UserName} Please Check your email for  email confirmation";
                     return LocalRedirect(returnUrl);
                 }
                 foreach (var error in result.Errors)
