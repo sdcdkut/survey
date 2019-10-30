@@ -87,7 +87,7 @@
                 <a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id" title="view or add response to @item.SubjectName">Response options</a> |
                 @if (item.ResponseTypes?.ResponseName!= null)
                 {
-                    <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="view or add question to @item.SubjectName">Add question</a>
+                    <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="view or add question to @item.SubjectName">Manage questions</a>
                 }
                 else
                 {

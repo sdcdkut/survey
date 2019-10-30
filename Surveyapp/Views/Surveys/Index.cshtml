@@ -61,10 +61,10 @@
                 <td>
                     @if (item.SurveyerId == _userManager.GetUserId(User))
                      {
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a><span>|</span>
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> <span>|</span>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> <span>|</span>
-                    <a asp-controller="SurveyCategories" asp-action="Index" asp-route-id="@item.Id">Survey Subject categories</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.name"><i class="fa fa-edit"></i></a><span>|</span>
+                    <a asp-action="Details" asp-route-id="@item.Id" title="view @item.name details"><i class="fa fa-eye"></i></a> <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@item.Id" title="Delete @item.name"><i class="fa fa-trash"></i></a> <span>|</span>
+                    <a asp-controller="SurveyCategories" asp-action="Index" asp-route-id="@item.Id">Survey Subject categories <i class="fa fa-receipt"></i></a>
                     }
                     else
                     {

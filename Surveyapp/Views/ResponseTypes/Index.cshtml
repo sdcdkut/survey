@@ -146,9 +146,9 @@ else
                 @Html.DisplayFor(modelItem => item.Subject.Id)
             </td>*@
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.ResponseName"><i class="fa fa-edit"></i></a> |
                 @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> |*@
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="Delete" asp-route-id="@item.Id"title="Delete @item.ResponseName"><i class="fa fa-trash"></i></a>
             </td>
         </tr>
 }
