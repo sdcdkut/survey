@@ -298,7 +298,8 @@ namespace Surveyapp.Controllers
                 PhoneNumber = user.PhoneNumber,
                 Roles = userRoles,
                 locked = locked,
-                LockEnd = (DateTimeOffset)user.LockoutEnd
+                //LockEnd = Convert.ToDateTime(user.LockoutEnd.ToString())
+                LockEnd = (user.LockoutEnd).Value.DateTime
             };
 
             return View(model);

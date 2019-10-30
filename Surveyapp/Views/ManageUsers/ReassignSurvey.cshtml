@@ -45,16 +45,16 @@
                 <label asp-for="@survey.SurveyerId" class="col-sm-2 col col-form-label">Select a New Owner</label>
                 <div class="col-sm-10">
                     <select id="myid" onchange="return warn('@survey.name','@owner')" asp-for="@survey.SurveyerId">
-                        <option selected disabled></option>
+                        <option disabled selected>@owner</option>
                         @{
                             var role = await roleManager.FindByNameAsync("Surveyor");
-                            var dic = new Dictionary<string, string>();
+                            //var dic = new Dictionary<string, string>();
 
                             foreach (var _user in _userManager.Users)
                             {
                                 if (await _userManager.IsInRoleAsync(_user, role.Name) && _user.Id != survey.SurveyerId)
                                 {
-                                    dic.Add(_user.Id, _user.UserName);
+                                   // dic.Add(_user.Id, _user.UserName);
                                     <option value="@_user.Id">@_user.UserName</option>
                                 }
                             }
