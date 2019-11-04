@@ -44,6 +44,11 @@ namespace Surveyapp.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
+            [DataType(DataType.Text)]
+            [Display(Name = "UserName")]
+            public string UserName { get; set; }
+            
+            [Required]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
@@ -63,33 +68,6 @@ namespace Surveyapp.Areas.Identity.Pages.Account
         public void OnGet(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
-            // if (await _roleManager.RoleExistsAsync("Admin") == false)
-            // {
-            //     IdentityResult Admin = await _roleManager
-            //         .CreateAsync(new IdentityRole
-            //         {
-            //             Name = "Admin",
-            //         });
-            // }
-
-            // if (await _roleManager.RoleExistsAsync("Employer") == false)
-            // {
-            //     IdentityResult Surveyor = await _roleManager
-            //         .CreateAsync(new IdentityRole
-            //         {
-            //             Name = "Surveyor",
-            //         });
-            // }
-
-            // if (await _roleManager.RoleExistsAsync("Freelancer") == false)
-            // {
-
-            //     IdentityResult Surveyee = await _roleManager
-            //         .CreateAsync(new IdentityRole
-            //         {
-            //             Name = "Surveyee",
-            //         });
-            // }
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
@@ -98,7 +76,7 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             returnUrl = returnUrl ?? /*Url.Content("~/")*/login;
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
+                var user = new ApplicationUser { UserName = Input.UserName, Email = Input.Email };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {

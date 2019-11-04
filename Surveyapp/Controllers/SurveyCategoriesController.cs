@@ -82,7 +82,7 @@ namespace Surveyapp.Controllers
                 _context.Add(surveyCategory);
                 await _context.SaveChangesAsync();
                 TempData["FeedbackMessage"] = $"survey category added successfully";
-                return RedirectToAction(nameof(Index),new {id=surveyCategory.SurveyId});
+                return RedirectToAction(nameof(Create),"SurveySubjects",new {id=surveyCategory.Id});
             }
             ViewData["SurveyId"] = new SelectList(_context.Survey, "Id", "Id", surveyCategory.SurveyId);
             return View(surveyCategory);

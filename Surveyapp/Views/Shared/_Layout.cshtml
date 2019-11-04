@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="~/css/select.css">
         <link rel="stylesheet" href="~/css/fontawsome.css">
         <link rel="stylesheet" type="text/css" href="~/lib/Datatables/datatables.css" />
+        <link rel="stylesheet" href="~/css/jquery-ui.css">
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -20,6 +21,7 @@
               crossorigin="anonymous"
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
         <link rel="stylesheet" type="text/css" href="~/lib/Datatables/datatables.css" />
+        <link rel="stylesheet" href="~/css/jquery-ui.css">
     </environment>
     <link rel="stylesheet" href="~/css/select.css">
     <link rel="stylesheet" href="~/css/site.css" />
@@ -126,6 +128,7 @@
         <script src="~/lib/Datatables/Buttons-1.6.1/js/dataTables.buttons.js"></script>
         <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.html5.js"></script>
         <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.print.js"></script>
+        <script src="~/js/modernizr.js"></script>
         <script src="~/lib/Datatables/datatables-fixedheader/dataTables.fixedHeader.js"></script>
     </environment>
     <environment exclude="Development">
@@ -151,6 +154,7 @@
         <script src="~/lib/Datatables/Buttons-1.6.1/js/dataTables.buttons.js"></script>
         <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.html5.js"></script>
         <script src="~/lib/Datatables/Buttons-1.6.1/js/buttons.print.js"></script>
+        <script src="~/js/modernizr.js"></script>
         <script src="~/lib/Datatables/datatables-fixedheader/dataTables.fixedHeader.js"></script>
     </environment>
 
@@ -160,7 +164,7 @@
 <script>
     setTimeout(function () {
         $("#FeedbackMessage").hide("slide", { direction: "right" }, 1000);
-    }, 2000);
+    }, 3000);
 </script>
     @RenderSection("Scripts", required: false)
 </body>

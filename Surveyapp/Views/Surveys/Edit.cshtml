@@ -3,10 +3,20 @@
 @{
     ViewData["Title"] = "Edit";
 }
-
-<h1>Edit</h1>
-
-<h4>Survey</h4>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a asp-action="Index">
+                <span>My Surveys </span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Edit @Model.name Survey </span>
+            </a>
+        </li>
+    </ol>
+</nav>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -57,4 +67,14 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $("#EndDate").attr("min",$("#Startdate").val());
+        $("#Startdate").attr("max",$("#EndDate").val());
+        $("#Startdate").on("input",function(e){
+            $("#EndDate").attr("min",$(this).val())
+        });
+        $("#EndDate").on("input",function(e){
+            $("#Startdate").attr("max",$(this).val())
+        })
+    </script>
 }

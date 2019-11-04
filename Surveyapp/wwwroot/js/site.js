@@ -2,3 +2,11 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+if (!Modernizr.inputtypes.date){
+    $("input[type='date']").datepicker({
+        showButtonPanel: true,
+        changeMonth: true,
+        changeYear: true,
+        showAnim: "slideDown"
+    });
+}

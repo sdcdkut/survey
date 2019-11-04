@@ -3,10 +3,28 @@
 @{
     ViewData["Title"] = "Edit";
 }
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+    
+        <li class="breadcrumb-item active">
+            <a asp-action="Index" asp-route-id="@Model.SurveyId">
+                <span>Survey Subject Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>edit Subject Category</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
-<h1>Edit</h1>
-
-<h4>SurveyCategory</h4>
+<h4>Edit SurveyCategory</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">

@@ -4,10 +4,23 @@
     ViewData["Title"] = "Details";
 }
 
-<h1>Details</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a asp-action="Index">
+                <span>My Surveys </span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>View @Model.name Survey </span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <div>
-    <h4>Survey</h4>
+    <h4>Survey details</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">

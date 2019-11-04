@@ -5,12 +5,26 @@
 }
 
 @*<h1>Create</h1>*@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item ">
+            <a asp-action="Index">
+                <span>My Surveys </span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Create Survey </span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <h4>Create Survey</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" id="creat-survey-form">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="name" class="control-label"></label>
@@ -19,12 +33,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="Startdate" class="control-label"></label>
-                <input asp-for="Startdate" class="form-control" />
+                <input asp-for="Startdate" value="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control" />
                 <span asp-validation-for="Startdate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
+                <input asp-for="EndDate" min="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -53,4 +67,41 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        //customize survey create from validation
+        var today = "@($"{DateTime.Now:yyyy-MM-dd}")";
+        jQuery.validator.addMethod("checktoday", function (value, element, params) {
+                if (value<today) {
+                        return false;
+                    } else {
+                        return true;
+                    };
+            },'<span style="color: red">Enter a date greater than today</span>');
+        $("#Startdate").on("input",function(e){
+            $("#EndDate").attr("min",$(this).val())
+        });
+        $("#EndDate").on("input",function(e){
+            $("#Startdate").attr("max",$(this).val())
+        })
+        $("#creat-survey-form").validate({
+            rules:{
+                name:"required",
+                Startdate:"required",
+                EndDate:{
+                    required:true,
+                    checktoday: true
+                },
+                status:"required"
+            },
+            messages:{
+                name: "<span style='color: red'>Please enter survey name<span>",
+                Startdate:'<span style="color: red">Enter survey start date</span>',
+                EndDate:{
+                    required:'<span style="color: red">Enter survey end date</span>',
+                    checktoday: '<span style="color: red">Enter date greater than today</span>'
+                },
+                status:'<span style="color: red">Enter survey status</span>'
+            }
+        })
+    </script>
 }

@@ -5,6 +5,31 @@
 }
 
 @*<h1>Edit</h1>*@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+    
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@Model.Category.SurveyId">
+                <span>Survey Subject Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a asp-action="Index" asp-route-id="@ViewBag.CategoryId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a >
+                <span>Edit Survey Subject</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <h4>Edit Survey Subject</h4>
 <hr />

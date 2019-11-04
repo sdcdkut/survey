@@ -6,6 +6,31 @@
 
 @*
 <h1>Create</h1>*@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+    
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Subject Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a asp-action="Index" asp-route-id="@ViewBag.CategoryId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a >
+                <span>Create Survey Subject</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <h4>Create SurveySubject</h4>
 <hr />
@@ -21,7 +46,7 @@
                         <input asp-for="SubjectName" style="width: auto;" class="form-control"/>
                         <span asp-validation-for="SubjectName" class="text-danger"></span>
                     </div>
-                    <p style="width: auto;margin-left: 3%"><a style="width: auto" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another properties</a></p>
+                    <p style="width: auto;margin-left: 3%"><a style="width: auto" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject properties</a></p>
                 </div>
             </div>
             @*<div class="form-group">

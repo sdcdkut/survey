@@ -64,6 +64,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
+            ViewBag.SurveyId = surveySubject.Category.SurveyId;
             return View(surveySubject);
         }
 
@@ -77,6 +78,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
             ViewData["CategoryId"] = id;/*new SelectList(_context.SurveyCategory, "Id", "Id");*/
             return View();
         }
@@ -107,7 +109,7 @@ namespace Surveyapp.Controllers
                 _context.Add(surveySubject);
                 await _context.SaveChangesAsync();
                 TempData["FeedbackMessage"] = $"{surveySubject.SubjectName} subject created successfully";
-                return RedirectToAction(nameof(Index), new { id = surveySubject.CategoryId });
+                return RedirectToAction(nameof(Create),"ResponseTypes", new { id = surveySubject.Id });
             }
             ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId);
             return View(surveySubject);
@@ -123,11 +125,12 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var surveySubject = await _context.SurveySubject.SingleOrDefaultAsync(x=>x.Id==id);
+            var surveySubject = await _context.SurveySubject.Include(x=>x.Category).SingleOrDefaultAsync(x=>x.Id==id);
             if (surveySubject == null)
             {
                 return NotFound();
             }
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
             ViewData["CategoryId"] = surveySubject.CategoryId/*new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId)*/;
             return View(surveySubject);
         }
@@ -191,7 +194,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
             var surveySubject = await _context.SurveySubject
                 .Include(s => s.Category)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -246,7 +249,7 @@ namespace Surveyapp.Controllers
             return View(subjects);
         }
 
-        public IActionResult Page_Load()
+        public IActionResult Page_Load_file()
         {
             //create document
             Document document = new Document();
@@ -286,8 +289,6 @@ namespace Surveyapp.Controllers
                 document.Close();
                 string filepath = Path.Combine(filefolder, "parsetest.pdf");
                 return PhysicalFile(filepath, MimeTypes.GetMimeType("parsetest.pdf"), Path.GetFileName(filepath));
-
-
 
             }
             catch (Exception exx)

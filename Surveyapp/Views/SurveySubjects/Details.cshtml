@@ -5,6 +5,31 @@
 }
 
 @*<h1>Details</h1>*@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+    
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Subject Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a asp-action="Index" asp-route-id="@Model.CategoryId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a >
+                <span>view Survey Subject</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <div>
     <h4>Survey Subject Details</h4>
@@ -57,13 +82,13 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.SubjectTypeId)
-        </dd>*@
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Category)
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Category.Id)
-        </dd>
+        </dd>*@
     </dl>
 </div>
 <div>

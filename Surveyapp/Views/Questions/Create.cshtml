@@ -26,7 +26,40 @@
           zoom: 200%;
         }
 </style>
-<h1>Create</h1>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="ResponseTypes" asp-route-id="@ViewBag.subjectid">
+                <span>Survey Response options</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-route-id="@ViewBag.subjectid">
+                <span>Questions</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>create Questions</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <h4>Question</h4>
 <hr />

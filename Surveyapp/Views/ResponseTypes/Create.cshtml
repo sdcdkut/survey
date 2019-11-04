@@ -22,7 +22,35 @@
           margin-left: 5%;
         } 
 </style>
-@*<h1>Create</h1>*@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-route-id="">
+                <span>Option Types</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Create Option Types</span>
+            </a>
+        </li>
+    </ol>
+</nav>
 
 <h4>Create Response options</h4>
 <hr />

@@ -74,10 +74,10 @@ namespace Surveyapp.Controllers
             {*/
                 _context.Add(survey);
                 await _context.SaveChangesAsync();
-                TempData["FeedbackMessage"] = $"survey added successfully";
-                return RedirectToAction(nameof(Index));
+                TempData["FeedbackMessage"] = $"survey added {survey.name} successfully";
+                return RedirectToAction(nameof(Create),"SurveyCategories",new {id = survey.Id });
             /*}*/
-            ViewData["SurveyerId"] = new SelectList(_context.Users, "Id", "Id", survey.SurveyerId);
+            ///ViewData["SurveyerId"] = new SelectList(_context.Users, "Id", "Id", survey.SurveyerId);
             return View(survey);
         }
 
@@ -137,7 +137,7 @@ namespace Surveyapp.Controllers
                         throw;
                     }
                 }
-                TempData["FeedbackMessage"] = $"survey edited successfully";
+                TempData["FeedbackMessage"] = $"{survey.name}  edited successfully";
                 return RedirectToAction(nameof(Index));
             }
             ViewData["SurveyerId"] = new SelectList(_context.Users, "Id", "Id", survey.SurveyerId);
@@ -175,7 +175,7 @@ namespace Surveyapp.Controllers
             var survey = await _context.Survey.FindAsync(id);
             _context.Survey.Remove(survey);
             await _context.SaveChangesAsync();
-            TempData["FeedbackMessage"] = $"survey deleted successfully";
+            TempData["FeedbackMessage"] = $"{survey.name} deleted successfully";
             return RedirectToAction(nameof(Index));
         }
 

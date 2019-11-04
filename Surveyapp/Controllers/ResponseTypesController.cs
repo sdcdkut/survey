@@ -23,6 +23,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: ResponseTypes
+        [NoDirectAccess]
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
@@ -71,6 +72,9 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
+            var Subject = _context.SurveySubject.Include(x=>x.Category).SingleOrDefault(x => x.Id == id);
+            ViewBag.SurveyId = Subject.Category.SurveyId;
+            ViewBag.CategoryId =Subject.Category.Id;
             ViewBag.SubjectId = id;
             //ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id");
             return View();
@@ -92,7 +96,10 @@ namespace Surveyapp.Controllers
             {
                 for (int i = 0; i < responseDictionary.Length; i++)
                 {
-                    respDictonary.Add((i+1).ToString(), responseDictionary[i]);
+                    if (responseDictionary[i] != null)
+                    {
+                        respDictonary.Add((i+1).ToString(), responseDictionary[i]);
+                    }
                 }
                 /*var dictionary = responseDictionary.ToDictionary(item => item.Key,
                     item => item.Value);*/
@@ -106,7 +113,7 @@ namespace Surveyapp.Controllers
                     _context.Add(responseTypes);
                     await _context.SaveChangesAsync();
                     TempData["FeedbackMessage"] = $"survey responses added successfully";
-                    return RedirectToAction(nameof(Index),new {id=responseTypes.SubjectId});
+                    return RedirectToAction(nameof(Create),"Questions",new {id=responseTypes.SubjectId});
             }
             /*else
             {
@@ -148,12 +155,14 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var responseType = await _context.ResponseType.FindAsync(id);
+            var responseType = await _context.ResponseType.Include(x=>x.Subject.Category).SingleOrDefaultAsync(x=>x.Id == id);
             if (responseType == null)
             {
                 return NotFound();
             }
 
+            ViewBag.SurveyId = responseType.Subject.Category.SurveyId;
+            ViewBag.CategoryId = responseType.Subject.CategoryId;
             ViewBag.typeDictonary = responseType.ResponseDictionary;
             ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id", responseType.SubjectId);
             return View(responseType);
@@ -221,13 +230,14 @@ namespace Surveyapp.Controllers
             }
 
             var responseType = await _context.ResponseType
-                .Include(r => r.Subject)
+                .Include(r => r.Subject.Category)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (responseType == null)
             {
                 return NotFound();
             }
-
+            ViewBag.SurveyId = responseType.Subject.Category.SurveyId;
+            ViewBag.CategoryId = responseType.Subject.CategoryId;
             return View(responseType);
         }
 
