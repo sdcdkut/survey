@@ -113,6 +113,10 @@ namespace Surveyapp.Controllers
                     _context.Add(responseTypes);
                     await _context.SaveChangesAsync();
                     TempData["FeedbackMessage"] = $"survey responses added successfully";
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return RedirectToAction("_CreatePartial", "Questions", new { id = responseTypes.Id,subjectId = responseTypes.SubjectId });
+                    }
                     return RedirectToAction(nameof(Create),"Questions",new {id=responseTypes.SubjectId});
             }
             /*else
@@ -257,6 +261,12 @@ namespace Surveyapp.Controllers
         private bool ResponseTypeExists(int id)
         {
             return _context.ResponseType.Any(e => e.Id == id);
+        }
+
+        public IActionResult _CreatePartial(int id)
+        {
+            ViewBag.SubjectId = id;
+            return PartialView(new ResponseType());
         }
     }
 }

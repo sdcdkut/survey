@@ -60,33 +60,6 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
             }
-            // if (await _roleManager.RoleExistsAsync("Admin") == false)
-            // {
-            //     IdentityResult Admin = await _roleManager
-            //         .CreateAsync(new IdentityRole
-            //         {
-            //             Name = "Admin",
-            //         });
-            // }
-
-            // if (await _roleManager.RoleExistsAsync("Employer") == false)
-            // {
-            //     IdentityResult Surveyor = await _roleManager
-            //         .CreateAsync(new IdentityRole
-            //         {
-            //             Name = "Surveyor",
-            //         });
-            // }
-
-            // if (await _roleManager.RoleExistsAsync("Freelancer") == false)
-            // {
-
-            //     IdentityResult Surveyee = await _roleManager
-            //         .CreateAsync(new IdentityRole
-            //         {
-            //             Name = "Surveyee",
-            //         });
-            // }
 
             returnUrl = returnUrl ?? Url.Content("~/");
 
@@ -106,7 +79,8 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+                ApplicationUser appUser = await _userManager.FindByEmailAsync(Input.Email);
+                var result = await _signInManager.PasswordSignInAsync(/*Input.Email*/appUser, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");

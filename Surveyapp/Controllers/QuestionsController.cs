@@ -113,6 +113,10 @@ namespace Surveyapp.Controllers
                 
                 await _context.SaveChangesAsync();
                 TempData["FeedbackMessage"] = $"Question(s) added successfully";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return RedirectToAction("_SuccessSurveySetupComplete", new { id=SubjectId });
+                }
                 return RedirectToAction(nameof(Index),new {id=SubjectId});
             }
             //}
@@ -248,6 +252,10 @@ namespace Surveyapp.Controllers
             _context.Question.Remove(question);
             await _context.SaveChangesAsync();
             TempData["FeedbackMessage"] = $"Question deleted successfully";
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return RedirectToAction("_CreatePartial", "Questions");
+            }
             return RedirectToAction(nameof(Index),new{id=question.SubjectId});
         }
     
@@ -280,5 +288,21 @@ namespace Surveyapp.Controllers
             return View(questions);
         }
 
+        public IActionResult _CreatePartial(int id, int subjectid)
+        {
+            ViewBag.subjectid = subjectid;
+            ViewBag.ResponseTypeId = id;
+           return PartialView(new Question());
+        }
+        public IActionResult _SuccessSurveySetupComplete(int id)
+        {
+            ViewBag.subjectid = id;
+            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x=>x.SurveySubjects.Any(y=>y.Id==id))?.SurveyId;
+            ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.CategoryId;
+            ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x=>x.Id==id)?.SubjectName;
+            ViewBag.ResponType = _context.ResponseType.Count(x=>x.Subject.Id == id);
+            var surveyContext = _context.Question.Include(q => q.ResponseType).Include(q => q.Subject).Where(x=>x.SubjectId == id);
+            return PartialView("_SuccessSurveySetupComplete",surveyContext);
+        }
     }
 }

@@ -34,9 +34,8 @@
     </ol>
 </nav>
 
-<h4>ResponseType</h4>
 <hr />
-<h2 style="color:red">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
+<h2 style="color:red;background-color: #f3f6cf">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
 <div class="row">
     <div class="col-md-7">
         <form asp-action="Edit">
@@ -55,6 +54,7 @@
         <div class="wrapper">
                     @foreach (var responses in Model.ResponseDictionary.OrderBy(x=>x.Key))
                     {
+                        /*check the first respond option*/
                         if ((int.Parse(responses.Key))==1)
                         {
                             <div class="col-md-12" style="display: flex;">
@@ -73,7 +73,7 @@
                                     <input class="form-control" value="@responses.Value" name="responseDictionary" placeholder="Input response option"/>
                                 </div>
                                 <div style="display: flex" class="col-md-8">
-                                    <p ><a href="javascript:void(0);" onclick="addresponsefield(this)" style="zoom: 200%" title="Add response option" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>
+                                    <p style="margin-right: 4%"><a href="javascript:void(0);" onclick="addresponsefield(this)" style="zoom: 200%" title="Add response option" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>
                                     <p ><a href="javascript:void(0);" title="Remove option field" style="zoom: 200%" class="remove_field new_minus_response_field_button fas fa-minus-circle"></a></p>
                                     @*<p class="col-md-8"><a href="javascript:void(0);" onclick="addresponsefield(this)" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>*@
                                 </div>
@@ -92,8 +92,6 @@
                         
 
                     }
-                @*<label asp-for="ResponseDictionary" class="control-label"></label>
-                <input asp-for="ResponseDictionary" class="form-control"/>*@
                 <span asp-validation-for="ResponseDictionary" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -123,7 +121,7 @@
                                   '<input class="form-control" required="required" name="responseDictionary" placeholder="Input response option" />' +
                                    '</div>' +
                                    '<div style="display: flex" class="col-md-8"> ' +
-                                   '<p ><a href="javascript:void(0);" onclick="addresponsefield(this)" title="Add response option" style="zoom: 200%" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>' +
+                                   '<p style="margin-right: 4%"><a href="javascript:void(0);" onclick="addresponsefield(this)" title="Add response option" style="zoom: 200%" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>' +
                                    '<p ><a href="javascript:void(0);" title="Remove option field" style="zoom: 200%" class="remove_field new_minus_response_field_button fas fa-minus-circle"></a></p>' +
                                    '</div>' +
                                     '</div>');

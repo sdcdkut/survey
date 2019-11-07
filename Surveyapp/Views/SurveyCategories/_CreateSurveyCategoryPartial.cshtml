@@ -1,0 +1,49 @@
+@model Surveyapp.Models.SurveyCategory
+
+<div class="row" style="margin-left: 10%" id="create-surveycategory-partial">
+    <div class="col-md-12">
+        @if (TempData["FeedbackMessage"] != null)
+        {
+            <div id="FeedbackMessage" class="alert alert-info alert-dismissible fade show" role="alert">
+                @TempData["FeedbackMessage"]!
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        <h4>Create Survey Subject Category</h4>
+        <form asp-action="Create" data-ajax="true" id="creat-surveycategorypartial-form"
+          data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail"
+          data-ajax-success="success" data-ajax-update="#create-surveycategory-partial"
+          data-ajax-mode="replace">
+            <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" required="required" asp-for="SurveyId" value="@ViewBag.SurveyId"/>
+            <div class="form-group">
+                <label asp-for="CategoryName" class="control-label"></label>
+                <input asp-for="CategoryName" class="form-control"/>
+                <span asp-validation-for="CategoryName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/jquery/jquery-ui.js"></script>
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+    setTimeout(function () {
+        $("#FeedbackMessage").hide("slide", { direction: "right" }, 1000);
+    }, 3000);
+    function success() {
+      console.log("success")
+    }
+    function fail() {
+      alert("Creation failed")
+    }
+</script>
+

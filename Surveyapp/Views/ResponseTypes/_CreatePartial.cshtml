@@ -1,4 +1,4 @@
-﻿@model Surveyapp.Models.ResponseType
+@model Surveyapp.Models.ResponseType
 
 @{
     ViewData["Title"] = "Create";
@@ -22,42 +22,24 @@
           margin-left: 5%;
         } 
 </style>
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="Surveys">
-                <span>My Surveys</span>
-            </a>
-        </li>
-        <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
-                <span>Survey Categories</span>
-            </a>
-        </li>
-        <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
-                <span>Survey Subject</span>
-            </a>
-        </li>
-        <li class="breadcrumb-item">
-            <a asp-action="Index" asp-route-id="@ViewBag.SubjectId">
-                <span>Option Types</span>
-            </a>
-        </li>
-        <li class="breadcrumb-item active">
-            <a>
-                <span>Create Option Types</span>
-            </a>
-        </li>
-    </ol>
-</nav>
-
-@*<h4>Create Response options</h4>*@
-<hr />
-<h2 style="color:red;background-color: #f3f6cf">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
-<div class="row">
-    <div class="col-md-8">
-        <form asp-action="Create">
+<div class="row col-md-12" style="margin-left: -9%" id="create-surveyresponse-partial">
+    <div class="col-md-12">
+        @if (TempData["FeedbackMessage"] != null)
+        {
+            <div id="FeedbackMessage" class="alert alert-info alert-dismissible fade show" role="alert">
+                @TempData["FeedbackMessage"]!
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        <h1>Add survey response options</h1>
+        <h2 style="color:red;background-color: #f3f6cf">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
+        <form asp-action="Create" data-ajax="true" id="creat-surveyresponsepartial-form"
+          data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail"
+          data-ajax-success="success" data-ajax-update="#create-surveyresponse-partial"
+          data-ajax-mode="replace">
+            <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="wrapper">
                 <div class="form-group">
@@ -67,14 +49,7 @@
                 </div>
                 <div class="form-group">
                     <input type="hidden" required="required" name="SubjectId" value="@ViewBag.SubjectId">
-                    @*<label asp-for="SubjectId" class="control-label"></label>
-                    <select asp-for="SubjectId" class="form-control" asp-items="ViewBag.SubjectId"></select>*@
                 </div>
-                @*<div class="form-group">
-                    <label asp-for="ResponseDictionary" class="control-label"></label>
-                    <input asp-for="ResponseDictionary" class="form-control" />
-                    <span asp-validation-for="ResponseDictionary" class="text-danger"></span>
-                </div>*@
                 <div class="col-md-12" style="display: flex;">
                     <label class="control-label">Response Options</label>
                     <div class="form-group col-md-4">
@@ -89,14 +64,13 @@
         </form>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index" asp-route-id="@ViewBag.SubjectId">Back to List</a>
-</div>
-
-@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery/jquery-ui.js"></script>
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
+    setTimeout(function () {
+        $("#FeedbackMessage").hide("slide", { direction: "right" }, 1000);
+    }, 3000);
     var max_fields = 10;
     var x = 1; //Initial input field is set to 1
     function addresponsefield(element){
@@ -118,25 +92,16 @@
         $(element).closest(".wrapper").find('.form-group:last-child input').focus();
         }
             }
-    /*$(".add_fields").click(function(e){
-            e.preventDefault();
-     //Check maximum allowed input fields
-            if(x < max_fields){ 
-                x++; //input field increment
-     //add input field
-            $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
-             '<label class="control-label">Response Options</label><div class="form-group col-md-4">' +
-              '<input class="form-control" name="responseDictionary" placeholder="Input response option" /></div>' +
-               '<p class="col-md-8"><a href="javascript:void(0);" class="remove_field btn btn-sm btn-secondary">Remove option</a></p>' +
-                '</div>');
-            }
-        });*/
-     
         //when user click on remove button
         $(".wrapper").on("click",".remove_field", function(e){ 
                 e.preventDefault();
          $(this).closest('div.form-group').remove(); //remove inout field
          x--; //inout field decrement
             });
+    function success() {
+      console.log("success")
+    }
+    function fail() {
+      alert("Creation failed")
+    }
 </script>
-}

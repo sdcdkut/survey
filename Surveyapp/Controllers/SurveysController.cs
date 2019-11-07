@@ -70,14 +70,18 @@ namespace Surveyapp.Controllers
             survey.SurveyerId = _usermanager.GetUserId(User);
             survey.approvalStatus = "NotApproved";
             //survey.status = survey.status.ToString();
-            /*if (ModelState.IsValid)
-            {*/
+            if (survey != null)
+            {
                 _context.Add(survey);
                 await _context.SaveChangesAsync();
                 TempData["FeedbackMessage"] = $"survey added {survey.name} successfully";
+                var ajax = Request.Headers["X-Requested-With"];
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return RedirectToAction("_CreateSurveyCategoryPartial", "SurveyCategories", new { id = survey.Id });
+                }
                 return RedirectToAction(nameof(Create),"SurveyCategories",new {id = survey.Id });
-            /*}*/
-            ///ViewData["SurveyerId"] = new SelectList(_context.Users, "Id", "Id", survey.SurveyerId);
+            }
             return View(survey);
         }
 
@@ -224,6 +228,10 @@ namespace Surveyapp.Controllers
         {
             throw new NotImplementedException();
         }
-        
+
+        public IActionResult CreatePartal()
+        {
+            return PartialView("_Createsurvey", new Survey());
+        }
     }
 }

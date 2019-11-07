@@ -1,0 +1,114 @@
+@model Surveyapp.Models.SurveySubject
+
+
+<div class="row" style="margin-left: -14%" id="create-surveysubject-partial">
+    <div class="col-md-12">
+        @if (TempData["FeedbackMessage"] != null)
+        {
+            <div id="FeedbackMessage" class="alert alert-info alert-dismissible fade show" role="alert">
+                @TempData["FeedbackMessage"]!
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+        <h4>Create SurveySubject</h4>
+        <form asp-action="Create" data-ajax="true" id="creat-surveysubjectpartial-form"
+                  data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail"
+                  data-ajax-success="success" data-ajax-update="#create-surveysubject-partial"
+                  data-ajax-mode="replace">
+            <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" required="required" name="CategoryId" value="@ViewBag.CategoryId">
+            <div class="wrapper">
+                <div style="display: flex;">
+                    <label style="margin-right: 3%" asp-for="SubjectName" class="control-label"></label>
+                    <div class="form-group">
+                        <input asp-for="SubjectName" style="width: auto;" class="form-control"/>
+                        <span asp-validation-for="SubjectName" class="text-danger"></span>
+                    </div>
+                    <p style="width: auto;margin-left: 3%"><a style="width: auto" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject properties</a></p>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/jquery/jquery-ui.js"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script >
+    setTimeout(function () {
+        $("#FeedbackMessage").hide("slide", { direction: "right" }, 1000);
+    }, 3000);
+    var max_fields = 10;
+    var x = 1;
+    function addpropertyfield(element){
+                //Check maximum allowed input fields
+                if(x < max_fields){
+                    x++; //input field increment
+                    //add input field
+                    $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
+                      '<div class="form-group col-md-7" style="display: flex;">' +
+                     '<input type="hidden" required name="otherproperty">' +
+                      '<label style="font-weight: bolder" for="">Property Name</label>' +
+                       '<input class="form-control" style="width: auto" name="PropertyName" required placeholder="Property Name" />' +
+                        '<span style="font-weight: bolder;margin: 9px 9px">:</span>' +
+                         '<label style="font-weight: bolder" for="">Property Value</label>' +
+                      '<input class="form-control" name="PropertyValue" style="width: auto" required placeholder="Property Value" />' +
+                      '<p class="col-md-2"><a href="javascript:void(0);" onclick="addpropertyfield(this)" style="zoom: 200%" title="Add another property field" class="add_fields fas fa-plus-circle"></a></p>'+
+                      '<p class="col-md-1"><a href="javascript:void(0);" title="Remove property field" style="zoom: 200%" class="remove_field fas fa-minus-circle"></a></p>' +
+                       '</div>'+
+                       '</div>');
+                 //add focus on last input
+                $(element).closest(".wrapper").find('.form-group:last-child input').focus()
+                }
+            }
+    //when user click on remove button
+    $(".wrapper").on("click",".remove_field", function(e){ 
+        e.preventDefault();
+        $(this).closest('div.form-group').remove(); //remove input field
+        x--; //inout field decrement
+        });
+    $(".wrapper").on("input","input[name='PropertyName'], input[name='PropertyValue']", function(e){ 
+        var PropertyName = $(this).closest('div.form-group').find('input[name="PropertyName"]').val();
+        var PropertyValue = $(this).closest('div.form-group').find('input[name="PropertyValue"]').val();
+        var otherproperty = $(this).closest('div.form-group').find('input[name="otherproperty"]').val(PropertyName+"|"+PropertyValue);
+        //console.log($(this).closest('div.form-group').find('input[name="otherproperty"]').val())
+        $(this).next('span.validatemessage').remove();
+        //console.log($(this).next('span.validatemessage').text())
+     });
+    //check if form is valid onsubmit
+    $('form#new-subject-form').submit(function(e) { 
+        var thisform = this;
+      e.preventDefault();
+      var submitform = false;
+      if($(this).valid()) {
+          submitform = true;
+      }
+      var Propertyinputs= $(".wrapper").find("input[name='PropertyName'], input[name='PropertyValue']");
+      $.each(Propertyinputs,function(key,value) {
+          if ($(value).val().length <=0 || $(value).val()== null){
+              $(this).next('span.validatemessage').remove();
+              $(value).after("<span class='validatemessage' style='color: red'>fill data</span>");
+             submitform = false;
+          }
+          else {
+              submitform = true;
+          }
+      });
+      if (submitform){
+        //$(this).unbind('submit').submit();
+        e.currentTarget.submit();
+      }
+    })
+    function success() {
+      console.log("success")
+    }
+    function fail() {
+      alert("Creation failed")
+    }
+</script>

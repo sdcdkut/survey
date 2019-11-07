@@ -16,6 +16,7 @@ using Surveyapp.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Surveyapp.Models;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Surveyapp
 {
@@ -79,6 +80,11 @@ namespace Surveyapp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
             app.UseAuthentication();
 

@@ -82,6 +82,10 @@ namespace Surveyapp.Controllers
                 _context.Add(surveyCategory);
                 await _context.SaveChangesAsync();
                 TempData["FeedbackMessage"] = $"survey category added successfully";
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return RedirectToAction("_CreatePartial", "SurveySubjects", new { id = surveyCategory.Id });
+                }
                 return RedirectToAction(nameof(Create),"SurveySubjects",new {id=surveyCategory.Id});
             }
             ViewData["SurveyId"] = new SelectList(_context.Survey, "Id", "Id", surveyCategory.SurveyId);
@@ -182,5 +186,13 @@ namespace Surveyapp.Controllers
         {
             return _context.SurveyCategory.Any(e => e.Id == id);
         }
+
+        public IActionResult _CreateSurveyCategoryPartial(int id)
+        {
+            IQueryable<SurveyCategory> surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == id);
+            ViewBag.SurveyId = id;
+            return PartialView(new SurveyCategory());
+        }
+
     }
 }
