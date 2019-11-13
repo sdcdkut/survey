@@ -34,31 +34,72 @@
     {
     @foreach (var item in Model)
         {
-            <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.SubjectName)
-            </td>
-            <td>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    // check if user has taken survey on subject
-                    if (_context.SurveyResponse.Where(x => x.question.Subject.Id == item.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
-                    {
-                        <button class="btn-block btn-sm btn btn-danger" disabled="disabled">survey Already taken</button>
-                    }
-                    else
-                    {
-                        <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
-                    }
-                }
-                else
-                {
-                    <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
-                }
-                @*@Html.DisplayFor(modelItem => item.EndDate)*@
-
-            </td>
-        </tr>
+            if (item.OtherProperties != null)
+            {
+                <tr data-toggle="popover" data-trigger="hover" title="@item.SubjectName's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
+                                                                                                                              {
+                                                                                                                                  <dt >
+                                                                                                                                    @otherProp.Key
+                                                                                                                                    </dt>
+                                                                                                                                      <dd>
+                                                                                                                                    @otherProp.Value
+                                                                                                                                    </dd>
+                                                                                                                              }
+                                                                                                                </dl>">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SubjectName)
+                    </td>
+                    <td>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            // check if user has taken survey on subject
+                            if (_context.SurveyResponse.Where(x => x.question.Subject.Id == item.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
+                            {
+                                <button class="btn-block btn-sm btn btn-danger" disabled="disabled">survey Already taken</button>
+                            }
+                            else
+                            {
+                                <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                            }
+                        }
+                        else
+                        {
+                            <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                        }
+                        @*@Html.DisplayFor(modelItem => item.EndDate)*@
+        
+                    </td>
+                </tr>
+            }
+            else
+            {
+                 <tr >
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SubjectName)
+                    </td>
+                    <td>
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            // check if user has taken survey on subject
+                            if (_context.SurveyResponse.Where(x => x.question.Subject.Id == item.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
+                            {
+                                <button class="btn-block btn-sm btn btn-danger" disabled="disabled">survey Already taken</button>
+                            }
+                            else
+                            {
+                                <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                            }
+                        }
+                        else
+                        {
+                            <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                        }
+                        @*@Html.DisplayFor(modelItem => item.EndDate)*@
+        
+                    </td>
+                </tr>
+            }
+            
         }
     }
     @*check if survey is of type open*@
@@ -66,16 +107,51 @@
     {
         @foreach (var item in Model)
                 {
-                    <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.SubjectName)
-                    </td>
-                    <td>
-                        <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
-                    </td>
-                </tr>
+                    if (item.OtherProperties != null)
+                    {
+                        <tr data-toggle="popover" data-trigger="hover" title="@item.SubjectName's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
+                                                                                                                                                  {
+                                                                                                                                                      <dt >
+                                                                                                                                                        @otherProp.Key
+                                                                                                                                                        </dt>
+                                                                                                                                                          <dd>
+                                                                                                                                                        @otherProp.Value
+                                                                                                                                                        </dd>
+                                                                                                                                                  }
+                                                                                                                                    </dl>">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.SubjectName)
+                            </td>
+                            <td>
+                                <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.SubjectName)
+                            </td>
+                            <td>
+                                <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
+                            </td>
+                        </tr>
+                    }
+                    
                 }
     }
     
     </tbody>
 </table>
+@section Scripts{
+    <script >
+    $("[data-toggle=popover]").popover({
+        animation: false,
+        html: true,
+        sanitize: false,
+        placement: 'bottom',
+        trigger: 'hover'
+    });
+    </script>
+}

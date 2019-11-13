@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,14 +16,16 @@ namespace Surveyapp.Controllers
     public class SurveyCategoriesController : Controller
     {
         private readonly SurveyContext _context;
+        private readonly UserManager<ApplicationUser> _usermanager;
 
-        public SurveyCategoriesController(SurveyContext context)
+        public SurveyCategoriesController(SurveyContext context, UserManager<ApplicationUser> usermanager)
         {
             _context = context;
+            _usermanager = usermanager;
         }
 
         // GET: SurveyCategories
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Index(int? id)
         {
             if (id== null)
@@ -32,6 +35,12 @@ namespace Surveyapp.Controllers
 
             ViewBag.SurveyId = id;
             var surveyContext = _context.SurveyCategory.Include(s => s.Survey).Where(x=>x.SurveyId==id);
+            var survey = _context.Survey.SingleOrDefault(x => x.Id == id);
+            var userId = _usermanager.GetUserId(User);
+            if (survey?.SurveyerId != userId)
+            {
+                return StatusCode(403);
+            }
             return View(await surveyContext.ToListAsync());
         }
 
@@ -56,14 +65,19 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyCategories/Create
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public IActionResult Create(int? id)
         {
             if (id==null)
             {
                 return NotFound();
             }
-
+            var survey = _context.Survey.SingleOrDefault(x => x.Id == id);
+            var userId = _usermanager.GetUserId(User);
+            if (survey?.SurveyerId != userId)
+            {
+                return StatusCode(403);
+            }
             ViewBag.SurveyId = id;
             //ViewData["SurveyId"] = new SelectList(_context.Survey, "Id", "Id");
             return View();
@@ -72,11 +86,12 @@ namespace Surveyapp.Controllers
         // POST: SurveyCategories/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CategoryName,SurveyId")] SurveyCategory surveyCategory)
         {
+            
             if (ModelState.IsValid)
             {
                 _context.Add(surveyCategory);
@@ -88,12 +103,13 @@ namespace Surveyapp.Controllers
                 }
                 return RedirectToAction(nameof(Create),"SurveySubjects",new {id=surveyCategory.Id});
             }
+            
             ViewData["SurveyId"] = new SelectList(_context.Survey, "Id", "Id", surveyCategory.SurveyId);
             return View(surveyCategory);
         }
 
         // GET: SurveyCategories/Edit/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -106,6 +122,12 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+
+            var survey = await _context.Survey.FindAsync(surveyCategory.SurveyId);
+            if (survey.SurveyerId != _usermanager.GetUserId(User))
+            {
+                return StatusCode(403);
+            }
             ViewBag.SurveyId = surveyCategory.SurveyId;
             //ViewData["SurveyId"] = new SelectList(_context.Survey, "Id", "Id", surveyCategory.SurveyId);
             return View(surveyCategory);
@@ -114,7 +136,7 @@ namespace Surveyapp.Controllers
         // POST: SurveyCategories/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryName,SurveyId")] SurveyCategory surveyCategory)
@@ -150,7 +172,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveyCategories/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -165,12 +187,17 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+            var survey = await _context.Survey.FindAsync(surveyCategory.SurveyId);
+            if (survey.SurveyerId != _usermanager.GetUserId(User))
+            {
+                return StatusCode(403);
+            }
 
             return View(surveyCategory);
         }
 
         // POST: SurveyCategories/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -189,6 +216,12 @@ namespace Surveyapp.Controllers
 
         public IActionResult _CreateSurveyCategoryPartial(int id)
         {
+            var survey = _context.Survey.SingleOrDefault(x => x.Id == id);
+            var userId = _usermanager.GetUserId(User);
+            if (survey?.SurveyerId != userId)
+            {
+                return StatusCode(403);
+            }
             IQueryable<SurveyCategory> surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == id);
             ViewBag.SurveyId = id;
             return PartialView(new SurveyCategory());

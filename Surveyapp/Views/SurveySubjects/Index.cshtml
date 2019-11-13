@@ -3,6 +3,11 @@
 @{
     ViewData["Title"] = "Survey Subject";
 }
+<style>
+    .popover{
+            max-width:100%!important;
+        }
+</style>
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
@@ -58,28 +63,44 @@
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
+    if (item.OtherProperties !=null)
+    {
+        <tr data-toggle="popover" data-trigger="hover" title="@item.SubjectName's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
+                                                                                                                      {
+                                                                                                                          <dt >
+                                                                                                                            @otherProp.Key
+                                                                                                                            </dt>
+                                                                                                                              <dd>
+                                                                                                                            @otherProp.Value
+                                                                                                                            </dd>
+                                                                                                                      }
+                                                                                                        </dl>">
             <td>
+                    @Html.DisplayFor(modelItem => item.SubjectName)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" title="edit @item.SubjectName"><i class="fa fa-edit"></i></a> |
+                    <a asp-action="Details" asp-route-id="@item.Id" title="view @item.SubjectName details"><i class="fa fa-eye"></i></a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id" title="delete @item.SubjectName"><i class="fa fa-trash-alt"></i></a> |
+                    <a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id" title="view or add response to @item.SubjectName">Response options</a> |
+                    @if (item.ResponseTypes?.ResponseName!= null)
+                    {
+                        <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="view or add question to @item.SubjectName">Manage questions</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="Add response options first in-order to add question">Add question</a>
+                    }
+                    
+                </td>
+            </tr>
+    }
+    else
+    {
+        <tr >
+        <td>
                 @Html.DisplayFor(modelItem => item.SubjectName)
             </td>
-            @*<td>
-                @Html.DisplayFor(modelItem => item.StateCorporation)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Chairpersion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AppointmentDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndofTerm)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.SubjectTypeId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category.Id)
-            </td>*@
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" title="edit @item.SubjectName"><i class="fa fa-edit"></i></a> |
                 <a asp-action="Details" asp-route-id="@item.Id" title="view @item.SubjectName details"><i class="fa fa-eye"></i></a> |
@@ -92,11 +113,24 @@
                 else
                 {
                     <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="Add response options first in-order to add question">Add question</a>
-                    @*<p><small title="Add response options first in-order to add question">Add question</small></p>*@
                 }
                 
             </td>
         </tr>
+    }
+    
 }
     </tbody>
 </table>
+
+@section Scripts{
+    <script >
+    $("[data-toggle=popover]").popover({
+        animation: false,
+        html: true,
+        sanitize: false,
+        placement: 'bottom',
+        trigger: 'hover'
+    });
+    </script>
+}

@@ -13,19 +13,19 @@
         }
         <h4>Create Survey Subject Category</h4>
         <form asp-action="Create" data-ajax="true" id="creat-surveycategorypartial-form"
-          data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail"
-          data-ajax-success="success" data-ajax-update="#create-surveycategory-partial"
-          data-ajax-mode="replace">
+              data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail"
+              data-ajax-success="success" data-ajax-update="#create-surveycategory-partial"
+              data-ajax-mode="replace">
             <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" required="required" asp-for="SurveyId" value="@ViewBag.SurveyId"/>
+            <input type="hidden" required="required" asp-for="SurveyId" value="@ViewBag.SurveyId" />
             <div class="form-group">
                 <label asp-for="CategoryName" class="control-label"></label>
-                <input asp-for="CategoryName" class="form-control"/>
+                <input asp-for="CategoryName" class="form-control" />
                 <span asp-validation-for="CategoryName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary"/>
+                <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -34,16 +34,17 @@
 
 <script src="~/lib/jquery/dist/jquery.js"></script>
 <script src="~/lib/jquery/jquery-ui.js"></script>
-@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
 <script>
     setTimeout(function () {
         $("#FeedbackMessage").hide("slide", { direction: "right" }, 1000);
     }, 3000);
     function success() {
-      console.log("success")
+        console.log("success")
     }
     function fail() {
-      alert("Creation failed")
+        alert("Creation failed")
     }
 </script>
 

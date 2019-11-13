@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
@@ -33,20 +34,25 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Details/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-
+            var userId = _usermanager.GetUserId(User);
             var survey = await _context.Survey
                 .Include(s => s.Surveyer)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (survey == null)
             {
                 return NotFound();
+            }
+
+            if (survey.SurveyerId != userId)
+            {
+                return StatusCode(403);
             }
 
             return View(survey);
@@ -86,7 +92,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Surveys/Edit/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -94,11 +100,15 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-
             var survey = await _context.Survey.FindAsync(id);
             if (survey == null)
             {
                 return NotFound();
+            }
+            var userId = _usermanager.GetUserId(User);
+            if (survey.SurveyerId != userId)
+            {
+                return StatusCode(403);
             }
             ViewData["SurveyerId"] = new SelectList(_context.Users, "Id", "Id", survey.SurveyerId);
             return View(survey);
@@ -107,7 +117,7 @@ namespace Surveyapp.Controllers
         // POST: Surveys/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize(Roles = "Surveyor")]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -123,33 +133,41 @@ namespace Surveyapp.Controllers
             }
             //ModelState.Remove<Survey>(x => x.SurveyerId);
             /*survey.SurveyerId = _usermanager.GetUserId(User);*/
-            if (ModelState.IsValid)
+            if (survey.SurveyerId ==_usermanager.GetUserId(User))
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    _context.Update(survey);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!SurveyExists(survey.Id))
+                    try
                     {
-                        return NotFound();
+                        _context.Update(survey);
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!SurveyExists(survey.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    TempData["FeedbackMessage"] = $"{survey.name}  edited successfully";
+                    return RedirectToAction(nameof(Index));
                 }
-                TempData["FeedbackMessage"] = $"{survey.name}  edited successfully";
-                return RedirectToAction(nameof(Index));
             }
+            else
+            {
+                return StatusCode(403);
+            }
+            
             ViewData["SurveyerId"] = new SelectList(_context.Users, "Id", "Id", survey.SurveyerId);
             return View(survey);
         }
 
         // GET: Surveys/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize(Roles = "Surveyor")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -165,22 +183,34 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+            var userId = _usermanager.GetUserId(User);
+            if (survey.SurveyerId != userId)
+            {
+                return StatusCode(403);
+            }
 
             return View(survey);
         }
 
         // POST: Surveys/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize(Roles = "Surveyor")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var survey = await _context.Survey.FindAsync(id);
-            _context.Survey.Remove(survey);
-            await _context.SaveChangesAsync();
-            TempData["FeedbackMessage"] = $"{survey.name} deleted successfully";
-            return RedirectToAction(nameof(Index));
+            if (survey.SurveyerId == _usermanager.GetUserId(User))
+            {
+                _context.Survey.Remove(survey);
+                await _context.SaveChangesAsync();
+                TempData["FeedbackMessage"] = $"{survey.name} deleted successfully";
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                return StatusCode(403);
+            }
         }
 
         private bool SurveyExists(int id)
@@ -199,7 +229,7 @@ namespace Surveyapp.Controllers
             surveyContext = surveyContext.Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any()))).Where(x=>x.approvalStatus=="Approved");
             return View(await surveyContext.ToListAsync());
         }
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveSurveys()
         {
@@ -207,7 +237,7 @@ namespace Surveyapp.Controllers
             return View(await surveyContext.ToListAsync());
         }
         
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ChangeApproval(int? id, string Approvalstate)
         {

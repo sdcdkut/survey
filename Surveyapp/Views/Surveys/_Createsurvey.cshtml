@@ -1,53 +1,54 @@
 @model Surveyapp.Models.Survey
-   <div class="modal-header">
-       <h4 class="modal-title"> new survey setup</h4>
-       <button type="button" class="close" data-dismiss="modal">&times;</button>
-   </div>
-   <div class="modal-body">
-       <div class="row" style="margin-left: 10%" id="create-survey-partial">
-           <div class="col-md-8">
-               <form asp-action="Create" data-ajax="true" id="creat-surveypartial-form"
-                     data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail" 
-                     data-ajax-success="success" data-ajax-update="#create-survey-partial"
-                     data-ajax-mode="replace">
-                   <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                   <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
-                   <div class="form-group">
-                       <label asp-for="name" class="control-label"></label>
-                       <input asp-for="name" class="form-control" />
-                       <span asp-validation-for="name" class="text-danger"></span>
-                   </div>
-                   <div class="form-group">
-                       <label asp-for="Startdate" class="control-label"></label>
-                       <input asp-for="Startdate" value="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control" />
-                       <span asp-validation-for="Startdate" class="text-danger"></span>
-                   </div>
-                   <div class="form-group">
-                       <label asp-for="EndDate" class="control-label"></label>
-                       <input asp-for="EndDate" min="@($"{DateTime.Now:yyyy-MM-dd}")" value="" class="form-control" />
-                       <span asp-validation-for="EndDate" class="text-danger"></span>
-                   </div>
-                   <div class="form-group">
-                       <label asp-for="status" class="control-label"></label>
-                       <select asp-for="status" class="form-control">
-                           <option value="Open">Open<small>(anounimous take is survey)</small></option>
-                           <option value="Closed" selected="selected">Closed<small>(login required for survey take)</small></option>
-                       </select>
-                       <span asp-validation-for="status" class="text-danger"></span>
-                   </div>
-                   <div class="form-group">
-                       <input type="submit" value="Create" class="btn btn-primary" />
-                   </div>
-               </form>
-           </div>
-       </div>
-   </div>
-   <div class="modal-footer"></div> 
+<div class="modal-header">
+    <h4 class="modal-title"> new survey setup</h4>
+    <button type="button" class="close" data-dismiss="modal">&times;</button>
+</div>
+<div class="modal-body">
+    <div class="row" style="margin-left: 10%" id="create-survey-partial">
+        <div class="col-md-8">
+            <form asp-action="Create" data-ajax="true" id="creat-surveypartial-form"
+                  data-ajax-loading="#spinner" data-ajax-method="POST" data-ajax-failure="fail"
+                  data-ajax-success="success" data-ajax-update="#create-survey-partial"
+                  data-ajax-mode="replace">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+                <div class="form-group">
+                    <label asp-for="name" class="control-label"></label>
+                    <input asp-for="name" class="form-control" />
+                    <span asp-validation-for="name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Startdate" class="control-label"></label>
+                    <input asp-for="Startdate" value="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control" />
+                    <span asp-validation-for="Startdate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="EndDate" class="control-label"></label>
+                    <input asp-for="EndDate" min="@($"{DateTime.Now:yyyy-MM-dd}")" value="" class="form-control" />
+                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="status" class="control-label"></label>
+                    <select asp-for="status" class="form-control">
+                        <option value="Open">Open<small>(anounimous take of survey)</small></option>
+                        <option value="Closed" selected="selected">Closed<small>(login required for survey take)</small></option>
+                    </select>
+                    <span asp-validation-for="status" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-footer"></div>
 
 
 <script src="~/lib/jquery/dist/jquery.js"></script>
-@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-<script >
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script>
 var today = "@($"{DateTime.Now:yyyy-MM-dd}")";
     jQuery.validator.addMethod("checktoday", function (value, element, params) {
             if (value<today) {

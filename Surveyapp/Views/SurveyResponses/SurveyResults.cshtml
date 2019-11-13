@@ -14,7 +14,7 @@
         </ol>
     </nav>
 <h4>Choose Subject Survey</h4>
-<table class="table">
+<table class="table table-hover table-striped" id="surveyresult-table">
     <thead>
         <tr>
             <th>
@@ -73,3 +73,8 @@
     }
     </tbody>
 </table>
+@section Scripts{
+    <script>
+        $("#surveyresult-table").DataTable();
+    </script>
+ }

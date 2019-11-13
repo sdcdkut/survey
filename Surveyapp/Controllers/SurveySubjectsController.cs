@@ -41,13 +41,20 @@ namespace Surveyapp.Controllers
             }
 
             ViewBag.CategoryId = id;
-            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
+            var surveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
+            ViewBag.SurveyId = surveyId;
             var surveyContext = _context.SurveySubject.Include(s => s.Category).Include(x => x.ResponseTypes).Where(x => x.CategoryId == id);
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(surveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             return View(await surveyContext.ToListAsync());
         }
 
         // GET: SurveySubjects/Details/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
@@ -63,15 +70,22 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+            var surveyId = surveySubject.Category.SurveyId;
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(surveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
 
-            ViewBag.SurveyId = surveySubject.Category.SurveyId;
+            ViewBag.SurveyId = surveyId;
             return View(surveySubject);
         }
 
         // GET: SurveySubjects/Create
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize]
-        public IActionResult Create(int? id)
+        public async Task<IActionResult> Create(int? id)
         {
             if (id == null)
             {
@@ -79,6 +93,12 @@ namespace Surveyapp.Controllers
             }
 
             ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(_context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             ViewData["CategoryId"] = id;/*new SelectList(_context.SurveyCategory, "Id", "Id");*/
             return View();
         }
@@ -86,7 +106,7 @@ namespace Surveyapp.Controllers
         // POST: SurveySubjects/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -120,7 +140,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects/Edit/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -134,7 +154,14 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-            ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
+            var surveyId = surveySubject.Category.SurveyId;
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(surveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
+            ViewBag.SurveyId = surveyId;
             ViewData["CategoryId"] = surveySubject.CategoryId/*new SelectList(_context.SurveyCategory, "Id", "Id", surveySubject.CategoryId)*/;
             return View(surveySubject);
         }
@@ -142,7 +169,7 @@ namespace Surveyapp.Controllers
         // POST: SurveySubjects/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -206,12 +233,19 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+            var surveyId = surveySubject.Category.SurveyId;
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(surveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
 
             return View(surveySubject);
         }
 
         // POST: SurveySubjects/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -229,8 +263,8 @@ namespace Surveyapp.Controllers
             return _context.SurveySubject.Any(e => e.Id == id);
         }
 
-        [NoDirectAccess]
-        public IActionResult SurveySubjects(int? id)
+        //[NoDirectAccess]
+        public async Task<IActionResult> SurveySubjects(int? id)
         {
             if (id == null)
             {
@@ -240,15 +274,21 @@ namespace Surveyapp.Controllers
             var surveyStatus = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id))?.status;
             var subjects = _context.SurveySubject.Where(x => x.CategoryId == id).Include(x=>x.Category.Survey)
                 .Where(x => x.Questions.Any()).Where(x => EF.Functions.DateDiffDay(x.Category.Survey.Startdate, DateTime.Now) > 0 && EF.Functions.DateDiffDay(DateTime.Now, x.Category.Survey.EndDate) > 0);
+            var surveyerId = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id))?.SurveyerId;
+            var useId = _usermanager.GetUserId(User);
+            
             /*if (surveyStatus == "Open")
             {
                 subjects = subjects;
-            }
+            }*/
 
             if (surveyStatus == "Closed")
             {
-                
-            }*/
+                if (surveyerId == useId)
+                {
+                    return StatusCode(403);
+                }
+            }
             //throw new NotImplementedException();
             return View(subjects);
         }
@@ -257,6 +297,12 @@ namespace Surveyapp.Controllers
         {
             var surveySubject = _context.SurveySubject.Where(x => x.CategoryId == id);
             ViewBag.CategoryId = id;
+            var surveyerId = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id))?.SurveyerId;
+            var useId = _usermanager.GetUserId(User);
+            if (surveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             return PartialView(new SurveySubject());
         }
 

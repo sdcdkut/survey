@@ -102,21 +102,32 @@ else
             <h5 style="margin-left: 5px;margin-right: 5px">OR</h5>
             int catgId = int.Parse(ViewBag.CategoryId.ToString());
             var sujbects = _context.ResponseType.Where(x=>x.Subject.CategoryId == catgId ).Select(x=>new {x.Subject.Id,x.Subject.SubjectName});
-            <div style="margin-left: 10px">
-                <ul class="select">
-                    <li>
-                        Choose other subject Options responses
-                        <ul style="list-style: none">
-                            @*<option value="">select subject</option>*@
-                            @foreach (var suboptions in sujbects)
-                            {
-                                <li ><a asp-action="AssociateResponse" asp-route-subId="@suboptions.Id" asp-route-id="@ViewBag.SubjectId">@suboptions.SubjectName options</a></li>
-                            }
-                        </ul>
-                    </li>
-                    
-                </ul>
+    <div style="margin-left: 10px">
+        <div class="dropdown">
+            <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
+                Choose from other subject category Options responses
+            </button>
+            <div class="dropdown-menu" style="width:100%;background-color:darkgrey">
+                @foreach (var suboptions in sujbects)
+                {
+                    <a class="dropdown-item" asp-action="AssociateResponse" asp-route-subId="@suboptions.Id" asp-route-id="@ViewBag.SubjectId">@suboptions.SubjectName options</a>
+                }
             </div>
+        </div>
+        @*<ul class="select">
+            <li>
+                Choose other subject Options responses
+                <ul style="list-style: none">
+                    <option value="">select subject</option>
+                    @foreach (var suboptions in sujbects)
+                    {
+                        <li ><a asp-action="AssociateResponse" asp-route-subId="@suboptions.Id" asp-route-id="@ViewBag.SubjectId">@suboptions.SubjectName options</a></li>
+                    }
+                </ul>
+            </li>
+
+        </ul>*@
+    </div>
         }
     </div>
     

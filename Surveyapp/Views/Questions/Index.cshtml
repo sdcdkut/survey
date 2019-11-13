@@ -101,19 +101,30 @@
              {
                  <h5 style="margin-left: 5px;margin-right: 5px">OR</h5>
                  var quizes = _context.SurveySubject.Where(x => x.CategoryId == catgId && x.Questions.Any());
-                 <div style="margin-left: 10px">
-                     <ul class="select">
-                         <li>
-                             Choose other subject questions
-                             <ul style="list-style: none;">
-                                 @foreach (var quizoptions in quizes)
-                                 {
-                                     <li asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</li>
-                                 }
-                             </ul>
-                         </li>
-                     </ul>
-                 </div>
+                <div style="margin-left: 10px">
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
+                            Choose other subject category questions
+                        </button>
+                        <div class="dropdown-menu" style="width:100%;background-color:darkgrey">
+                            @foreach (var quizoptions in quizes)
+                            {
+                                <a class="dropdown-item" asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</a>
+                            }
+                        </div>
+                    </div>
+        @*<ul class="select">
+            <li>
+                Choose other subject questions
+                <ul style="list-style: none;">
+                    @foreach (var quizoptions in quizes)
+                    {
+                        <li asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</li>
+                    }
+                </ul>
+            </li>
+        </ul>*@
+    </div>
              }
         }
         @*if there are questions for this subject*@

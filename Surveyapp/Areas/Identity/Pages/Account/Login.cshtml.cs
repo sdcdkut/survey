@@ -80,31 +80,32 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 ApplicationUser appUser = await _userManager.FindByEmailAsync(Input.Email);
-                var result = await _signInManager.PasswordSignInAsync(/*Input.Email*/appUser, Input.Password, Input.RememberMe, lockoutOnFailure: true);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
-                }
+                
                 ApplicationUser userid = _userManager.FindByEmailAsync(Input.Email).Result;
-                if (userid != null)
+                if (appUser != null)
                 {
                     if (!_userManager.IsEmailConfirmedAsync(userid).Result)
                     {
                         ModelState.AddModelError(string.Empty, "Email not confirmed!");
                         return Page();
                     }
+                    var result = await _signInManager.PasswordSignInAsync(/*Input.Email*/appUser, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("User logged in.");
+                        return LocalRedirect(returnUrl);
+                    }
+                    if (result.RequiresTwoFactor)
+                    {
+                        return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+                    }
+                    if (result.IsLockedOut)
+                    {
+                        _logger.LogWarning("User account locked out.");
+                        return RedirectToPage("./Lockout");
+                    }
                 }
-                if (userid == null)
+                if (appUser == null)
                 {
                     ModelState.AddModelError(string.Empty, "User Email not found!");
                     return Page();

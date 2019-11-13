@@ -216,7 +216,7 @@ namespace Surveyapp.Controllers
             {
                 return Content("Subject category not specified");
             }
-            ViewBag.SurveyName = _context.Survey.Where(x=>x.SurveyCategorys.Any(y=>y.Id == id)).SingleOrDefault().name;
+            ViewBag.SurveyName = _context.Survey.SingleOrDefault(x => x.SurveyCategorys.Any(y=>y.Id == id))?.name;
             var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes)
                                     .Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id)
                                     .Where(x=>x.Category.Survey.SurveyerId == _usermanager.GetUserId(User));

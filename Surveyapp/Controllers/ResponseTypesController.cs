@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +17,16 @@ namespace Surveyapp.Controllers
     public class ResponseTypesController : Controller
     {
         private readonly SurveyContext _context;
+        private readonly UserManager<ApplicationUser> _usermanager;
 
-        public ResponseTypesController(SurveyContext context)
+        public ResponseTypesController(SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
         // GET: ResponseTypes
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
@@ -41,10 +44,17 @@ namespace Surveyapp.Controllers
             ViewData["Subjects"] =  new SelectList(_context.SurveySubject.Where(x=>x.CategoryId == categoryId),"Id", "SubjectName");
             var surveyContext = _context.ResponseType.Include(r => r.Subject.Category).Where(x=>x.SubjectId == id);
             /*var responses =*/
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(_context.SurveyCategory.SingleOrDefault(x=>x.SurveySubjects.Any(y=>y.Id==id))?.SurveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             return View(await surveyContext.ToListAsync());
         }
 
         // GET: ResponseTypes/Details/5
+        [NoDirectAccess]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -64,8 +74,8 @@ namespace Surveyapp.Controllers
         }
 
         // GET: ResponseTypes/Create
-        [NoDirectAccess]
-        public IActionResult Create(int? id)
+        //[NoDirectAccess]
+        public async Task<IActionResult> Create(int? id)
         {
             if (id == null)
             {
@@ -76,6 +86,12 @@ namespace Surveyapp.Controllers
             ViewBag.SurveyId = Subject.Category.SurveyId;
             ViewBag.CategoryId =Subject.Category.Id;
             ViewBag.SubjectId = id;
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(Subject.Category.SurveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             //ViewData["SubjectId"] = new SelectList(_context.SurveySubject, "Id", "Id");
             return View();
         }
@@ -85,7 +101,7 @@ namespace Surveyapp.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Create([Bind("Id,ResponseName,SubjectId")] ResponseType responseType,int SubjectId,string ResponseName,string[] responseDictionary,string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
@@ -129,11 +145,18 @@ namespace Surveyapp.Controllers
             return View(responseType);
         }
         
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> AssociateResponse(int? subId, int? id)
         {
             if (subId != null && id != null)
             {
+                var useId = _usermanager.GetUserId(User);
+                var subject = await _context.SurveySubject.Include(x=>x.Category).SingleOrDefaultAsync(x=>x.Id == id);
+                var survey = await _context.Survey.FindAsync(subject.Category.SurveyId);
+                if (survey.SurveyerId != useId)
+                {
+                    return StatusCode(403);
+                }
                 var subjectAssociate = _context.ResponseType.SingleOrDefault(x => x.SubjectId == subId);
                 ResponseType responseTypes = new ResponseType()
                 {
@@ -151,7 +174,7 @@ namespace Surveyapp.Controllers
         } 
 
         // GET: ResponseTypes/Edit/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -164,7 +187,12 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(responseType.Subject.Category.SurveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             ViewBag.SurveyId = responseType.Subject.Category.SurveyId;
             ViewBag.CategoryId = responseType.Subject.CategoryId;
             ViewBag.typeDictonary = responseType.ResponseDictionary;
@@ -175,7 +203,7 @@ namespace Surveyapp.Controllers
         // POST: ResponseTypes/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,ResponseName")] ResponseType responseType, string[] responseDictionary, string ResponseName)
@@ -208,7 +236,10 @@ namespace Surveyapp.Controllers
                 var respDictonary = new Dictionary<string, string>();
                     for (int i = 0; i < responseDictionary.Length; i++)
                     {
-                        respDictonary.Add((i+1).ToString(), responseDictionary[i]);
+                        if (responseDictionary[i] != null)
+                        {
+                            respDictonary.Add((i+1).ToString(), responseDictionary[i]);
+                        }
                     }
                     ResponseType responseTypes = await _context.ResponseType.FindAsync(id);
 
@@ -225,7 +256,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: ResponseTypes/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -240,13 +271,19 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(responseType.Subject.Category.SurveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             ViewBag.SurveyId = responseType.Subject.Category.SurveyId;
             ViewBag.CategoryId = responseType.Subject.CategoryId;
             return View(responseType);
         }
 
         // POST: ResponseTypes/Delete/5
-        [NoDirectAccess]
+        //[NoDirectAccess]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -257,14 +294,21 @@ namespace Surveyapp.Controllers
             TempData["FeedbackMessage"] = $"survey responses deleted successfully";
             return RedirectToAction(nameof(Index),new{id=responseType.SubjectId});
         }
-        [NoDirectAccess]
+        //[NoDirectAccess]
         private bool ResponseTypeExists(int id)
         {
             return _context.ResponseType.Any(e => e.Id == id);
         }
 
-        public IActionResult _CreatePartial(int id)
+        public async Task<IActionResult> _CreatePartial(int id)
         {
+            var subject = await _context.SurveySubject.Include(x => x.Category).SingleOrDefaultAsync(x => x.Id == id); 
+            var useId = _usermanager.GetUserId(User);
+            var survey = await _context.Survey.FindAsync(subject.Category.SurveyId);
+            if (survey.SurveyerId != useId)
+            {
+                return StatusCode(403);
+            }
             ViewBag.SubjectId = id;
             return PartialView(new ResponseType());
         }

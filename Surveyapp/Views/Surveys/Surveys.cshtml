@@ -20,7 +20,7 @@
 @*check if there is available surveys*@
 @if (Model.Any())
 {
-    <table class="table">
+    <table class="table table-striped table-hover" id="survey-take-table">
         <thead>
             <tr>
                 <th>
@@ -29,7 +29,6 @@
                 <th>
                     Availability
                 </th>
-                <th></th>
                 <th></th>
             </tr>
         </thead>
@@ -56,7 +55,7 @@
                 <td>
                     @dateStatus
                 </td>
-                <td width="30%">
+                <td width="45%">
                 @*Check if survey date is available for take*@
                     @if (EF.Functions.DateDiffDay(item.Startdate,DateTime.Now)>0&& EF.Functions.DateDiffDay(DateTime.Now,item.EndDate)>0)
                     {
@@ -142,4 +141,9 @@ else
 {
     <h2>No Open Sureys are available</h2>
 }
+@section Scripts{
+    <script>
+        $('#survey-take-table').DataTable();
+    </script>
+ }
 

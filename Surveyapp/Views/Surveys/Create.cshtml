@@ -45,7 +45,7 @@
                 <label asp-for="status" class="control-label"></label>
                 @*<input asp-for="status" class="form-control" />*@
                 <select asp-for="status" class="form-control">
-                    <option value="Open">Open<small>(anounimous take is survey)</small></option>
+                    <option value="Open">Open<small>(allow anounimous take of survey)</small></option>
                     <option value="Closed" selected="selected">Closed<small>(login required for survey take)</small></option>
                 </select>
                 <span asp-validation-for="status" class="text-danger"></span>
