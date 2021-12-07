@@ -24,7 +24,7 @@ namespace Surveyapp
 
         public Startup(IConfiguration configuration, IWebHostEnvironment hostEnvironment)
         {
-            hostEnvironment = hostEnvironment;
+            HostingEnvironment = hostEnvironment;
             Configuration = configuration;
         }
 
@@ -71,7 +71,7 @@ namespace Surveyapp
             services.AddAuthentication()
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, config =>
                 {
-                    config.Authority = Configuration["openIdAuthority:live"] /*: Configuration["openIdAuthority:live"]*/;
+                    config.Authority = HostingEnvironment.IsDevelopment()? Configuration["openIdAuthority:live"] : Configuration["openIdAuthority:live"];
                     config.ClientId = Configuration["Client:ClientId"];
                     config.ClientSecret = Configuration["Client:ClientSecret"];
                     config.SaveTokens = true;
