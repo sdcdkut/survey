@@ -12,14 +12,14 @@
                 <span>My Surveys</span>
             </a>
         </li>
-    
+
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@Model.Category.SurveyId">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@Model.SurveyId">
                 <span>Survey Subject Categories</span>
             </a>
         </li>
         <li class="breadcrumb-item active">
-            <a asp-action="Index" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="Index" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Subject</span>
             </a>
         </li>
@@ -32,42 +32,89 @@
 </nav>
 
 <h4>Edit Survey Subject</h4>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-9">
         <form asp-action="Edit" id="edit-subject-form">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="CategoryId" value="@ViewData["CategoryId"]">
+            <input type="hidden" asp-for="Id"/>
+            <input type="hidden" asp-for="SurveyId">
             <div class="wrapper">
                 <div style="display: flex;">
-                    <label style="margin-right: 3%" asp-for="SubjectName" class="control-label"></label>
-                    <div class="form-group">
-                        <input asp-for="SubjectName" style="width: auto;" class="form-control"/>
-                        <span asp-validation-for="SubjectName" class="text-danger"></span>
+                    <div class="form-group" style="margin-right: 3%">
+                        <label asp-for="Name" class="control-label"></label>
+                        <input asp-for="Name" style="width: auto;" class="form-control"/>
+                        <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
-                    <p style="width: auto;margin-left: 3%"><a style="width: auto" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another properties</a></p>
+                    <div class="form-group" style="margin-right: 3%">
+                        <label asp-for="CategoryId" class="control-label"></label>
+                        <select data-allow-clear="true" asp-for="CategoryId" asp-items="ViewBag.CategoryId" style="width: auto;" class="form-control">
+                            <option value="" selected="selected"></option>
+                        </select>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group" style="margin-right: 3%">
+                        <label asp-for="ResponseTypeId" class="control-label"></label>
+                        <select asp-for="ResponseTypeId" asp-items="ViewBag.ResponseTypeId" style="width: auto;" class="form-control"></select>
+                        <span asp-validation-for="ResponseTypeId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label"></label>
+                        <textarea asp-for="Description"  class="form-control" ></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <p style="width: auto;margin-left: 3%">
+                        <a style="width: auto" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another properties</a>
+                    </p>
                 </div>
-                @if (Model.OtherProperties != null)
-                {
-                    foreach (var Properties in Model.OtherProperties)
+                <div class="other-property-div">
+                    <h4>Other subject Properties</h4>
+                    @if (Model.OtherProperties != null)
                     {
-                        <div class="form-group col-md-12" style="display: flex;">
-                            <div class="form-group col-md-7" style="display: flex;">
-                                <label style="font-weight: bolder" for="">Property Name</label>
-                                <input type="hidden" required="required" value="@Properties.Key|@Properties.Key" name="otherproperty">
-                                <input class="form-control" style="width: auto" name="PropertyName" value="@Properties.Key" required placeholder="Property Name"/>
-                                <span style="font-weight: bolder;margin: 9px 9px">:</span>
-                                <label style="font-weight: bolder" for="">Property Value</label>
-                                <input class="form-control" name="PropertyValue" value="@Properties.Value" style="width: auto" required placeholder="Property Value"/>
-                                <p class="col-md-2"><a href="javascript:void(0);" onclick="addpropertyfield(this)" style="zoom: 200%" title="Add another property field" class="add_fields fas fa-plus-circle"></a></p>
-                                <p class="col-md-1"><a href="javascript:void(0);" title="Remove property field" style="zoom: 200%" class="remove_field fas fa-minus-circle"></a></p>
+                        for (var i = 0; i < Model.OtherProperties.Count; i++)
+                        {
+                            <div class="d-flex Property-group">
+                                <div class="form-group" style="width: auto;margin-left: 3%">
+                                    <label style="margin-right: 3%" class="control-label">Name</label>
+                                    <input asp-for="OtherProperties[i].Name" style="width: auto;" class="form-control"/>
+                                    <span asp-validation-for="OtherProperties[i].Name" class="text-danger"></span>
+                                </div>
+                                <div class="form-group" style="width: auto;margin-left: 3%">
+                                    <label style="margin-right: 3%" class="control-label">Value</label>
+                                    <input asp-for="OtherProperties[i].Value" style="width: auto;" class="form-control"/>
+                                    <span asp-validation-for="OtherProperties[i].Value" class="text-danger"></span>
+                                </div>
+                                <p style="width: auto;margin-left: 3%;margin-top: 2%">
+                                    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject property</a>
+                                    @if (i != 0)
+                                    {
+                                        <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info remove_field">remove property</a>
+                                    }
+                                </p>
                             </div>
-                         </div>
+                        }
                     }
-                }
+                    else
+                    {
+                        <div class="d-flex Property-group">
+                            <div class="form-group" style="width: auto;margin-left: 3%">
+                                <label style="margin-right: 3%" class="control-label">Name</label>
+                                <input asp-for="OtherProperties[0].Name" style="width: auto;" class="form-control"/>
+                                <span asp-validation-for="OtherProperties[0].Name" class="text-danger"></span>
+                            </div>
+                            <div class="form-group" style="width: auto;margin-left: 3%">
+                                <label style="margin-right: 3%" class="control-label">Value</label>
+                                <input asp-for="OtherProperties[0].Value" style="width: auto;" class="form-control"/>
+                                <span asp-validation-for="OtherProperties[0].Value" class="text-danger"></span>
+                            </div>
+                            <p style="width: auto;margin-left: 3%;margin-top: 2%">
+                                <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject property</a>
+                            </p>
+                        </div>
+                    }
+                </div>
             </div>
-            
+
             @*<div class="form-group">
                 <label asp-for="StateCorporation" class="control-label"></label>
                 <input asp-for="StateCorporation" class="form-control" />
@@ -99,50 +146,53 @@
                 <span asp-validation-for="SubjectTypeId" class="text-danger"></span>
             </div>*@
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary"/>
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index" asp-route-id="@Model.CategoryId">Back to List</a>
+    <a asp-action="Index" asp-route-id="@ViewBag.SurveyId">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script >
         var max_fields = 10;
         var x = 1;
         function addpropertyfield(element){
-            //Check maximum allowed input fields
-            if(x < max_fields){
-                //input field increment
-                x++;
-                //add input field
-                $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
-                  '<div class="form-group col-md-7" style="display: flex;">' +
-                 '<input type="hidden" required name="otherproperty">' +
-                  '<label style="font-weight: bolder" for="">Property Name</label>' +
-                   '<input class="form-control" style="width: auto" name="PropertyName" required placeholder="Property Name" />' +
-                    '<span style="font-weight: bolder;margin: 9px 9px">:</span>' +
-                     '<label style="font-weight: bolder" for="">Property Value</label>' +
-                  '<input class="form-control" name="PropertyValue" style="width: auto" required placeholder="Property Value" />' +
-                  '<p class="col-md-2"><a href="javascript:void(0);" onclick="addpropertyfield(this)" style="zoom: 200%" title="Add another property field" class="add_fields fas fa-plus-circle"></a></p>'+
-                  '<p class="col-md-1"><a href="javascript:void(0);" title="Remove property field" style="zoom: 200%" class="remove_field fas fa-minus-circle"></a></p>' +
-                   '</div>'+
-                   '</div>');
-             //add focus on last input
-            $(element).closest(".wrapper").find('.form-group:last-child input').focus()
-            }
+        var propElements = $(element).closest(".other-property-div").find(".Property-group").length;
+        var nextPropElement = parseInt(propElements)+1;
+        //Check maximum allowed input fields
+        if(x < max_fields){
+            x++; //input field increment
+            //add input field
+            $(".other-property-div").append('<div class="d-flex Property-group">'+
+                                  '<div class="form-group" style="width: auto;margin-left: 3%">'+
+                                  '    <label style="margin-right: 3%" class="control-label">Name</label>'+
+                                  '    <input name="OtherProperties['+nextPropElement+'].Name" style="width: auto;" class="form-control"/>'+
+                                  '</div>'+
+                                  '<div class="form-group" style="width: auto;margin-left: 3%">'+
+                                  '    <label style="margin-right: 3%" class="control-label">Value</label>'+
+                                  '    <input name="OtherProperties['+nextPropElement+'].Value" style="width: auto;" class="form-control"/>'+
+                                  '</div>'+
+                                  '<p style="width: auto;margin-left: 3%;margin-top: 2%">'+
+                                  '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject property</a>'+
+                                  '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info remove_field">remove property</a>'+
+                                  '</p>'+
+                                  '</div>');
+         //add focus on last input
+        $(element).closest(".wrapper").find('.form-group:last-child input').focus()
         }
-        //when user click on remove button
-        $(".wrapper").on("click",".remove_field", function(e){ 
-            e.preventDefault();
-            $(this).closest('div.form-group').remove(); //remove input field
-            x--; //inout field decrement
-            });
-        $(".wrapper").on("input","input[name='PropertyName'], input[name='PropertyValue']", function(e){ 
+    }
+    //when user click on remove button
+    $(document).on("click",".remove_field", function(e){ 
+        e.preventDefault();
+        $(this).closest('div.Property-group').remove(); //remove input field
+        x--; //inout field decrement
+        });
+        /*$(".wrapper").on("input","input[name='PropertyName'], input[name='PropertyValue']", function(e){ 
             var PropertyName = $(this).closest('div.form-group').find('input[name="PropertyName"]').val();
             var PropertyValue = $(this).closest('div.form-group').find('input[name="PropertyValue"]').val();
             var otherproperty = $(this).closest('div.form-group').find('input[name="otherproperty"]').val(PropertyName+"|"+PropertyValue);
@@ -173,6 +223,6 @@
             //$(this).unbind('submit').submit();
             e.currentTarget.submit();
           }
-        })
+        })*/
     </script>
 }

@@ -17,12 +17,12 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Subject</span>
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-route-id="@Model.SubjectId">
+            <a asp-action="Index" >
                 <span>Option Types</span>
             </a>
         </li>
@@ -52,7 +52,7 @@
             <td>
                 @foreach(var itemed in Model.ResponseDictionary)
                 {
-                    <p>(@itemed.Key) @itemed.Value</p>
+                    <p>(@itemed.Name) @itemed.Value</p>
                 }
             </td>
         </dd>
@@ -67,6 +67,6 @@
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index" asp-route-id="@Model.SubjectId">Back to List</a>
+        <a asp-action="Index" >Back to List</a>
     </form>
 </div>

@@ -17,7 +17,7 @@ namespace Surveyapp.Controllers
         private readonly UserManager<ApplicationUser> _usermanager;
 
 
-        public SurveyResponsesController(SurveyContext context, UserManager<ApplicationUser>userManager)
+        public SurveyResponsesController(SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _usermanager = userManager;
@@ -67,41 +67,44 @@ namespace Surveyapp.Controllers
         //[Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,RespondantId,QuestionId,Response")] SurveyResponse surveyResponse, string[] quizresponse)
+        public async Task<IActionResult> Create( /*[Bind("Id,RespondantId,QuestionId,Response")] SurveyResponse surveyResponse, string[] quizresponse*/
+            Dictionary<int, SurveyResponse> quizResponse)
         {
-            if (/*ModelState.IsValid*/quizresponse.Length>0)
+            if ( /*ModelState.IsValid*/quizResponse.Any())
             {
-                int? categoryId= null;
-                foreach (var quizeAndResponse in quizresponse)
+                //int? categoryId = null;
+                foreach (var quizAndResponse in quizResponse)
                 {
-                    string[] ids = quizeAndResponse.Split(new char[] { '|' });
-                    string response = ids[0];
-                    int quizId = int.Parse(ids[1]);
-                    string RespondantId = null;
-                    if (User.Identity.IsAuthenticated)
+                    string respondantId = null;
+                    if (User.Identity!.IsAuthenticated)
                     {
-                        RespondantId = _usermanager.GetUserId(User);
+                        respondantId = _usermanager.GetUserId(User);
                     }
-                    SurveyResponse newResponse = new SurveyResponse()
+
+                    var newResponse = new SurveyResponse()
                     {
-                        QuestionId=quizId,
-                        Response = response,
-                        RespondantId = RespondantId
+                        QuestionId = quizAndResponse.Value.QuestionId,
+                        Response = quizAndResponse.Value.Response,
+                        RespondantId = respondantId,
+                        ResponseText = quizAndResponse.Value?.ResponseText
                     };
                     /*foreach (var id in ids)
-                    {
-                        var sd = id;
-                    }*/
-                    categoryId = _context.SurveySubject.SingleOrDefault(x => x.Questions.Any(y=>y.Id == newResponse.QuestionId))?.CategoryId;
-                    _context.Add(newResponse);
+                {
+                    var sd = id;
+                }*/
+                    //categoryId = _context.SurveySubject.SingleOrDefault(x => x.Questions.Any(y => y.Id == newResponse.QuestionId))?.CategoryId;
+                    _context.SurveyResponse.Add(newResponse);
                 }
+
                 await _context.SaveChangesAsync();
                 TempData["FeedbackMessage"] = $"Survey Taken successfully";
-                return RedirectToAction("SurveySubjects","SurveySubjects", new{id = categoryId});
+                /*return RedirectToAction("SurveySubjects", "SurveySubjects", new { id = categoryId });*/
+                return RedirectToAction("Surveys", "Surveys");
             }
-            ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id", surveyResponse.RespondantId);
-            ViewData["QuestionId"] = new SelectList(_context.Question, "Id", "Id", surveyResponse.QuestionId);
-            return View(surveyResponse);
+
+            /*ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id", surveyResponse.RespondantId);
+            ViewData["QuestionId"] = new SelectList(_context.Question, "Id", "Id", surveyResponse.QuestionId);*/
+            return RedirectToAction("Surveys", "Surveys");
         }
 
         // GET: SurveyResponses/Edit/5
@@ -118,6 +121,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+
             ViewData["RespondantId"] = new SelectList(_context.Users, "Id", "Id", surveyResponse.RespondantId);
             ViewData["QuestionId"] = new SelectList(_context.Question, "Id", "Id", surveyResponse.QuestionId);
             return View(surveyResponse);
@@ -198,17 +202,21 @@ namespace Surveyapp.Controllers
         {
             return _context.SurveyResponse.Any(e => e.Id == id);
         }
+
         [Authorize]
-        public async Task<IActionResult> SurveyResults (int? id)
+        public async Task<IActionResult> SurveyResults(int? id)
         {
-            IQueryable<Survey> subjects = _context.Survey.Include(x=>x.SurveyCategorys)
-                .Where(x=>x.SurveyCategorys.Any(a=>a.SurveySubjects.Any(z=>z.Questions.Any(c=>c.SurveyResponses.Any()))));
-            if (User.Identity.IsAuthenticated)
+            var subjects = _context.Survey.Include(c => c.SurveySubjects)
+                .ThenInclude(c => c.Questions).ThenInclude(v => v.SurveyResponses).Include(c=>c.Surveyors).ToList()
+                .Where(x => x.SurveySubjects.Any(z => z.Questions.Any(c => c.SurveyResponses.Any())));
+            if (User.Identity!.IsAuthenticated)
             {
-                subjects = subjects.Where(x => x.SurveyerId == _usermanager.GetUserId(User));
+                subjects = subjects.Where(x => x.Surveyors.Any(c=>c.ActiveStatus && c.SurveyorId == _usermanager.GetUserId(User)));
             }
-            return  View(subjects);
+
+            return View(subjects);
         }
+
         [Authorize]
         public async Task<IActionResult> SubjectsResult(int? id)
         {
@@ -216,13 +224,17 @@ namespace Surveyapp.Controllers
             {
                 return Content("Subject category not specified");
             }
-            ViewBag.SurveyName = _context.Survey.SingleOrDefault(x => x.SurveyCategorys.Any(y=>y.Id == id))?.name;
-            var questionResults = _context.SurveySubject.Include(x=>x.Questions).Include(x=>x.ResponseTypes)
-                                    .Where(x=>x.Questions.Any(z=>z.SurveyResponses.Any())).Where(z=>z.CategoryId==id)
-                                    .Where(x=>x.Category.Survey.SurveyerId == _usermanager.GetUserId(User));
-           
-            return View(questionResults);
+
+            ViewBag.SurveyName = _context.Survey.Include(c => c.Surveyors).ThenInclude(c => c.Surveyor).SingleOrDefault(x => x.Id == id)?.Name;
+            var questionResults = _context.SurveySubject.Include(x => x.Questions).ThenInclude(c => c.SurveyResponses)
+                .Include(c => c.Category.Survey.Surveyors).ThenInclude(c=>c.Surveyor)
+                .Include(x => x.Survey.Surveyors).ToList()
+                .Where(x => x.Questions.Any(z => z.SurveyResponses.Any())).Where(z => z.SurveyId == id)
+                .Where(x => x.Survey.Surveyors.Any(c=>c.ActiveStatus && c.SurveyorId == _usermanager.GetUserId(User)));
+
+            return View(questionResults.ToList());
         }
+
         [Authorize]
         public async Task<IActionResult> QuestionResults(int? id)
         {
@@ -230,17 +242,25 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-            var scoreResponse = _context.SurveyResponse.Where(a => a.question.SubjectId == id).Sum(x => int.Parse(x.Response));
-            var questionResponsesCount = _context.Question.Where(a => a.SubjectId == id).Take(1).SelectMany(x => x.SurveyResponses)?.Count();
+
+            var scoreResponse = _context.SurveyResponse.Include(c=>c.question.ResponseType).Include(c=>c.question.QuestionGroup)
+                .Where(a => a.question.SubjectId == id).ToList().Sum(x =>
+            {
+                if (x?.Response != null) return x.Response;
+                return 0;
+            });
+            var questionResponsesCount = _context.Question.Where(a => a.SubjectId == id).ToList().Take(1).SelectMany(x => x.SurveyResponses)?.Count();
             var totalResponse = _context.SurveyResponse.Where(a => a.question.SubjectId == id).Count(a => a.question.SubjectId == id);
-            var avgScore = Math.Round((decimal)scoreResponse / (decimal)totalResponse, 0);
-            ViewBag.Time = EF.Functions.DateDiffMinute(DateTime.Now, DateTime.Now);
-            ViewBag.CategoryId = _context.SurveySubject.SingleOrDefault(z=>z.Id == id)?.CategoryId;
-            ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(z => z.Id == id)?.SubjectName;
+            var avgScore = Math.Round(scoreResponse / (decimal)totalResponse, 0);
+            var surveySubject = _context.SurveySubject.SingleOrDefault(z => z.Id == id);
+            ViewBag.Time = (DateTime.Now - DateTime.Now).Minutes;
+            ViewBag.CategoryId = surveySubject?.CategoryId;
+            ViewBag.SubjectName = surveySubject?.Name;
+            ViewBag.SurveyId = surveySubject?.SurveyId;
             ViewBag.avgScore = avgScore;
-            ViewBag.SubjectResult = _context.ResponseType.Where(x => x.SubjectId == id).SelectMany(x => x.ResponseDictionary).SingleOrDefault(x => int.Parse(x.Key) == avgScore).Value;
-            var questionResults = _context.Question.Where(z=>z.SubjectId==id).Where(x=>x.SurveyResponses.Any());
-            return View(questionResults);
+            ViewBag.SubjectResult = _context.ResponseType.ToList().SelectMany(x => x.ResponseDictionary).FirstOrDefault( x => x.Value == avgScore)?.Value;
+            var questionResults = _context.Question.Include(c=>c.SurveyResponses).Where(z => z.SubjectId == id).Where(x => x.SurveyResponses.Any());
+            return View(await questionResults.ToListAsync());
         }
     }
 }

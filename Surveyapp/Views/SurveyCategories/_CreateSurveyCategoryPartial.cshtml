@@ -18,11 +18,15 @@
               data-ajax-mode="replace">
             <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" required="required" asp-for="SurveyId" value="@ViewBag.SurveyId" />
             <div class="form-group">
                 <label asp-for="CategoryName" class="control-label"></label>
                 <input asp-for="CategoryName" class="form-control" />
                 <span asp-validation-for="CategoryName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SurveyId" class="control-label"></label>
+                <select asp-for="SurveyId" class ="form-control" asp-items="ViewBag.SurveyId"></select>
+                <span asp-validation-for="SurveyId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

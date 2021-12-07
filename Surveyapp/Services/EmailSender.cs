@@ -9,20 +9,24 @@ using System.Net;
 using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Configuration;
 
-namespace jirafrelance.Services
+namespace Surveyapp.Services
 {
     public class EmailSender: IEmailSender
     {
         private readonly EmailSettings _emailSettings;
-        private readonly IHostingEnvironment _env;
+        private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration configuration;
 
         public EmailSender(
             IOptions<EmailSettings> emailSettings,
-            IHostingEnvironment env)
+            IWebHostEnvironment env,
+            IConfiguration configuration)
         {
             _emailSettings = emailSettings.Value;
             _env = env;
+            this.configuration = configuration;
         }
 
         public async Task SendEmailAsync(string email, string subject, string message)
@@ -31,7 +35,7 @@ namespace jirafrelance.Services
             {
                 var mimeMessage = new MimeMessage();
 
-                mimeMessage.From.Add(new MailboxAddress("surveysdkut", "surveysdkut@gmail.com"));
+                mimeMessage.From.Add(new MailboxAddress("surveysdkut", configuration["Email:Address"]));
 
                 mimeMessage.To.Add(new MailboxAddress(email));
 
@@ -48,7 +52,7 @@ namespace jirafrelance.Services
                     smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                     await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                    await smtp.AuthenticateAsync("surveysdkut@gmail.com", "surveysdkut??");
+                    await smtp.AuthenticateAsync(configuration["Email:Address"], configuration["Email:Password"]);
                     await smtp.SendAsync(mimeMessage);
                     await smtp.DisconnectAsync(true);
 

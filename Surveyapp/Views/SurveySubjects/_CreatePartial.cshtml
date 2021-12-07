@@ -22,10 +22,10 @@
             <input type="hidden" required="required" name="CategoryId" value="@ViewBag.CategoryId">
             <div class="wrapper">
                 <div style="display: flex;">
-                    <label style="margin-right: 3%" asp-for="SubjectName" class="control-label"></label>
+                    <label style="margin-right: 3%" asp-for="Name" class="control-label"></label>
                     <div class="form-group">
-                        <input asp-for="SubjectName" style="width: auto;" class="form-control" />
-                        <span asp-validation-for="SubjectName" class="text-danger"></span>
+                        <input asp-for="Name" style="width: auto;" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
                     <p style="width: auto;margin-left: 3%"><a style="width: auto" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject properties</a></p>
                 </div>

@@ -66,13 +66,13 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Subject</span>
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="ResponseTypes" asp-route-id="@ViewBag.subjectid">
-                <span>Survey Response options</span>
+            <a asp-action="Index" asp-controller="QuestionGroups" asp-route-id="@ViewBag.subjectid">
+                <span>Question groups</span>
             </a>
         </li>
         <li class="breadcrumb-item active">
@@ -85,10 +85,10 @@
 
 <h1>@ViewBag.SubjectName Questions</h1>
 @*check if survey question has respond options*@
-@if (ViewBag.ResponType>0)
+@if (/*ViewBag.ResponType>0*/true)
 {
-    int catgId = ViewBag.CategoryId;
-    var otherQuiz = _context.Question.Any(x => x.Subject.CategoryId == catgId);
+    int surveyId = ViewBag.SurveyId;
+    var otherQuiz = _context.Question.Any(x => x.Subject.SurveyId == surveyId);
     <div style="display: flex;">
         @*check if there are not questions and add quize from other subjects option*@
         @if (!Model.Any())
@@ -100,7 +100,7 @@
             @if (otherQuiz)
              {
                  <h5 style="margin-left: 5px;margin-right: 5px">OR</h5>
-                 var quizes = _context.SurveySubject.Where(x => x.CategoryId == catgId && x.Questions.Any());
+                 var quizes = _context.SurveySubject.Where(x => x.SurveyId == surveyId && x.Questions.Any());
                 <div style="margin-left: 10px">
                     <div class="dropdown">
                         <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
@@ -109,7 +109,7 @@
                         <div class="dropdown-menu" style="width:100%;background-color:darkgrey">
                             @foreach (var quizoptions in quizes)
                             {
-                                <a class="dropdown-item" asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.SubjectName Questions</a>
+                                <a class="dropdown-item" asp-action="AssociateQuestion" asp-route-subId="@quizoptions.Id" asp-route-id="@ViewBag.subjectid">@quizoptions.Name Questions</a>
                             }
                         </div>
                     </div>
@@ -137,12 +137,6 @@
 
     </div>
 }
-else
-{
-    <p>
-        <a asp-action="Create" asp-controller="ResponseTypes" asp-route-id="@ViewBag.subjectid">Create New Response <small>(No response option found for subject)</small></a>
-    </p>
-}
 
 
 <table class="table">
@@ -151,11 +145,14 @@ else
             <th>
                 @Html.DisplayNameFor(model => model.question)
             </th>
-            @*<th>
-                @Html.DisplayNameFor(model => model.Subject)
-            </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model.QuestionGroup)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.ResponseType.ResponseName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AnswerRequired)
             </th>
             <th></th>
         </tr>
@@ -166,9 +163,9 @@ else
             <td>
                 @Html.DisplayFor(modelItem => item.question)
             </td>
-            @*<td>
-                @Html.DisplayFor(modelItem => item.Subject.Id)
-            </td>*@
+            <td>
+                @Html.DisplayFor(modelItem => item.QuestionGroup.Name)
+            </td>
             <td>
                 @*@foreach (var respnses in item.ResponseType.ResponseDictionary)
                 {
@@ -177,6 +174,9 @@ else
                     </label>
                 }*@
                 @Html.DisplayFor(modelItem => item.ResponseType.ResponseName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AnswerRequired)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" title="Edit"><i class="fa fa-edit"></i></a> |

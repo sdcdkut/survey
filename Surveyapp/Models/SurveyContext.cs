@@ -20,67 +20,92 @@ namespace Surveyapp.Models
 
         }
         public DbSet<Survey> Survey { get; set; }
+        public DbSet<Surveyors> Surveyors { get; set; }
         public DbSet<SurveyCategory> SurveyCategory { get; set; }
         public DbSet<SurveySubject> SurveySubject { get; set; }
         public DbSet<ResponseType> ResponseType { get; set; }
         public DbSet<Question> Question { get; set; }
+        public DbSet<QuestionGroup> QuestionGroups { get; set; }
         public DbSet<SurveyResponse> SurveyResponse { get; set; }
+        public DbSet<SurveyParticipants> SurveyParticipants { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<ResponseType>(entity =>
             {
                 entity.HasIndex(e => e.Id);
-
-                entity.Property(e => e.ResponseDictionary).IsRequired().
+                /*entity.Property(e => e.ResponseDictionary).IsRequired().
                 HasConversion(
                     x => JsonConvert.SerializeObject(x),
-                    v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));
-
-                entity.HasOne(d => d.Subject)
+                    v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));*/
+                /*entity.HasOne(d => d.Subject)
                     .WithOne(p => p.ResponseTypes)
                     //.HasForeignKey(d => d.SubjectId)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
-
+                    .OnDelete(DeleteBehavior.ClientSetNull);*/
+            });
+            modelBuilder.Entity<Survey>(entity =>
+            {
+                entity.HasKey(c => c.Id);
+                entity.HasIndex(e => e.Id);
+                entity.HasIndex(c => new { c.Name, c.Startdate, c.EndDate, c.status }).IsUnique();
             });
             modelBuilder.Entity<SurveyCategory>(entity =>
             {
                 entity.HasIndex(e => e.Id);
-
-
                 entity.HasOne(d => d.Survey)
                     .WithMany(p => p.SurveyCategorys)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
-
+                    .OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<SurveySubject>(entity =>
             {
                 entity.HasIndex(e => e.Id);
 
-                entity.Property(e => e.OtherProperties).IsRequired().
+                /*entity.Property(e => e.OtherProperties).IsRequired().
                     HasConversion(
                         x => JsonConvert.SerializeObject(x),
-                        v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));
+                        v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));*/
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.SurveySubjects)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(d => d.Survey)
+                    .WithMany(p => p.SurveySubjects)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<SurveySubject>(entity =>
             {
                 entity.HasIndex(e => e.Id);
                 entity.HasMany(p => p.Questions)
                 .WithOne(t => t.Subject)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<QuestionGroup>(entity =>
+            {
+                entity.HasIndex(e => e.Id);
+                entity.HasMany(p => p.Questions)
+                    .WithOne(t => t.QuestionGroup)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<Question>(entity =>
+            {
+                entity.HasIndex(e => e.Id);
+                entity.HasMany(p => p.SurveyResponses)
+                    .WithOne(t => t.question)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<SurveyResponse>(entity =>
             {
                 entity.HasIndex(e => e.Id);
-
+                entity.HasOne(p => p.question)
+                    .WithMany(t => t.SurveyResponses)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<SurveyResponse>(entity =>
+            {
+                entity.HasIndex(e => e.Id);
                 entity.HasOne(d => d.Respondant)
                     .WithMany(p => p.SurveyResponses)
                     .OnDelete(DeleteBehavior.ClientSetNull);
-
                 entity.HasOne(d => d.question)
                     .WithMany(p => p.SurveyResponses)
                     .OnDelete(DeleteBehavior.ClientSetNull);

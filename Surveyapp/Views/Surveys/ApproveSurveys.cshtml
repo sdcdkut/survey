@@ -23,7 +23,7 @@
     <thead>
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.name)
+            @Html.DisplayNameFor(model => model.Name)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Startdate)
@@ -48,7 +48,7 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.name)
+                @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Startdate)
@@ -60,7 +60,7 @@
                 @Html.DisplayFor(modelItem => item.status)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Surveyer.UserName)
+                @Html.DisplayFor(modelItem => item.SurveyorNames)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.approvalStatus)
@@ -79,8 +79,8 @@
                 }
                 @if (item.approvalStatus == null)
                 {
-                    <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Change Approval state</button>
-                    <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
+                    <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#@Regex.Replace(item.Name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Change Approval state</button>
+                    <div id="@Regex.Replace(item.Name, @"\s", "")" class="collapse" style="width:80%">
                         <ul style="width:inherit">
                             <li><a asp-action="ChangeApproval" asp-route-id="@item.Id" asp-route-Approvalstate="Approved">Approve</a></li>
                             <li><a asp-action="ChangeApproval" asp-route-id="@item.Id" asp-route-Approvalstate="NotApproved">Disapprove</a></li>

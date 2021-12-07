@@ -1,0 +1,127 @@
+@model QuestionGroup
+
+@{
+    ViewBag.Title = "Create Question groups";
+    Layout = "_Layout";
+}
+
+<style>
+    .new_add_field_button{
+    border-radius: 50%;
+    background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 5%;
+      zoom: 200%;
+      /*text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px*/
+    }
+    .new_minus_field_button{
+        border-radius: 50%;
+        background-color: #4CAF50;
+          border: none;
+          color: white;
+          padding: 5%;
+          zoom: 200%;
+        }
+</style>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveySubjectId">
+                <span>Survey Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Questions" asp-route-id="@ViewBag.SurveySubjectId">
+                <span>Questions</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>create Questions group</span>
+            </a>
+        </li>
+    </ol>
+</nav>
+<h4>Question Group</h4>
+<hr/>
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" required="required" name="subjectId" value="@ViewBag.SurveySubjectId">
+            @*<input type="hidden" asp-for="ResponseTypeId" value="@ViewBag.ResponseTypeId">*@
+            <div class="wrapper">
+                <div class="form-group col-md-12 question-div" style="display: flex;">
+                    <div class="form-group col-md-4">
+                        <label class="control-label">question</label>
+                        <input type="hidden" name="QuestionGroup[0].SubjectId" value="@ViewBag.SurveySubjectId">
+                        <input placeholder="Input question" rows="4" cols="50" type="text" required="required" name="QuestionGroup[0].Name" class="form-control"/>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <p class="col-md-8">
+                        <a style="margin-top: 5%;" href="javascript:void(0);" onclick="addquestiongroupfield(this)" class="add_fields btn btn-secondary btn-sm">Add another question group field</a>
+                    </p>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" asp-route-id="@ViewBag.SurveySubjectId">Back to List</a>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        var max_fields = 50;
+        var x = 1; //Initial input field is set to 1
+        function addquestiongroupfield(element){
+            //Check maximum allowed input fields
+            if(x < max_fields){
+                x++; //input field increment
+                var SurveySubjectId = '@ViewBag.SurveySubjectId';
+                var questionDiv = $(element).closest(".wrapper").find(".question-div").length;
+                var nextQuestionDiv = parseInt(questionDiv)+1;
+                //add input field
+                $(".wrapper").append('<div class="form-group col-md-12 question-div" style="display: flex;">'+
+                                      '    <div class="form-group col-md-4">'+
+                                      '        <label class="control-label">question group</label>' +
+                                      '        <input type="hidden" name="QuestionGroup['+nextQuestionDiv+'].SubjectId" value="'+SurveySubjectId+'">'+
+                                      '        <input placeholder="Input question" type="text" required="required" name="QuestionGroup['+nextQuestionDiv+'].Name" class="form-control"/>'+
+                                      '    </div>'+
+                                      '<div class="col-md-7">'+
+                                     '     <p class="col-md-3"><a href="javascript:void(0);" onclick="addquestionfield(this)" title="Add another question field" class="add_fields new_add_field_button fas fa-plus-circle"></a></p>'+
+                                     '     <p class="col-md-3"><a href="javascript:void(0);" title="Remove question field" class="remove_field new_minus_field_button fas fa-minus-circle"></a></p>' +
+                                     '</div>'+
+                                      '</div>');
+             //add focus on last textarea
+            $(element).closest(".wrapper").find('.form-group:last-child textarea').focus()
+            //console.log($(element).closest(".wrapper").find('.form-group:last-child').html())
+            }
+        }
+        $(".wrapper").on("click",".remove_field", function(e){ 
+                e.preventDefault();
+         $(this).closest('div.form-group').remove(); //remove inout field
+         x--; //inout field decrement
+            });
+        </script>
+}

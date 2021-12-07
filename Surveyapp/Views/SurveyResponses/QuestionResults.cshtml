@@ -1,4 +1,4 @@
-@model IEnumerable<Surveyapp.Models.Question>
+@model IEnumerable<Question>
 @inject SurveyContext Context
 
 @{
@@ -28,7 +28,7 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="SubjectsResult" asp-controller="SurveyResponses" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="SubjectsResult" asp-controller="SurveyResponses" asp-route-id="@ViewBag.SurveyId">
                 <span>Subject Results</span>
             </a>
         </li>
@@ -43,7 +43,7 @@
 <table class="table table-striped table-hover table-bordered display" id="question-result-table">
     <thead>
         <tr>
-            <th>
+            <th width="60%">
                 Question
             </th>
             <th>
@@ -62,31 +62,63 @@
     </thead>
     <tbody>
         @{
-            var surveyResponse = Context.SurveyResponse;
-            var responseType = Context.ResponseType;
-            foreach (var item in Model.OrderBy(x => x.ResponseType))
+            var surveyResponse = Context.SurveyResponse.ToList();
+            var responseType = Context.ResponseType.ToList();
+            foreach (var item in Model?.OrderBy(x => x.Id).GroupBy(c=>c.QuestionGroup))
             {
-                var questionResponseSum = surveyResponse.Where(a => a.QuestionId == item.Id).Sum(x => int.Parse(x.Response));
-                var totalQuestionCountResponse = surveyResponse.Count(x => x.QuestionId == item.Id) > 0 ? Context.SurveyResponse.Count(x => x.QuestionId == item.Id) : 1;
-                var avgScore = Math.Round((decimal)questionResponseSum / (decimal)totalQuestionCountResponse, 0);
-                res = totalQuestionCountResponse;
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.question)
-                    </td>
-                    <td>
-                        @questionResponseSum
-                    </td>
-                    <td>
-                        @totalQuestionCountResponse
-                    </td>
-                    <td>
-                        @avgScore
-                    </td>
-                    <td>
-                        @responseType.Where(x => x.SubjectId == item.SubjectId).SelectMany(x => x.ResponseDictionary).SingleOrDefault(x => int.Parse(x.Key) == avgScore).Value
-                    </td>
+                    <td colspan="5" style="font-weight: bolder;text-align: center">@item.Key?.Name</td>
+                    <td style="display: none"></td>
+                    <td style="display: none"></td>
+                    <td style="display: none"></td>
+                    <td style="display: none"></td>
                 </tr>
+                foreach (var question in item)
+                {
+                    var questionResponseSum = surveyResponse.Where(a => a.QuestionId == question.Id).Sum(x => x.Response);
+                    var totalQuestionCountResponse = surveyResponse.Count(x => x.QuestionId == question.Id) > 0 ? Context.SurveyResponse.Count(x => x.QuestionId == question.Id) : 1;
+                    var avgScore = Math.Round(questionResponseSum / (decimal)totalQuestionCountResponse, 0);
+                    res = totalQuestionCountResponse;
+                    var responses = string.Join(",", surveyResponse.Where(c => c.QuestionId == question.Id).Select(x => x.Response));
+                    var responseTexts = surveyResponse.Where(c => c.QuestionId == question.Id).Select(x => x.ResponseText).ToList();
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => question.question)
+                        </td>
+                        @if (question.ResponseType.DisplayOptionType == DisplayOptionType.Input)
+                        {
+                            <td colspan="4">
+                                @foreach (var responseText in responseTexts)
+                                {
+                                    <p>@responseText</p>
+                                    @*if (responseText != responseTexts?.LastOrDefault())
+                                    {
+                                        <span>,</span>
+                                    }*@
+                                }
+                            </td>
+                            <td style="display: none"></td>
+                            <td style="display: none"></td>
+                            <td style="display: none"></td>
+                        }
+                        else
+                        {
+                            <td title="@responses">
+                                @questionResponseSum
+                            </td>
+                            <td>
+                                @totalQuestionCountResponse
+                            </td>
+                            <td>
+                                @avgScore
+                            </td>
+                            <td>
+                                @responseType.SelectMany(x => x.ResponseDictionary).FirstOrDefault(x => x.Value == avgScore)?.Value
+                            </td>
+                        }
+                    </tr>
+                }
+                
             }
         }
 
@@ -111,6 +143,8 @@
                         text: '<span title="only visible columns will be exported to excel">Export to pdf</span>',
                         title: "@ViewBag.SubjectName Survey Report",
                         className: 'btn btn-sm btn-xs',
+                        orientation: 'landscape',
+                        //pageSize: 'LEGAL',
                         filename:'@ViewBag.SubjectName Survey Report',
                         exportOptions: {
                             page: 'all'
@@ -124,7 +158,8 @@
                                     columns: [
                                         {
                                             alignment: 'center',
-                                            text: ['Page ', { text: page.toString(), pageBreak: 'before' }, ' of ', { text: pages.toString() }, '\n genetated by @User.Identity.Name ']
+                                            color:'#727c8c',
+                                            text: ['Page ', { text: page.toString(), pageBreak: 'before' }, ' of ', { text: pages.toString() }, '\n genetated by @User.Identity.Name on(@DateTime.Now) ']
                                         }
                                     ],
                                 }
@@ -134,13 +169,14 @@
                                     columns: [
                                         {
                                             alignment: 'center',
+                                            color:'#727c8c',
                                             text: " DKUT Survey app",
                                             canvas: [{ type: 'rect', x: 170, y: 32, w: pageSize.width - 170, h: 40 }]
                                         }
                                     ],
                                 }
                             });
-                            doc.content[2].table.widths="*"
+                            //doc.content[2].table.widths="*"
                             //doc.content.splice(0, 0, {
                             //    margin: [12, 0, 0, 12],
                             //    alignment: "center",
@@ -148,10 +184,24 @@
                             $.each(doc.content[2].table.body, function (key, values) {
                                 //console.log(doc.content[2].table.body[0][1].text)
                                 $.each(values, function (id, vals) {
-                                    //console.log(vals.text)
-                                vals.alignment = 'center'
+                                    //console.log(vals)
+                                    //if its not the first row
+                                    if (id!=0) {
+                                        vals.alignment = 'center'
+                                    }
+                                
                                 })
                             })
+                            //console.log(doc.styles)
+                            doc.styles['td:nth-child(1)'] = { 
+                               width: '60%',
+                               'max-width': '60%'
+                            }
+                            doc.styles.tableFooter = {
+                               background: 'blue',
+                               alignment: 'right',
+                               color:'blue'
+                             }
                         }
                     },
                     {
@@ -159,7 +209,7 @@
                         text: 'export to excel',
                         filename: '@ViewBag.SubjectName Survey Report',
                         messageTop: "@ViewBag.SubjectName Overall perfromance : @ViewBag.SubjectResult (@ViewBag.avgScore)",
-                        messageBottom: "genetated by @User.Identity.Name",
+                        messageBottom: "genetated by @User.Identity.Name on(@DateTime.Now) ",
                         className: 'btn-xs',
                         exportOptions: {
                             page: 'all'

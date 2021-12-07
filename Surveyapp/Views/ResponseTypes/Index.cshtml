@@ -1,6 +1,7 @@
 ﻿@using System.Collections
 @model IEnumerable<Surveyapp.Models.ResponseType>
 @inject SurveyContext _context
+@inject UserManager<ApplicationUser> _userManager
 @using Microsoft.EntityFrameworkCore;
 @using System.Linq;
 
@@ -54,6 +55,7 @@
       line-height:20px;
     }
 </style>
+@*
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
@@ -83,8 +85,11 @@
         </li>
     </ol>
 </nav>
+*@
 
+<a asp-action="Create">Create </a>
 @*check if subject has questions b4 adding response option*@
+@*
 @if (Model.Any())
 {
     <a asp-controller="Questions" asp-action="Create" asp-route-id="@ViewBag.subjectId">Add question </a>
@@ -96,12 +101,12 @@ else
         <p>
             <a asp-action="Create" asp-route-id="@ViewBag.SubjectId">Create New @ViewBag.SubjectName's Respond Options</a>
         </p>
-        @*if there are respond type on subject category*@
+        $1$if there are respond type on subject category#1#
         @if (ViewBag.otherSubjectOption)
         {
             <h5 style="margin-left: 5px;margin-right: 5px">OR</h5>
             int catgId = int.Parse(ViewBag.CategoryId.ToString());
-            var sujbects = _context.ResponseType.Where(x=>x.Subject.CategoryId == catgId ).Select(x=>new {x.Subject.Id,x.Subject.SubjectName});
+            var sujbects = _context.ResponseType.Select(x=>new {x.Id,x.ResponseName});
     <div style="margin-left: 10px">
         <div class="dropdown">
             <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">
@@ -110,11 +115,11 @@ else
             <div class="dropdown-menu" style="width:100%;background-color:darkgrey">
                 @foreach (var suboptions in sujbects)
                 {
-                    <a class="dropdown-item" asp-action="AssociateResponse" asp-route-subId="@suboptions.Id" asp-route-id="@ViewBag.SubjectId">@suboptions.SubjectName options</a>
+                    <a class="dropdown-item" asp-action="AssociateResponse" asp-route-subId="@suboptions.Id" asp-route-id="@ViewBag.SubjectId">@suboptions.ResponseName options</a>
                 }
             </div>
         </div>
-        @*<ul class="select">
+        $1$<ul class="select">
             <li>
                 Choose other subject Options responses
                 <ul style="list-style: none">
@@ -126,47 +131,68 @@ else
                 </ul>
             </li>
 
-        </ul>*@
+        </ul>#1#
     </div>
         }
     </div>
     
 }
+*@
 
 <table class="table">
     <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ResponseName)
-            </th>
-            <th>
-                Response options
-                @*@Html.DisplayNameFor(model => model.Subject)*@
-            </th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ResponseName)
+        </th>
+        <th>
+            Response options
+            @*@Html.DisplayNameFor(model => model.Subject)*@
+        </th>
+        <th>
+            Created by
+        </th>
+        <th>Display</th>
+        <th></th>
+    </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+    @foreach (var item in Model)
+    {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.ResponseName)
             </td>
             <td>
-            @foreach(var itemed in item.ResponseDictionary)
-            {
-                <p>(@itemed.Key) @itemed.Value</p>
-            }
+                @foreach (var itemed in item.ResponseDictionary)
+                {
+                    <p>(@itemed.Name) @itemed.Value</p>
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Creator.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DisplayOptionType)
             </td>
             @*<td>
                 @Html.DisplayFor(modelItem => item.Subject.Id)
             </td>*@
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.ResponseName"><i class="fa fa-edit"></i></a> |
-                @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> |*@
-                <a asp-action="Delete" asp-route-id="@item.Id"title="Delete @item.ResponseName"><i class="fa fa-trash"></i></a>
+                @if (_userManager.GetUserId(User) == item.CreatorId)
+                {
+                    <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.ResponseName">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <apan>|</apan>
+                                    @*<a asp-action="Details" asp-route-id="@item.Id">Details</a> |*@
+                    <a asp-action="Delete" asp-route-id="@item.Id"title="Delete @item.ResponseName">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                }
+
             </td>
         </tr>
-}
+    }
     </tbody>
 </table>

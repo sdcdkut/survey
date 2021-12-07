@@ -39,17 +39,12 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Subject</span>
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="ResponseTypes" asp-route-id="@ViewBag.subjectid">
-                <span>Survey Response options</span>
-            </a>
-        </li>
-        <li class="breadcrumb-item">
-            <a asp-action="Index" asp-route-id="@ViewBag.subjectid">
+            <a asp-action="Index" asp-route-id="@ViewBag.SubjectId">
                 <span>Questions</span>
             </a>
         </li>
@@ -60,15 +55,18 @@
         </li>
     </ol>
 </nav>
-
+<div style="display: none">
+    <select name="" id="responseTypeSelect" asp-items="ViewBag.ResponseTypeId"></select>
+    <select name="" id="questionsSelect" asp-items="ViewBag.QuestionGroupId"></select>
+</div>
 <h4>Question</h4>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-12">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" required="required" name="SubjectId" value="@ViewBag.subjectid">
-            <input type="hidden" asp-for="ResponseTypeId" value="@ViewBag.ResponseTypeId">
+            <input type="hidden" required="required" name="subjectId" value="@ViewBag.SubjectId">
+            @*<input type="hidden" asp-for="ResponseTypeId" value="@ViewBag.ResponseTypeId">*@
             <div class="wrapper">
                 @*<div class="form-group">
                     $1$<label asp-for="SubjectId" class="control-label"></label>
@@ -79,30 +77,49 @@
                     <label asp-for="ResponseTypeId" class="control-label"></label>
                     <select asp-for="ResponseTypeId" class ="form-control" asp-items="ViewBag.ResponseTypeId"></select>
                 </div>*@
-                <div class="form-group col-md-12" style="display: flex;">
-                    <label asp-for="question" class="control-label"></label>
+                <div class="form-group col-md-12 question-div" style="display: flex;">
+                    <input type="hidden" required="required" name="Question[0].SubjectId" value="@ViewBag.SubjectId">
                     <div class="form-group col-md-4">
-                    <textarea placeholder="Input question" rows="4" cols="50" @*asp-for="question"*@ type="text" required="required" name="quiz" class="form-control"></textarea>
+                        <label class="control-label">question</label>
+                        <textarea placeholder="Input question" rows="4" cols="50" type="text" required="required" name="Question[0].question" class="form-control"></textarea>
                         <span asp-validation-for="question" class="text-danger"></span>
                     </div>
-                    <p class="col-md-8"><a href="javascript:void(0);" onclick="addquestionfield(this)" class="add_fields btn btn-secondary btn-sm">Add another question field</a></p>
+                    <div class="form-group" style="margin-right: 3%">
+                        <label asp-for="ResponseTypeId" class="control-label"></label>
+                        <select required="required" asp-items="ViewBag.ResponseTypeId" name="Question[0].ResponseTypeId" style="width: auto;" class="form-control"></select>
+                        <span asp-validation-for="ResponseTypeId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group" style="margin-right: 3%">
+                        <label asp-for="QuestionGroupId" class="control-label"></label>
+                        <select asp-items="ViewBag.QuestionGroupId" name="Question[0].QuestionGroupId" style="width: auto;" class="form-control"></select>
+                        <span asp-validation-for="QuestionGroupId" class="text-danger"></span>
+                    </div>
+                    <div class="form-group" style="margin-right: 3%">
+                        <label asp-for="AnswerRequired" class="control-label"></label>
+                        <input type="hidden" value="false" name="Question[0].AnswerRequired" style="width: auto;" class="form-control"/>
+                        <input type="checkbox" value="true" name="Question[0].AnswerRequired" checked="checked" style="width: auto;" class="form-control"/>
+                        <span asp-validation-for="AnswerRequired" class="text-danger"></span>
+                    </div>
+                    <p class="col-md-8">
+                        <a href="javascript:void(0);" onclick="addquestionfield(this)" class="add_fields btn btn-secondary btn-sm">Add another question field</a>
+                    </p>
                 </div>
             </div>
-                <div class="form-group">
-                    <input type="submit" value="Create" class="btn btn-primary" />
-                </div>
-            
-            
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary"/>
+            </div>
+
+
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index" asp-route-id="@ViewBag.subjectid">Back to List</a>
+    <a asp-action="Index" asp-route-id="@ViewBag.SubjectId">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
         var max_fields = 50;
         var x = 1; //Initial input field is set to 1
@@ -110,22 +127,47 @@
             //Check maximum allowed input fields
             if(x < max_fields){
                 x++; //input field increment
+                var subjectId = '@ViewBag.SubjectId';
+                var questionDiv = $(element).closest(".wrapper").find(".question-div").length;
+                var nextQuestionDiv = parseInt(questionDiv)+1;
                 //add input field
-                $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
-                 '<label class="control-label">question</label>' +
-                  '<div class="form-group col-md-7">' +
-                  '<textarea rows="4" cols="50" class="form-control" name="quiz" placeholder="Input question" ></textarea>' +
-                   '</div>' +
-                   '<div class="col-md-7">'+
-                   '<p class="col-md-3"><a href="javascript:void(0);" onclick="addquestionfield(this)" title="Add another question field" class="add_fields new_add_field_button fas fa-plus-circle"></a></p>'+
-                   '<p class="col-md-3"><a href="javascript:void(0);" title="Remove question field" class="remove_field new_minus_field_button fas fa-minus-circle"></a></p>' +
-                   '</div>'+
-                   '</div>');
+                $(".wrapper").append('<div class="form-group col-md-12 question-div" style="display: flex;">' +
+                                      '    <input type="hidden" required="required" name="Question['+nextQuestionDiv+'].SubjectId" value="'+subjectId+'">'+
+                                      '    <div class="form-group col-md-4">'+
+                                      '        <label class="control-label">question</label>'+
+                                      '        <textarea placeholder="Input question" rows="4" cols="50" type="text" required="required" name="Question['+nextQuestionDiv+'].question" class="form-control"></textarea>'+
+                                      '    </div>'+
+                                      '    <div class="form-group" style="margin-right: 3%">'+
+                                      '        <label class="control-label">Response Type</label>'+
+                                      '        <select style="width: auto;" name="Question['+nextQuestionDiv+'].ResponseTypeId" class="form-control">' +
+                                       $("#responseTypeSelect").html()+
+                                       '</select>'+
+                                      '    </div>'+
+                                      '    <div class="form-group" style="margin-right: 3%">'+
+                                      '        <label class="control-label">Question Group</label>'+
+                                      '        <select style="width: auto;" name="Question['+nextQuestionDiv+'].QuestionGroupId" class="form-control">' +
+                                       $("#questionsSelect").html()+
+                                       '</select>'+
+                                      '    </div>' +
+                                       '<div class="form-group" style="margin-right: 3%">'+
+                                       '     <label class="control-label">AnswerRequired</label>'+
+                                       '     <input type="hidden" value="false" name="Question[0].AnswerRequired" style="width: auto;" class="form-control"/>'+
+                                       '     <input type="checkbox" value="true" name="Question[0].AnswerRequired" checked="checked" style="width: auto;" class="form-control"/>'+
+                                       '</div>'+
+                                      '<div class="col-md-7">'+
+                                     '     <p class="col-md-3"><a href="javascript:void(0);" onclick="addquestionfield(this)" title="Add another question field" class="add_fields new_add_field_button fas fa-plus-circle"></a></p>'+
+                                     '     <p class="col-md-3"><a href="javascript:void(0);" title="Remove question field" class="remove_field new_minus_field_button fas fa-minus-circle"></a></p>' +
+                                     '</div>'+
+                                      '/div>');
              //add focus on last textarea
             $(element).closest(".wrapper").find('.form-group:last-child textarea').focus()
             //console.log($(element).closest(".wrapper").find('.form-group:last-child').html())
             }
         }
+        /*'<div class="col-md-7">'+
+                           '<p class="col-md-3"><a href="javascript:void(0);" onclick="addquestionfield(this)" title="Add another question field" class="add_fields new_add_field_button fas fa-plus-circle"></a></p>'+
+                           '<p class="col-md-3"><a href="javascript:void(0);" title="Remove question field" class="remove_field new_minus_field_button fas fa-minus-circle"></a></p>' +
+                           '</div>'+*/
         /*$(".add_fields").click(function(e){
                 e.preventDefault();
          //Check maximum allowed input fields

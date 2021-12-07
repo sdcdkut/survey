@@ -7,6 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Surveyapp.Controllers
 {
@@ -25,25 +29,43 @@ namespace Surveyapp.Controllers
         [HttpGet]
         public async Task<IActionResult> UserSurvey()
         {
-            var surveyContext = _context.Survey;
+            var surveyContext = _context.Survey.Include(c => c.Surveyors).ThenInclude(c => c.Surveyor);
             return View(await surveyContext.ToListAsync());
         }
         [HttpGet]
         public async Task<IActionResult> ReassignSurvey(string id)
         {
             var surveyId = Convert.ToInt32(id);
-            var surveyContext = _context.Survey.Where(x => x.Id == surveyId);
+            var surveyContext = _context.Survey.Include(c => c.Surveyors).ThenInclude(c => c.Surveyor)
+                .Where(x => x.Id == surveyId);
             return View(await surveyContext.ToListAsync());
         }
 
         [HttpPost]
-        public async Task<IActionResult> ReassignSurvey(Survey survey)
+        public async Task<IActionResult> ReassignSurvey(Survey survey, string surveyOwner)
         {
-            var surveyupdate = _context.Survey.SingleOrDefault(x => x.Id == survey.Id);
-            surveyupdate.SurveyerId = survey.SurveyerId;
+            var surveyupdate = _context.Survey.Include(c=>c.Surveyors).SingleOrDefault(x => x.Id == survey.Id);
+            var surveyors = _context.Surveyors.Where(c => c.SurveyId == survey.Id).ToList();
+            //surveyupdate.SurveyerId = survey.SurveyerId;
             try
             {
-                _context.Survey.Update(surveyupdate);
+                foreach (var surveyor in surveyors)
+                {
+                    surveyor.Owner = surveyor.SurveyorId == surveyOwner;
+                    _context.Surveyors.Update(surveyor);
+                }
+                if (!_context.Surveyors.Any(c=>c.SurveyorId == surveyOwner && c.SurveyId == survey.Id))
+                {
+                    await _context.Surveyors.AddAsync(new Surveyors
+                    {
+                        Owner = true,
+                        Permission = SurveyPermission.AllPermissions,
+                        SurveyorId = surveyOwner,
+                        ActiveStatus = true,
+                        SurveyId = survey.Id
+                    });
+                }
+                //_context.Survey.Update(surveyupdate);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -270,7 +292,7 @@ namespace Surveyapp.Controllers
                 {
                     ModelState.AddModelError("", error.Description);
                 }
-                return View("ListRole s");
+                return View("ListRoles");
             }
         }
 
@@ -285,7 +307,7 @@ namespace Surveyapp.Controllers
             }
             var userRoles = await userManager.GetRolesAsync(user);
             var locked = false;
-            var dif = EF.Functions.DateDiffSecond(DateTime.Now, user.LockoutEnd);
+            var dif = (user.LockoutEnd - DateTime.Now).Value.Seconds;
             if (dif > 0)
             {
                 locked = true;
@@ -417,6 +439,45 @@ namespace Surveyapp.Controllers
                 }
                 return View(model);
             }
+        }
+
+        public IActionResult Create()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IActionResult ExternalLogin()
+        {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                /*var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "sd"),
+                    new Claim(ClaimTypes.Name, "sc"),
+                    new Claim("onelogin-access-token", "sd")
+                };
+                var userIdentity = new ClaimsIdentity(claims, "login");
+                ClaimsPrincipal principal = new ClaimsPrincipal(userIdentity);*/
+                //await HttpContext.SignInAsync(principal);
+                //HttpContext.GetOwinContext().Authentication.Challenge(OpenIdConnectAuthenticationDefaults.AuthenticationType);
+                return Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectDefaults.AuthenticationScheme);
+            }
+
+            return RedirectToAction("Index","Home");
+        }
+
+        [Authorize(AuthenticationSchemes = (CookieAuthenticationDefaults.AuthenticationScheme + "," + OpenIdConnectDefaults.AuthenticationScheme))]
+        public async Task<IActionResult> Signout()
+        {
+            //return RedirectToAction(nameof(SignIn));
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties { RedirectUri = "/" });
+            var authSignOut = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("Index", "Home")
+            };
+            //return RedirectToAction(nameof(Index));
+            return SignOut(authSignOut, CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
         }
     }
 }

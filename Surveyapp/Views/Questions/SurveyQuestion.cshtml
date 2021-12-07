@@ -6,33 +6,33 @@
     ViewBag.Title = "Survey Questions";
     Layout = "_Layout";
 }
-    <style>
+<style>
         .FixedHeader_Cloned{
             background-color:azure
         }
     </style>
 <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-action="Surveys" asp-controller="Surveys">
-                    <span>Surveys</span>
-                </a>
-            </li>
-            <li class="breadcrumb-item">
-                <a asp-action="SurveySubjects" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
-                    <span>Survey Subjects</span>
-                </a>
-            </li>
-            <li class="breadcrumb-item active">
-                <a>
-                    <span>Survey Questions</span>
-                </a>
-            </li>
-        </ol>
-    </nav>
-<h2>@ViewBag.SubjectName Survey Questions</h2>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Surveys" asp-controller="Surveys">
+                <span>Surveys</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="SurveySubjects" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Subjects</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Survey Questions</span>
+            </a>
+        </li>
+    </ol>
+</nav>
+<h3>@ViewBag.SubjectName Survey Questions <small style="font-style: italic">(NB: questionnaire marked (<span style="color: red">*</span>) requires a score)</small></h3>
 @*if there is questions*@
-@if (Model.Any())
+@if (Model!.Any())
 {
     @*<div class="row">
         <div class="col-md-8">
@@ -114,101 +114,283 @@
             </form>
         </div>
     </div>*@
-    
-<form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
+    <h5 style="font-style: italic">@Model.FirstOrDefault()?.Subject?.Description</h5>
+    <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <table border="0" class="table table-striped table-hover table-bordered display">
-        <thead style="position: sticky; top: 0;">
-        <tr style="height: 5px!important;line-height: 2%;">
-            <th colspan="2"></th>
-            <th colspan="@Model.Take(1).SelectMany(x=>x.ResponseType.ResponseDictionary).Count()" style="text-align: center;">Scores</th>
-        </tr>
-        <tr style="height: 5px!important;width: auto !important;">
-            <th>
-                SN
-            </th>
-            <th style="width:60%">
-                Question
-            </th>
-            @foreach (var item in Model.Take(1).SelectMany(x => x.ResponseType.ResponseDictionary))
-            {
-                <th style="width:auto!important">@item.Value</th>
-            }
-        </tr>
-        </thead>
-        <tbody>
-        @{
-            var quizSerialTable = 0;
-            var formSubmitBtnTable=false;
-        }
-        @*check if survey is of type open*@
-        @if (Model.Any(x => x.Subject.Category.Survey.status == "Open"))
+    <thead style="position: sticky; top: 0;">
+    @*<tr style="height: 5px!important;line-height: 2%;">
+                <th colspan="2"></th>
+                <th colspan="@Model.Take(1).SelectMany(x => x.ResponseType.ResponseDictionary).Count()" style="text-align: center;">Scores</th>
+            </tr>*@
+    <tr style="height: 5px!important;width: auto !important;">
+        <th>SN </th>
+        <th >Question</th>
+        <th style="width:auto!important"> Scores</th>
+        @*@foreach (var item in Model.Take(1).SelectMany(x => x.ResponseType.ResponseDictionary))
+                {
+                    <th style="width:auto!important">@item.Value</th>
+                }*@
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        var quizSerialTable = 0;
+        var formSubmitBtnTable = false;
+    }
+    @*check if survey is of type open*@
+    @if (Model.Any(x => x.Subject.Survey.status == "Open"))
+    {
+        @foreach (var quiz in Model.GroupBy(c => c.QuestionGroup))
         {
-            @foreach (var quiz in Model)
+            <tr>
+                <td colspan="3" style="text-align: left;font-weight: bolder">@quiz.Key?.Name</td>
+            </tr>
+            foreach (var question in quiz)
             {
+                var required = question?.AnswerRequired == true ? "required" : "";
                 quizSerialTable++;
                 formSubmitBtnTable = true;
                 <tr>
                     <input type="hidden" required="required" name="quizresponse" id="quizresponseTable"/>
                     <td >@quizSerialTable</td>
-                    <td style="width:60%">@Html.DisplayFor(modelItem => quiz.question)</td>
-                    @foreach (var response in quiz.ResponseType.ResponseDictionary)
-                    {
-                        <td>
-                            <input type="radio" class="tableradio" name="quize @quiz.Id" value="@response.Key|@quiz.Id" required="required"/>
-                        </td>
-                    }
-                    
+                    <td style="width:60%">
+                        @Html.DisplayFor(modelItem => question.question)
+                        @if (question?.AnswerRequired == true)
+                        {
+                            <span style="color: red">*</span>
+                        }
+                        else
+                        {
+                            <small style="font-style: italic">(not required)</small>
+                        }
+                    </td>
+                    <td>
+                        @if (question?.ResponseType.DisplayOptionType == DisplayOptionType.RadioButton)
+                        {
+                            @foreach (var response in question.ResponseType.ResponseDictionary)
+                            {
+                                <span title="@response.Value">@response.Name</span>
+                                <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                <input type="radio" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
+                            }
+                        }
+                        @if (question?.ResponseType.DisplayOptionType == DisplayOptionType.DropDown)
+                        {
+                            var quizResponseName = $"quizResponse[{question.Id}].Response";
+                            var responseDictionary = question.ResponseType.ResponseDictionary.Select(v => new SelectListItem
+                            {
+                                Value = $"{v.Value}",
+                                Text = v.Name
+                            });
+                            <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                            if (question?.AnswerRequired == true)
+                            {
+                                <select required name="@quizResponseName" asp-items="@responseDictionary"></select>
+                            }
+                            else
+                            {
+                                <select name="@quizResponseName" asp-items="@responseDictionary"></select>
+                            }
+                        }
+                        @if (question?.ResponseType.DisplayOptionType == DisplayOptionType.Input)
+                        {
+                            @foreach (var response in question.ResponseType.ResponseDictionary)
+                            {
+                                <span style="text-align: center" title="@response.Value">@response.Name</span>
+                                <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                <input type="hidden" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
+                                <textarea  class="tableradio" name="quizResponse[@question.Id].ResponseText" @required></textarea>
+                            }
+                        }
+                    </td>
                 </tr>
             }
         }
-        @*check if survey is of type Closed*@
-        @if (Model.Any(x => x.Subject.Category.Survey.status == "Closed"))
+    }
+    @*check if survey is of type Closed*@
+    @if (Model.Any(x => x.Subject.Survey.status == "Closed"))
+    {
+        //check if user is loged in
+        if (User.Identity!.IsAuthenticated)
         {
-            //check if user is loged in
-            if (User.Identity.IsAuthenticated)
+            @foreach (var quiz in Model.GroupBy(c => c.QuestionGroup))
             {
-                @foreach (var quiz in Model)
-                 {
-                     //check if user has not answered the survey question
-                     if (!_context.SurveyResponse.Where(x => x.QuestionId == quiz.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
-                     {
-                         quizSerialTable++;
-                          formSubmitBtnTable = true;
-                          <tr>
-                              <input type="hidden" required="required" name="quizresponse" id="quizresponseTable"/>
-                              <td >@quizSerialTable</td>
-                              <td style="width:60%">@Html.DisplayFor(modelItem => quiz.question)</td>
-                              @foreach (var response in quiz.ResponseType.ResponseDictionary)
-                              {
-                                  <td>
-                                      <input type="radio" class="tableradio" name="quize @quiz.Id" value="@response.Key|@quiz.Id" required="required"/>
-                                  </td>
-                              }
-                             
-                          </tr>
-                     }else
-                     {
-                         <h3 style="background-color:Lavender;">Survey questions already taken</h3>
-                     }
-                 }
-                 
-            }else
-            {
-                <h3 style="background-color:Lavender;">Survey questions require login</h3>
+                <tr>
+                    <td colspan="3" style="text-align: left;font-weight: bolder">@quiz.Key?.Name</td>
+                </tr>
+                foreach (var question in quiz)
+                {
+                    //check if user has not answered the survey question
+                    if (!_context.SurveyResponse.Where(x => x.QuestionId == question.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
+                    {
+                        var required = question?.AnswerRequired == true ? "required" : "";
+                        quizSerialTable++;
+                        formSubmitBtnTable = true;
+                        <tr>
+                            <input type="hidden" required="required" name="quizresponse" id="quizeresponseId"/>
+                            <td >@quizSerialTable</td>
+                            <td style="width:60%">
+                                @Html.DisplayFor(modelItem => question.question)
+                                @if (question?.AnswerRequired == true)
+                                {
+                                    <span style="color: red">*</span>
+                                }
+                                else
+                                {
+                                    <small style="font-style: italic">(not required)</small>
+                                }
+                            </td>
+                            <td>
+                                @if (question.ResponseType.DisplayOptionType == DisplayOptionType.RadioButton)
+                                {
+                                    @foreach (var response in question.ResponseType.ResponseDictionary)
+                                    {
+                                        <span title="@response.Value">@response.Name</span>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="radio" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
+                                    }
+                                }
+                                @if (question.ResponseType.DisplayOptionType == DisplayOptionType.DropDown)
+                                {
+                                    var quizResponseName = $"quizResponse[{question.Id}].Response";
+                                    var responseDictionary = question.ResponseType.ResponseDictionary.Select(v => new SelectListItem
+                                    {
+                                        Value = $"{v.Value}",
+                                        Text = v.Name
+                                    });
+                                    <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                    if (question?.AnswerRequired == true)
+                                    {
+                                        <select required name="@quizResponseName" asp-items="@responseDictionary"></select>
+                                    }
+                                    else
+                                    {
+                                        <select name="@quizResponseName" asp-items="@responseDictionary"></select>
+                                    }
+                                }
+                                @if (question.ResponseType.DisplayOptionType == DisplayOptionType.Input)
+                                {
+                                    @foreach (var response in question.ResponseType.ResponseDictionary)
+                                    {
+                                        <span style="text-align: center" title="@response.Value">@response.Name</span>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="hidden" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
+                                        <input class="tableradio" name="quizResponse[@question.Id].ResponseText" @required/>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <h3 style="background-color:Lavender;">Survey questions already taken</h3>
+                    }
+                }
             }
         }
-        
-        </tbody>
+        else
+        {
+            <h3 style="background-color:Lavender;">Survey questions require login</h3>
+        }
+    }
+    @*check if survey is of type Closed*@
+    @if (Model.Any(x => x.Subject.Survey.status == "SelectiveParticipants"))
+    {
+        //check if user is loged in
+        if (User.Identity!.IsAuthenticated && Model.Any(c=>c.Subject.Survey.SurveyParticipants.Any(v=>v.ParticipantId == _usermanager.GetUserId(User))))
+        {
+            @foreach (var quiz in Model.GroupBy(c => c.QuestionGroup))
+            {
+                <tr>
+                    <td colspan="3" style="text-align: left;font-weight: bolder">@quiz.Key?.Name</td>
+                </tr>
+                foreach (var question in quiz)
+                {
+                    //check if user has not answered the survey question
+                    if (!_context.SurveyResponse.Where(x => x.QuestionId == question.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
+                    {
+                        var required = question?.AnswerRequired == true ? "required" : "";
+                        quizSerialTable++;
+                        formSubmitBtnTable = true;
+                        <tr>
+                            <input type="hidden" required="required" name="quizresponse" id="quizeresponseId"/>
+                            <td >@quizSerialTable</td>
+                            <td style="width:60%">
+                                @Html.DisplayFor(modelItem => question.question)
+                                @if (question?.AnswerRequired == true)
+                                {
+                                    <span style="color: red">*</span>
+                                }
+                                else
+                                {
+                                    <small style="font-style: italic">(not required)</small>
+                                }
+                            </td>
+                            <td>
+                                @if (question.ResponseType.DisplayOptionType == DisplayOptionType.RadioButton)
+                                {
+                                    @foreach (var response in question.ResponseType.ResponseDictionary)
+                                    {
+                                        <span title="@response.Value">@response.Name</span>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="radio" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
+                                    }
+                                }
+                                @if (question.ResponseType.DisplayOptionType == DisplayOptionType.DropDown)
+                                {
+                                    var quizResponseName = $"quizResponse[{question.Id}].Response";
+                                    var responseDictionary = question.ResponseType.ResponseDictionary.Select(v => new SelectListItem
+                                    {
+                                        Value = $"{v.Value}",
+                                        Text = v.Name
+                                    });
+                                    <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                    if (question?.AnswerRequired == true)
+                                    {
+                                        <select required name="@quizResponseName" asp-items="@responseDictionary"></select>
+                                    }
+                                    else
+                                    {
+                                        <select name="@quizResponseName" asp-items="@responseDictionary"></select>
+                                    }
+                                }
+                                @if (question.ResponseType.DisplayOptionType == DisplayOptionType.Input)
+                                {
+                                    @foreach (var response in question.ResponseType.ResponseDictionary)
+                                    {
+                                        <span style="text-align: center" title="@response.Value">@response.Name</span>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="hidden" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
+                                        <input class="tableradio" name="quizResponse[@question.Id].ResponseText" @required/>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <h3 style="background-color:Lavender;">Survey questions already taken</h3>
+                    }
+                }
+            }
+        }
+        else
+        {
+            <h3 style="background-color:Lavender;">Survey questions require login</h3>
+        }
+    }
+
+    </tbody>
     </table>
     @if (formSubmitBtnTable)
-     {
-         <div class="form-group">
-             <input type="submit" value="Submit Survey" class="btn btn-primary"/>
-         </div>
-     }
-</form>
-@section Scripts{ 
+    {
+        <div class="form-group" style="position: fixed;right: 4%;bottom: 11%">
+            <input type="submit" value="Submit Survey" class="btn btn-primary"/>
+        </div>
+    }
+    </form>
+@section Scripts{
     <script>
         $('form input:radio').on('input', function (e) {
             var quizeresponse = $(this).parent().parent().parent().parent().find("#quizresponse");
@@ -217,8 +399,8 @@
 
         })
         $('form input:radio.tableradio').on('input', function (e) {
-            var quizeresponse = $(this).parent().parent().find("#quizresponseTable");
-            quizeresponse.val($(this).val());
+            var quizeresponseId = $(this).parent().parent().find("#quizresponseTable");
+            quizeresponseId.val($(this).val());
             /*console.log($(this).closest("tr").find("#quizresponseTable").val())*/
 
         })
@@ -292,6 +474,5 @@
         })*/
     </script>
 }
-        //<script src="~/lib/jquery/dist/jquery.js"></script>
-
+    //<script src="~/lib/jquery/dist/jquery.js"></script>
 }

@@ -1,0 +1,91 @@
+@model IEnumerable<QuestionGroup>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<style>
+.modal.show {
+  display: flex !important;
+  justify-content: center;
+}
+
+.modal-dialog {
+  align-self: center;
+}
+#Setup-new-survey-div{
+    position: absolute;
+    right: 3%;
+}
+</style>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="Surveys">
+                <span>My Surveys</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Categories</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
+                <span>Survey Subject</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Question groups</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a asp-action="Index" asp-controller="Questions" asp-route-id="@ViewBag.SubjectId">
+                <span>Questions</span>
+            </a>
+        </li>
+    </ol>
+</nav>
+
+<p>
+    <a asp-action="Create" asp-route-id="@ViewBag.SubjectId">create new subject questions</a>
+</p>
+<table class="table table-striped table-hover" id="survey-table">
+    <thead>
+    <tr>
+        <th>
+            Group Question Name 
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SurveySubject)
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SurveySubject.Name)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.Name">
+                    <i class="fa fa-edit"></i>
+                </a><span>|</span>
+                <a asp-action="Details" asp-route-id="@item.Id" title="view @item.Name details">
+                    <i class="fa fa-eye"></i>
+                </a> <span>|</span>
+                <a asp-action="Delete" asp-route-id="@item.Id" title="Delete @item.Name">
+                    <i class="fa fa-trash"></i>
+                </a> <span>|</span>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

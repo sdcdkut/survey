@@ -55,12 +55,12 @@
     </thead>
     <tbody>
         @{
-            var surveyResponse = Context.SurveyResponse;
-            var responseType = Context.ResponseType;
-            var question = Context.Question;
+            var surveyResponse = Context.SurveyResponse.ToList();
+            var responseType = Context.ResponseType.ToList();
+            var question = Context.Question.ToList();
             foreach (var item in Model)
             {
-                var scoreResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Sum(x => int.Parse(x.Response));
+                var scoreResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Sum(x => x.Response);
                 //var questions = question.Where(x => x.SubjectId == item.Id).Count(a => a.SubjectId == item.Id);
                 var questionResponsesCount = question.Where(a => a.SubjectId == item.Id).Take(1).SelectMany(x => x.SurveyResponses)?.Count();
                 var totalResponse = surveyResponse.Where(a => a.question.SubjectId == item.Id).Count(a => a.question.SubjectId == item.Id);
@@ -69,7 +69,7 @@
                 res = questionResponsesCount;
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.SubjectName)
+                        @Html.DisplayFor(modelItem => item.Name)
                     </td>
                     <td>
                         @scoreResponse
@@ -78,7 +78,7 @@
                         @avgScore
                     </td>
                     <td>
-                        @responseType.Where(x => x.SubjectId == item.Id).SelectMany(x => x.ResponseDictionary).SingleOrDefault(x => int.Parse(x.Key) == avgScore).Value
+                        @responseType.SelectMany(x => x.ResponseDictionary).FirstOrDefault(x => x.Value == avgScore)?.Value
                     </td>
                     <td><a asp-action="QuestionResults" asp-route-id="@item.Id">Indiviual Question performnce <i class="fa fa-receipt"></i></a></td>
                 </tr>

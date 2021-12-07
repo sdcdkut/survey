@@ -1,0 +1,69 @@
+@model Surveyors
+
+@{
+    ViewBag.Title = "create new survey access";
+    Layout = "_Layout";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">
+            <a asp-action="Index">
+                <span>My Surveys </span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a asp-action="SurveyUsersAccess" asp-route-id="@ViewBag.SurveyId">
+                <span>Surveys User access</span>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">
+            <a>
+                <span>Create new Survey access </span>
+            </a>
+        </li>
+    </ol>
+</nav>
+<hr/>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateUserAccess">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="SurveyId" value="@ViewBag.SurveyId"/>
+            <input type="hidden" asp-for="Owner" value="false" >
+            <div class="form-group">
+                <label asp-for="SurveyorId" class="control-label"></label>
+                <select asp-for="SurveyorId" asp-items="ViewBag.SurveyorId" class="form-control"></select>
+                <span asp-validation-for="SurveyorId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ActiveStatus" class="control-label"></label>
+                <input type="checkbox" checked="checked" asp-for="ActiveStatus" class="form-control"/>
+                <span asp-validation-for="ActiveStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Permission" class="control-label"></label>
+                <select asp-for="Permission" asp-items="Html.GetEnumSelectList<SurveyPermission>()" class="form-control"></select>
+                <span asp-validation-for="Permission" class="text-danger"></span>
+            </div>
+            @*<div class="form-group">
+                       <label asp-for="SurveyerId" class="control-label"></label>
+                       <select asp-for="SurveyerId" class="form-control" asp-items="ViewBag.SurveyerId"></select>
+                       <span asp-validation-for="SurveyerId" class="text-danger"></span>
+                   </div>*@
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary"/>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="SurveyUsersAccess" asp-route-id="@ViewBag.SurveyId">Back to List</a>
+</div>
+
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}

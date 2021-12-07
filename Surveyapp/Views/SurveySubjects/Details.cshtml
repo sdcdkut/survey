@@ -36,17 +36,17 @@
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.SubjectName)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.SubjectName)
+            @Html.DisplayFor(model => model.Name)
         </dd>
         @if (Model.OtherProperties != null)
         {
             foreach (var props in Model.OtherProperties)
             {
                 <dt class = "col-sm-2">
-                    @props.Key
+                    @props.Name
                 </dt>
                 <dd class = "col-sm-10">
                     @props.Value
@@ -93,5 +93,5 @@
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
-    <a asp-action="Index" asp-route-id="@Model.CategoryId">Back to List</a>
+    <a asp-action="Index" asp-route-id="@Model.SurveyId">Back to List</a>
 </div>

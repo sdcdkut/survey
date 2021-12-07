@@ -84,11 +84,11 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                 ApplicationUser userid = _userManager.FindByEmailAsync(Input.Email).Result;
                 if (appUser != null)
                 {
-                    if (!_userManager.IsEmailConfirmedAsync(userid).Result)
-                    {
-                        ModelState.AddModelError(string.Empty, "Email not confirmed!");
-                        return Page();
-                    }
+                    // if (!_userManager.IsEmailConfirmedAsync(userid).Result)
+                    // {
+                    //     ModelState.AddModelError(string.Empty, "Email not confirmed!");
+                    //     return Page();
+                    // }
                     var result = await _signInManager.PasswordSignInAsync(/*Input.Email*/appUser, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                     if (result.Succeeded)
                     {

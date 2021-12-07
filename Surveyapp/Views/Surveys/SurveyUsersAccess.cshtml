@@ -1,0 +1,85 @@
+@model IEnumerable<Surveyors>
+@inject UserManager<ApplicationUser> _userManager
+@{
+    ViewBag.Title = "Users Access";
+    Layout = "_Layout";
+    var currentUserId = _userManager.GetUserId(User);
+    var modificationRights = Model?.Any(c => c.Owner && currentUserId == c.SurveyorId) == true ||
+                             Model?.Any(c => c.ActiveStatus && c.Permission is SurveyPermission.Write or SurveyPermission.AllPermissions && currentUserId == c.SurveyorId) == true;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item ">
+            <a asp-action="Index">
+                <span>My Surveys </span>
+            </a>
+        </li>
+        <li class="breadcrumb-item ">
+            <a >
+                <span>user Survey access </span>
+            </a>
+        </li>
+    </ol>
+</nav>
+@if (modificationRights)
+{
+    <p>
+        <a asp-action="CreateUserAccess" asp-route-id="@ViewBag.SurveyId">create new user access to Survey</a>
+    </p>
+}
+
+<table class="table table-striped table-hover" id="survey-table">
+    <thead>
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Surveyor)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ActiveStatus)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Permission)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Owner)
+        </th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @{
+        foreach (var item in Model?.Where(c => !c.Owner))
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Surveyor.UserName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ActiveStatus)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Permission)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Owner)
+                </td>
+                <td>
+                    @if (modificationRights)
+                    {
+                        <a asp-action="EditUserAccess" asp-route-id="@item.Id">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <span>|</span>
+                        <a asp-action="DeleteUserAccess" asp-route-id="@item.Id">
+                            <i class="fa fa-trash"></i>
+                        </a>
+                        <span>|</span>
+                        <a asp-controller="SurveySubjects" asp-action="Index" asp-route-id="@item.Id">Survey Subjects <i class="fa fa-receipt"></i></a>
+                    }
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>

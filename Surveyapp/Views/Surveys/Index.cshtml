@@ -29,13 +29,17 @@
 </nav>
 
 <div class="pull-right" id="Setup-new-survey-div">
-    <a  asp-controller="Surveys" asp-action="CreatePartal" data-toggle="modal" data-target="#Setup-new-survey" class="btn btn-primary btn-sm">
+    @*<a asp-controller="Surveys" asp-action="CreatePartal" data-ajax="true" id="creat-surveypartial-form"
+       data-ajax-loading="#spinner" data-ajax-method="GET" data-ajax-failure="failtoget"
+       data-ajax-success="success" data-toggle="modal" data-target="#Setup-new-survey" class="btn btn-primary btn-sm">
         SetUP a full survey
-    </a>
+    </a>*@
     <div id="Setup-new-survey" class="modal fade hidden-print" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" style="width: 100%">
             <div class="modal-content">
-    
+                <span id="spinner" style="display:none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </span>
             </div>
         </div>
     </div>
@@ -47,7 +51,7 @@
     <thead>
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.name)
+            @Html.DisplayNameFor(model => model.Name)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Startdate)
@@ -69,7 +73,7 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.name)
+                @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Startdate)
@@ -84,23 +88,35 @@
                 @Html.DisplayFor(modelItem => item.approvalStatus)
             </td>
             <td>
-                @if (item.SurveyerId == _userManager.GetUserId(User))
+                @if (item.Surveyors.Any(c => c.SurveyorId == _userManager.GetUserId(User)))
                 {
-                    <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.name"><i class="fa fa-edit"></i></a><span>|</span>
-                    <a asp-action="Details" asp-route-id="@item.Id" title="view @item.name details"><i class="fa fa-eye"></i></a> <span>|</span>
-                    <a asp-action="Delete" asp-route-id="@item.Id" title="Delete @item.name"><i class="fa fa-trash"></i></a> <span>|</span>
-                    <a asp-controller="SurveyCategories" asp-action="Index" asp-route-id="@item.Id">Survey Subject categories <i class="fa fa-receipt"></i></a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" title="Edit @item.Name">
+                        <i class="fa fa-edit"></i>
+                    </a>
+                    <span>|</span>
+                    <a asp-action="Details" asp-route-id="@item.Id" title="view @item.Name details">
+                        <i class="fa fa-eye"></i>
+                    </a>
+                    <span>|</span>
+                    <a asp-action="Delete" asp-route-id="@item.Id" title="Delete @item.Name">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                    <span>|</span>
+                    <a asp-controller="SurveySubjects" asp-action="Index" asp-route-id="@item.Id">Survey Subjects <i class="fa fa-receipt"></i></a>
+                    <span>|</span>
+                    <a asp-action="SurveyUsersAccess" asp-route-id="@item.Id">User(s) Access<i class="fas fa-user"></i></a>
+                    @if (DateTime.Now >item.EndDate)
+                    {
+                        <span>|</span>
+                        <a asp-action="ReOpenSurvey" asp-route-id="@item.Id">Re-Open Survey<i class="fas fa-box-open"></i></a>
+                    }
                 }
-                else
-                {
-                    <span></span>
-                }
-
             </td>
         </tr>
     }
     </tbody>
 </table>
+
 @section Scripts
 {
     <script >
@@ -112,6 +128,15 @@
         // replace the content of modal-content ever time the modal is opened
         modal.find('.modal-content').load(url);
     });
+    $('#Setup-new-survey').on('hidden.bs.modal', function () {
+     location.reload();
+    })
+    function success() {
+      console.log("success")
+    }
+    function failtoget() {
+      alert("error getting page")
+    }
     /*$('#Setup-new-survey').on('hidden.bs.modal', function () {
         $(this).removeData('bs.modal');
         $(this).find(".modal-body").empty();

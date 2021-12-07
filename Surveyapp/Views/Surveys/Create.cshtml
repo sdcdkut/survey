@@ -21,32 +21,56 @@
 </nav>
 
 <h4>Create Survey</h4>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create" id="creat-survey-form">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="name" class="control-label"></label>
-                <input asp-for="name" class="form-control" />
-                <span asp-validation-for="name" class="text-danger"></span>
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control"/>
+                <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Startdate" class="control-label"></label>
-                <input asp-for="Startdate" value="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control" />
+                <input asp-for="Startdate" value="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control"/>
                 <span asp-validation-for="Startdate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" min="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control" />
+                <input asp-for="EndDate" min="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control"/>
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description"  class="form-control" ></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                @{
+                    var statusSelect = new[]
+                    {
+                        new { text = "Open (allow anonymous take of survey)", value = "Open" },
+                        new { text = "Closed (login required for survey take)", value = "Closed" },
+                        new { text = "SelectiveParticipants (only Selected Participants)", value = "SelectiveParticipants" }
+                    }.Select(c => new SelectListItem
+                    {
+                        Value = c.value,
+                        Text = c.text,
+                        Selected = c.value == Model?.status
+                    });
+                }
+
                 <label asp-for="status" class="control-label"></label>
                 @*<input asp-for="status" class="form-control" />*@
-                <select asp-for="status" class="form-control">
-                    <option value="Open">Open<small>(allow anounimous take of survey)</small></option>
-                    <option value="Closed" selected="selected">Closed<small>(login required for survey take)</small></option>
+                <select asp-for="status" class="form-control" asp-items="statusSelect" onchange="surveyTypechange(this)"></select>
+                <span asp-validation-for="status" class="text-danger"></span>
+            </div>
+            <div class="form-group Participants" style="display: none">
+                <label asp-for="SurveyParticipants" class="control-label"></label>
+                @*<input asp-for="status" class="form-control" />*@
+                <select name="Participants" multiple="multiple" asp-items="ViewBag.Participants" class="form-control">
                 </select>
                 <span asp-validation-for="status" class="text-danger"></span>
             </div>
@@ -55,7 +79,7 @@
                 <select asp-for="SurveyerId" class ="form-control" asp-items="ViewBag.SurveyerId"></select>
             </div>*@
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary"/>
             </div>
         </form>
     </div>
@@ -66,7 +90,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
         //customize survey create from validation
         var today = "@($"{DateTime.Now:yyyy-MM-dd}")";
@@ -103,5 +127,13 @@
                 status:'<span style="color: red">Enter survey status</span>'
             }
         })
+        function surveyTypechange(element) {
+          var selectedValue = $(element).val();
+          if (selectedValue === "SelectiveParticipants"){
+              $(".Participants").show()
+          }else {
+              $(".Participants").hide()
+          }
+        }
     </script>
 }

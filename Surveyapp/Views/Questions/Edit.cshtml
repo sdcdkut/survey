@@ -22,7 +22,7 @@
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Subject</span>
             </a>
         </li>
@@ -46,6 +46,7 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" required="required"/>
+            <input type="hidden" asp-for="SubjectId" required="required">
             @*<div class="form-group">
                 <label asp-for="SubjectId" class="control-label"></label>
                 <select asp-for="SubjectId" class="form-control" asp-items="ViewBag.SubjectId"></select>
@@ -56,10 +57,28 @@
                 <select asp-for="ResponseTypeId" required="required" class="form-control" asp-items="ViewBag.ResponseTypeId"></select>
                 <span asp-validation-for="ResponseTypeId" class="text-danger"></span>
             </div>
+            <div class="form-group" style="margin-right: 3%">
+                <label asp-for="QuestionGroupId" class="control-label"></label>
+                <select asp-items="ViewBag.QuestionGroupId" asp-for="QuestionGroupId" style="width: auto;" class="form-control"></select>
+                <span asp-validation-for="ResponseTypeId" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="question" class="control-label"></label>
                 <textarea asp-for="question" required class="form-control" ></textarea>
                 <span asp-validation-for="question" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AnswerRequired" class="control-label"></label>
+                <input type="hidden" name="AnswerRequired" value="false" class="form-control" />
+                @if (Model?.AnswerRequired == true)
+                {
+                    <input type="checkbox" name="AnswerRequired" checked="checked" value="true" class="form-control"/>
+                }
+                else
+                {
+                    <input type="checkbox" name="AnswerRequired" class="form-control"/>
+                }
+                <span asp-validation-for="AnswerRequired" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

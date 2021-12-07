@@ -12,50 +12,90 @@
         </li>
         <li class="breadcrumb-item active">
             <a>
-                <span>Edit @Model.name Survey </span>
+                <span>Edit @Model.Name Survey </span>
             </a>
         </li>
     </ol>
 </nav>
-<hr />
+<hr/>
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <input type="hidden" asp-for="SurveyerId" />
+            <input type="hidden" asp-for="Id"/>
+            @* <input type="hidden" asp-for="SurveyerId" /> *@
             <input type="hidden" asp-for="approvalStatus">
             <div class="form-group">
-                <label asp-for="name" class="control-label"></label>
-                <input asp-for="name" class="form-control" />
-                <span asp-validation-for="name" class="text-danger"></span>
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control"/>
+                <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Startdate" class="control-label"></label>
-                <input asp-for="Startdate" class="form-control" />
+                <input asp-for="Startdate" class="form-control"/>
                 <span asp-validation-for="Startdate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
+                <input asp-for="EndDate" class="form-control"/>
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description"  class="form-control" ></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @{
+                    var statusSelect = new[]
+                    {
+                        new { text = "Open (allow anonymous take of survey)", value = "Open" },
+                        new { text = "Closed (login required for survey take)", value = "Closed" },
+                        new { text = "SelectiveParticipants (only Selected Participants)", value = "SelectiveParticipants" }
+                    }.Select(c => new SelectListItem
+                    {
+                        Value = c.value,
+                        Text = c.text,
+                        Selected = c.value == Model.status
+                    });
+                }
                 <label asp-for="status" class="control-label"></label>
                 @*<input asp-for="status" class="form-control" />*@
-                <select asp-for="status" class="form-control">
-                    <option value="Open">Open<small>(allow anounimous take of survey)</small></option>
-                    <option value="Closed">Closed<small>(login required for survey take)</small></option>
-                </select>
+                <select asp-for="status" class="form-control" onchange="surveyTypechange(this)" asp-items="statusSelect"></select>
                 <span asp-validation-for="status" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="ListedOnSurveyListPage" class="control-label"></label>
+                <input asp-for="ListedOnSurveyListPage" class="form-control"/>
+                <span asp-validation-for="ListedOnSurveyListPage" class="text-danger"></span>
+            </div>
+            @if (Model.status == "SelectiveParticipants")
+            {
+                <div class="form-group Participants">
+                    <label asp-for="SurveyParticipants" class="control-label"></label>
+                    @*<input asp-for="status" class="form-control" />*@
+                    <select name="SurveyParticipants" multiple="multiple" asp-items="ViewBag.Participants" class="form-control">
+                    </select>
+                    <span asp-validation-for="SurveyParticipants" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <div class="form-group Participants" style="display: none">
+                    <label asp-for="SurveyParticipants" class="control-label"></label>
+                    @*<input asp-for="status" class="form-control" />*@
+                    <select name="SurveyParticipants" multiple="multiple" asp-items="ViewBag.Participants" class="form-control">
+                    </select>
+                    <span asp-validation-for="SurveyParticipants" class="text-danger"></span>
+                </div>
+            }
             @*<div class="form-group">
                 <label asp-for="SurveyerId" class="control-label"></label>
                 <select asp-for="SurveyerId" class="form-control" asp-items="ViewBag.SurveyerId"></select>
                 <span asp-validation-for="SurveyerId" class="text-danger"></span>
             </div>*@
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary"/>
             </div>
         </form>
     </div>
@@ -66,7 +106,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
     <script>
         $("#EndDate").attr("min",$("#Startdate").val());
         $("#Startdate").attr("max",$("#EndDate").val());
@@ -76,5 +116,13 @@
         $("#EndDate").on("input",function(e){
             $("#Startdate").attr("max",$(this).val())
         })
+        function surveyTypechange(element) {
+          var selectedValue = $(element).val();
+          if (selectedValue === "SelectiveParticipants"){
+              $(".Participants").show()
+          }else {
+              $(".Participants").hide()
+          }
+        }
     </script>
 }

@@ -30,27 +30,26 @@
     </thead>
     <tbody>
     @*check if survey is of type closed*@
-    @if (Model.Any(x => x.Category.Survey.status == "Closed"))
+    @if (Model.Any(x => x.Survey.status == "Closed"))
     {
     @foreach (var item in Model)
         {
             if (item.OtherProperties != null)
             {
-                <tr data-toggle="popover" data-trigger="hover" title="@item.SubjectName's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
+                <tr data-toggle="popover" data-trigger="hover" title="@item.Name's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
                                                                                                                               {
                                                                                                                                   <dt >
-                                                                                                                                    @otherProp.Key
+                                                                                                                                    @otherProp.Name
                                                                                                                                     </dt>
                                                                                                                                       <dd>
                                                                                                                                     @otherProp.Value
                                                                                                                                     </dd>
-                                                                                                                              }
-                                                                                                                </dl>">
+                                                                                                                              }</dl>">
                     <td>
-                        @Html.DisplayFor(modelItem => item.SubjectName)
+                        @Html.DisplayFor(modelItem => item.Name)
                     </td>
                     <td>
-                        @if (User.Identity.IsAuthenticated)
+                        @if (User.Identity!.IsAuthenticated)
                         {
                             // check if user has taken survey on subject
                             if (_context.SurveyResponse.Where(x => x.question.Subject.Id == item.Id).Any(x => x.RespondantId == _usermanager.GetUserId(User)))
@@ -75,7 +74,7 @@
             {
                  <tr >
                     <td>
-                        @Html.DisplayFor(modelItem => item.SubjectName)
+                        @Html.DisplayFor(modelItem => item.Name)
                     </td>
                     <td>
                         @if (User.Identity.IsAuthenticated)
@@ -103,24 +102,23 @@
         }
     }
     @*check if survey is of type open*@
-    @if (Model.Any(x => x.Category.Survey.status == "Open"))
+    @if (Model.Any(x => x.Survey.status == "Open"))
     {
         @foreach (var item in Model)
                 {
                     if (item.OtherProperties != null)
                     {
-                        <tr data-toggle="popover" data-trigger="hover" title="@item.SubjectName's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
+                        <tr data-toggle="popover" data-trigger="hover" title="@item.Name's other properties" data-content="<dl style='width:100%' >@foreach (var otherProp in item.OtherProperties)
                                                                                                                                                   {
                                                                                                                                                       <dt >
-                                                                                                                                                        @otherProp.Key
+                                                                                                                                                        @otherProp.Name
                                                                                                                                                         </dt>
                                                                                                                                                           <dd>
                                                                                                                                                         @otherProp.Value
                                                                                                                                                         </dd>
-                                                                                                                                                  }
-                                                                                                                                    </dl>">
+                                                                                                                                                  }</dl>">
                             <td>
-                                @Html.DisplayFor(modelItem => item.SubjectName)
+                                @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
                                 <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>
@@ -131,7 +129,7 @@
                     {
                         <tr>
                             <td>
-                                @Html.DisplayFor(modelItem => item.SubjectName)
+                                @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td>
                                 <a asp-controller="Questions" asp-action="SurveyQuestion" asp-route-id="@item.Id">Start Survey</a>

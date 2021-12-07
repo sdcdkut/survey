@@ -29,16 +29,16 @@
                 <span>My Surveys</span>
             </a>
         </li>
-        <li class="breadcrumb-item">
+        @*<li class="breadcrumb-item">
             <a asp-action="Index" asp-controller="SurveyCategories" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Categories</span>
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.CategoryId">
+            <a asp-action="Index" asp-controller="SurveySubjects" asp-route-id="@ViewBag.SurveyId">
                 <span>Survey Subject</span>
             </a>
-        </li>
+        </li>*@
         <li class="breadcrumb-item">
             <a asp-action="Index" asp-route-id="@ViewBag.SubjectId">
                 <span>Option Types</span>
@@ -54,7 +54,7 @@
 
 @*<h4>Create Response options</h4>*@
 <hr />
-<h2 style="color:red;background-color: #f3f6cf">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2>
+@* <h2 style="color:red;background-color: #f3f6cf">Note the order of adding the response option<small style="color:red">(This is used for rating scale)</small></h2> *@
 <div class="row">
     <div class="col-md-8">
         <form asp-action="Create">
@@ -66,22 +66,41 @@
                     <span asp-validation-for="ResponseName" class="text-danger"></span>
                 </div>
                 <div class="form-group">
-                    <input type="hidden" required="required" name="SubjectId" value="@ViewBag.SubjectId">
-                    @*<label asp-for="SubjectId" class="control-label"></label>
-                    <select asp-for="SubjectId" class="form-control" asp-items="ViewBag.SubjectId"></select>*@
+                    <label asp-for="DisplayOptionType" class="control-label"></label>
+                    <select asp-for="DisplayOptionType"  asp-items="Html.GetEnumSelectList<DisplayOptionType>()" class="form-control" ></select>
+                    <span asp-validation-for="ResponseName" class="text-danger"></span>
                 </div>
                 @*<div class="form-group">
-                    <label asp-for="ResponseDictionary" class="control-label"></label>
-                    <input asp-for="ResponseDictionary" class="form-control" />
-                    <span asp-validation-for="ResponseDictionary" class="text-danger"></span>
+                    <input type="hidden" required="required" name="SubjectId" value="@ViewBag.SubjectId">
+                    $1$<label asp-for="SubjectId" class="control-label"></label>
+                    <select asp-for="SubjectId" class="form-control" asp-items="ViewBag.SubjectId"></select>#1#
                 </div>*@
-                <div class="col-md-12" style="display: flex;">
+                <div class="respond-options-div">
+                    <h4>Respond options and their Value</h4>
+                    <div class="d-flex response-group">
+                        <div class="form-group" style="width: auto;margin-left: 3%">
+                            <label style="margin-right: 3%" class="control-label">Name</label>
+                            <input required asp-for="ResponseDictionary[0].Name" style="width: auto;" class="form-control"/>
+                            <span asp-validation-for="ResponseDictionary[0].Name" class="text-danger"></span>
+                        </div>
+                        <div class="form-group" style="width: auto;margin-left: 3%">
+                            <label style="margin-right: 3%" class="control-label">Value</label>
+                            <input required asp-for="ResponseDictionary[0].Value" style="width: auto;" class="form-control"/>
+                            <span asp-validation-for="ResponseDictionary[0].Value" class="text-danger"></span>
+                        </div>
+                        <p style="width: auto;margin-left: 3%;margin-top: 2%">
+                            <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addresponsefield(this)">Add another response</a>
+                        </p>
+                    </div>
+                </div>
+
+                @*<div class="col-md-12" style="display: flex;">
                     <label class="control-label">Response Options</label>
                     <div class="form-group col-md-4">
                         <input required="required" name="responseDictionary" placeholder="Input response option" class="form-control"/>
                     </div>
                     <p class="col-md-8"><a href="javascript:void(0);" onclick="addresponsefield(this)" style="border-radius: 6px" class="add_fields btn btn-secondary btn-sm">Add response option field</a></p>
-                </div>
+                </div>*@
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -97,23 +116,29 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-    var max_fields = 10;
+    var max_fields = 20;
     var x = 1; //Initial input field is set to 1
     function addresponsefield(element){
         //Check maximum allowed input fields
         if(x < max_fields){
+            var propElements = $(element).closest(".respond-options-div").find(".response-group").length;
+            var nextPropElement = parseInt(propElements)+1;
             x++; //input field increment
             //add input field
-            $(".wrapper").append('<div class="form-group col-md-12" style="display: flex;">' +
-                         '<label class="control-label">Response Options</label>' +
-                          '<div class="form-group col-md-4">' +
-                          '<input class="form-control" required="required" name="responseDictionary" placeholder="Input response option" />' +
-                           '</div>' +
-                           '<div style="display: flex" class="col-md-8" >' +
-                           '<p style="margin-right: 4%"><a href="javascript:void(0);" onclick="addresponsefield(this)" title="Add response option" class="add_fields new_add_response_field_button fas fa-plus-circle"></a></p>' +
-                           '<p ><a href="javascript:void(0);" title="Remove option field" class="remove_field new_minus_response_field_button fas fa-minus-circle"></a></p>' +
-                           '</div>' +
-                            '</div>');
+            $(".respond-options-div").append('<div class="d-flex response-group">'+
+                                  '<div class="form-group" style="width: auto;margin-left: 3%">'+
+                                  '    <label style="margin-right: 3%" class="control-label">Name</label>'+
+                                  '    <input required name="ResponseDictionary['+nextPropElement+'].Name" style="width: auto;" class="form-control"/>'+
+                                  '</div>'+
+                                  '<div class="form-group" style="width: auto;margin-left: 3%">'+
+                                  '    <label style="margin-right: 3%" class="control-label">Value</label>'+
+                                  '    <input required type="number" name="ResponseDictionary['+nextPropElement+'].Value" style="width: auto;" class="form-control"/>'+
+                                  '</div>'+
+                                  '<p style="width: auto;margin-left: 3%;margin-top: 2%">'+
+                                  '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addresponsefield(this)">Add another response</a>'+
+                                  '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info remove_field">remove response</a>'+
+                                  '</p>'+
+                                  '</div>');
          //add focus on last input
         $(element).closest(".wrapper").find('.form-group:last-child input').focus();
         }
@@ -133,9 +158,9 @@
         });*/
      
         //when user click on remove button
-        $(".wrapper").on("click",".remove_field", function(e){ 
+        $(document).on("click",".remove_field", function(e){ 
                 e.preventDefault();
-         $(this).closest('div.form-group').remove(); //remove inout field
+         $(this).closest('div.response-group').remove(); //remove inout field
          x--; //inout field decrement
             });
 </script>
