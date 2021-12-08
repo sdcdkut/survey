@@ -124,7 +124,7 @@ namespace Surveyapp.Controllers
                     Text = c.UserName,
                     Selected = participants.Contains(c.Id)
                 });
-                return RedirectToAction(nameof(Index) /*,"SurveyCategories",new {id = survey.Id }*/);
+                return RedirectToAction(nameof(Create) ,"SurveySubjects",new {id = survey.Id });
             }
 
             ViewBag.Participants = _context.Users.Select(c => new SelectListItem
