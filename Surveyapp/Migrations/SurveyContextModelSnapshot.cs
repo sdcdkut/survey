@@ -253,6 +253,9 @@ namespace Surveyapp.Migrations
 
                     b.HasIndex("SubjectId");
 
+                    b.HasIndex("question", "SubjectId")
+                        .IsUnique();
+
                     b.ToTable("Question");
                 });
 
@@ -471,11 +474,20 @@ namespace Surveyapp.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AddAnotherSubjectOnSurveyTake")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("CategoryId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
+
+                    b.Property<List<DynamicSubjectValue>>("DynamicSubjectValue")
+                        .HasColumnType("jsonb");
+
+                    b.Property<bool>("DynamicallyCreated")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -657,6 +669,7 @@ namespace Surveyapp.Migrations
                     b.HasOne("Surveyapp.Models.Question", "question")
                         .WithMany("SurveyResponses")
                         .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Surveyapp.Models.ApplicationUser", "Respondant")

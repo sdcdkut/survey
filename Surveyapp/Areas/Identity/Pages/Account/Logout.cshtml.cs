@@ -19,11 +19,13 @@ namespace Surveyapp.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;
+        private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
 
-        public LogoutModel(SignInManager<ApplicationUser> signInManager, ILogger<LogoutModel> logger)
+        public LogoutModel(SignInManager<ApplicationUser> signInManager, ILogger<LogoutModel> logger, IAuthenticationSchemeProvider authenticationSchemeProvider)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _authenticationSchemeProvider = authenticationSchemeProvider;
         }
 
         public void OnGet()
@@ -35,11 +37,20 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             await _signInManager.SignOutAsync();
             var authSignOut = new AuthenticationProperties
             {
-                RedirectUri = returnUrl != null? LocalRedirect(returnUrl).Url: Url.Action("Index", "Home")
+                RedirectUri = returnUrl != null ? LocalRedirect(returnUrl).Url : Url.Action("Index", "Home")
             };
             //return RedirectToAction(nameof(Index));
-            return SignOut(authSignOut, OpenIdConnectDefaults.AuthenticationScheme);
-            _logger.LogInformation("User logged out.");
+            _logger.LogInformation("User logged out");
+            var result = await HttpContext.AuthenticateAsync();
+            var r1 = await _authenticationSchemeProvider.GetRequestHandlerSchemesAsync();
+            //var r2 = await _authenticationSchemeProvider.GetDefaultAuthenticateSchemeAsync();
+            //var r3 = await _authenticationSchemeProvider.GetAllSchemesAsync();
+            var authenticationScheme = result.Ticket?.AuthenticationScheme;
+            if (authenticationScheme is OpenIdConnectDefaults.AuthenticationScheme)
+            {
+                return SignOut(authSignOut, OpenIdConnectDefaults.AuthenticationScheme);
+            }
+
             if (returnUrl != null)
             {
                 return LocalRedirect(returnUrl);

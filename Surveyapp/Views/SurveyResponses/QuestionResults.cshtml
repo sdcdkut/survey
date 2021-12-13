@@ -1,5 +1,6 @@
 @model IEnumerable<Question>
 @inject SurveyContext Context
+@using Microsoft.EntityFrameworkCore
 
 @{
     ViewBag.Title = "Question Result";
@@ -42,91 +43,93 @@
 <h2>Question Result</h2>
 <table class="table table-striped table-hover table-bordered display" id="question-result-table">
     <thead>
-        <tr>
-            <th width="60%">
-                Question
-            </th>
-            <th>
-                Total Score
-            </th>
-            <th>
-                No of Response
-            </th>
-            <th>
-                Avarage Score
-            </th>
-            <th>
-                Result
-            </th>
-        </tr>
+    <tr>
+        <th width="60%">
+            Question
+        </th>
+        <th>
+            Total Score
+        </th>
+        <th>
+            No of Response
+        </th>
+        <th>
+            Avarage Score
+        </th>
+        <th>
+            Result
+        </th>
+    </tr>
     </thead>
     <tbody>
-        @{
-            var surveyResponse = Context.SurveyResponse.ToList();
-            var responseType = Context.ResponseType.ToList();
-            foreach (var item in Model?.OrderBy(x => x.Id).GroupBy(c=>c.QuestionGroup))
+    @{
+        int SurveyId = ViewBag.SurveyId;
+        var surveyResponse = Context.SurveyResponse.Include(c => c.question.Subject)
+            .Where(c => c.question.Subject.SurveyId == SurveyId).ToList();
+        //var responseType = Context.ResponseType.ToList();
+        foreach (var item in Model?.OrderBy(x => x.Id).GroupBy(c => c.QuestionGroup)!)
+        {
+            <tr>
+                <td colspan="5" style="font-weight: bolder;text-align: center">@item.Key?.Name</td>
+                <td style="display: none"></td>
+                <td style="display: none"></td>
+                <td style="display: none"></td>
+                <td style="display: none"></td>
+            </tr>
+            foreach (var question in item)
             {
+                var questionResponseSum = surveyResponse.Where(a => a.QuestionId == question.Id).Sum(x => x.Response);
+                var totalQuestionCountResponse = surveyResponse.Count(x => x.QuestionId == question.Id) > 0 ? Context.SurveyResponse.Count(x => x.QuestionId == question.Id) : 1;
+                var avgScore = Math.Round(questionResponseSum / (decimal)totalQuestionCountResponse, 0);
+                res = totalQuestionCountResponse;
+                var responses = string.Join(",", surveyResponse.Where(c => c.QuestionId == question.Id).Select(x => x.Response));
+                var responseTexts = surveyResponse.Where(c => c.QuestionId == question.Id).Select(x => x.ResponseText).ToList();
                 <tr>
-                    <td colspan="5" style="font-weight: bolder;text-align: center">@item.Key?.Name</td>
-                    <td style="display: none"></td>
-                    <td style="display: none"></td>
-                    <td style="display: none"></td>
-                    <td style="display: none"></td>
-                </tr>
-                foreach (var question in item)
-                {
-                    var questionResponseSum = surveyResponse.Where(a => a.QuestionId == question.Id).Sum(x => x.Response);
-                    var totalQuestionCountResponse = surveyResponse.Count(x => x.QuestionId == question.Id) > 0 ? Context.SurveyResponse.Count(x => x.QuestionId == question.Id) : 1;
-                    var avgScore = Math.Round(questionResponseSum / (decimal)totalQuestionCountResponse, 0);
-                    res = totalQuestionCountResponse;
-                    var responses = string.Join(",", surveyResponse.Where(c => c.QuestionId == question.Id).Select(x => x.Response));
-                    var responseTexts = surveyResponse.Where(c => c.QuestionId == question.Id).Select(x => x.ResponseText).ToList();
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => question.question)
-                        </td>
-                        @if (question.ResponseType.DisplayOptionType == DisplayOptionType.Input)
-                        {
-                            <td colspan="4">
-                                @foreach (var responseText in responseTexts)
-                                {
-                                    <p>@responseText</p>
+                    <td>
+                        @Html.DisplayFor(modelItem => question.question)
+                    </td>
+                    @if (question.ResponseType.DisplayOptionType == DisplayOptionType.Input)
+                    {
+                        <td colspan="4">
+                            @foreach (var responseText in responseTexts)
+                            {
+                                <p>@responseText</p>
                                     @*if (responseText != responseTexts?.LastOrDefault())
                                     {
                                         <span>,</span>
                                     }*@
-                                }
-                            </td>
-                            <td style="display: none"></td>
-                            <td style="display: none"></td>
-                            <td style="display: none"></td>
-                        }
-                        else
-                        {
-                            <td title="@responses">
-                                @questionResponseSum
-                            </td>
-                            <td>
-                                @totalQuestionCountResponse
-                            </td>
-                            <td>
-                                @avgScore
-                            </td>
-                            <td>
-                                @responseType.SelectMany(x => x.ResponseDictionary).FirstOrDefault(x => x.Value == avgScore)?.Value
-                            </td>
-                        }
-                    </tr>
-                }
-                
+                            }
+                        </td>
+                        <td style="display: none"></td>
+                        <td style="display: none"></td>
+                        <td style="display: none"></td>
+                    }
+                    else
+                    {
+                        <td title="@responses">
+                            @questionResponseSum
+                        </td>
+                        <td>
+                            @totalQuestionCountResponse
+                        </td>
+                        <td>
+                            @avgScore
+                        </td>
+                        <td>
+                            @question.ResponseType.ResponseDictionary.FirstOrDefault(x => x.Value == avgScore)?.Name
+                        </td>
+                    }
+                </tr>
             }
         }
+    }
 
     </tbody>
 </table>
 @*<div align="center" style="background-color:Beige; color:aqua">
     Number of responses per question <Strong> @res</Strong>
 </div>*@
+
 @section Scripts
 {
     <script>

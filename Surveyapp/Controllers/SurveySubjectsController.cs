@@ -24,7 +24,7 @@ namespace Surveyapp.Controllers
         private readonly UserManager<ApplicationUser> _usermanager;
         private readonly IWebHostEnvironment _iHostingEnvironment;
 
-        public SurveySubjectsController(IWebHostEnvironment hostingEnvironment,SurveyContext context, UserManager<ApplicationUser> userManager)
+        public SurveySubjectsController(IWebHostEnvironment hostingEnvironment, SurveyContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _usermanager = userManager;
@@ -32,7 +32,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: SurveySubjects 
-        [Authorize(/*Roles = "Surveyor"*/)]
+        [Authorize( /*Roles = "Surveyor"*/)]
         public async Task<IActionResult> Index(int? id)
         {
             if (id == null)
@@ -44,13 +44,14 @@ namespace Surveyapp.Controllers
             var surveyId = id;
             ViewBag.SurveyId = surveyId;
             var surveyContext = _context.SurveySubject.Include(s => s.Category)
-                .Include(c=>c.Survey).Where(x => x.SurveyId == id);
+                .Include(c => c.Survey).Where(x => x.SurveyId == id);
             var useId = _usermanager.GetUserId(User);
-            var survey = _context.Survey.Include(c=>c.Surveyors).FirstOrDefault(c=>c.Id == surveyId);
-            if (survey?.Surveyors.Any(c=>c.ActiveStatus && c.SurveyorId == useId) == false)
+            var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
+            if (survey?.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId) == false)
             {
                 return StatusCode(403);
             }
+
             return View(await surveyContext.ToListAsync());
         }
 
@@ -66,6 +67,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+
             var surveyId = surveySubject.SurveyId;
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
@@ -95,7 +97,8 @@ namespace Surveyapp.Controllers
             {
                 return StatusCode(403);
             }
-            ViewData["CategoryId"] = new SelectList(_context.SurveyCategory.Where(c=>c.SurveyId == id), "Id", "CategoryName");
+
+            ViewData["CategoryId"] = new SelectList(_context.SurveyCategory.Where(c => c.SurveyId == id), "Id", "CategoryName");
             ViewBag.Description = survey?.Description;
             ViewBag.ResponseTypeId = _context.ResponseType.Select(v => new SelectListItem
             {
@@ -112,9 +115,21 @@ namespace Surveyapp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId")] SurveySubject surveySubject, Dictionary<int, OtherProperties> OtherProperties)
+        public async Task<IActionResult> Create(
+            [Bind("Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId,AddAnotherSubjectOnSurveyTake,DynamicSubjectValue")] SurveySubject surveySubject,
+            Dictionary<int, OtherProperties> OtherProperties,
+            Dictionary<int, DynamicSubjectValueViewModel> DynamicSubjectValue)
         {
-            surveySubject.OtherProperties = OtherProperties?.Select(c=>new OtherProperties{Name = c.Value.Name, Value = c.Value.Value}).ToList();
+            surveySubject.OtherProperties = OtherProperties?.Select(c => new OtherProperties { Name = c.Value.Name, Value = c.Value.Value }).ToList();
+            if (surveySubject.AddAnotherSubjectOnSurveyTake && DynamicSubjectValue.Any())
+            {
+                surveySubject.DynamicSubjectValue = DynamicSubjectValue.Select(c => new DynamicSubjectValue
+                {
+                    Name = c.Value.Name,
+                    SelectValueOptions = c.Value.SelectValueOptions.Select(v => v.Value).ToList()
+                }).ToList();
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(surveySubject);
@@ -124,8 +139,10 @@ namespace Surveyapp.Controllers
                 {
                     return RedirectToAction("_CreatePartial", "ResponseTypes", new { id = surveySubject.Id });
                 }
-                return RedirectToAction(nameof(Create),"Questions", new { id = surveySubject.Id });
+
+                return RedirectToAction(nameof(Create), "Questions", new { id = surveySubject.Id });
             }
+
             ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "CategoryName", surveySubject.CategoryId);
             ViewBag.ResponseTypeId = _context.ResponseType.Select(v => new SelectListItem
             {
@@ -146,11 +163,12 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var surveySubject = await _context.SurveySubject.Include(x=>x.Category).SingleOrDefaultAsync(x=>x.Id==id);
+            var surveySubject = await _context.SurveySubject.Include(x => x.Category).SingleOrDefaultAsync(x => x.Id == id);
             if (surveySubject == null)
             {
                 return NotFound();
             }
+
             var surveyId = surveySubject.SurveyId;
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
@@ -158,6 +176,7 @@ namespace Surveyapp.Controllers
             {
                 return StatusCode(403);
             }
+
             ViewBag.SurveyId = surveyId;
             ViewData["CategoryId"] = new SelectList(_context.SurveyCategory, "Id", "CategoryName", surveySubject.CategoryId);
             ViewBag.ResponseTypeId = _context.ResponseType.Select(v => new SelectListItem
@@ -176,8 +195,10 @@ namespace Surveyapp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId")] SurveySubject surveySubject,
-            Dictionary<int, OtherProperties> OtherProperties)
+        public async Task<IActionResult> Edit(int id,
+            [Bind("Id,Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId,AddAnotherSubjectOnSurveyTake,DynamicSubjectValue")] SurveySubject surveySubject,
+            Dictionary<int, OtherProperties> OtherProperties,
+            Dictionary<int, DynamicSubjectValueViewModel> DynamicSubjectValue)
         {
             if (id != surveySubject.Id)
             {
@@ -185,6 +206,15 @@ namespace Surveyapp.Controllers
             }
 
             surveySubject.OtherProperties = OtherProperties?.Select(c => new OtherProperties { Name = c.Value.Name, Value = c.Value.Value }).ToList();
+            surveySubject.DynamicSubjectValue = null;
+            if (surveySubject.AddAnotherSubjectOnSurveyTake )
+            {
+                surveySubject.DynamicSubjectValue = DynamicSubjectValue?.Select(c => new DynamicSubjectValue
+                {
+                    Name = c.Value.Name,
+                    SelectValueOptions = c.Value.SelectValueOptions.Select(v => v.Value).ToList()
+                }).ToList();
+            }
             if (ModelState.IsValid)
             {
                 try
@@ -203,6 +233,7 @@ namespace Surveyapp.Controllers
                         throw;
                     }
                 }
+
                 TempData["FeedbackMessage"] = $"survey subject edited successfully";
                 return RedirectToAction(nameof(Index), new { id = surveySubject.SurveyId });
             }
@@ -225,6 +256,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+
             ViewBag.SurveyId = _context.SurveyCategory.SingleOrDefault(x => x.Id == id)?.SurveyId;
             var surveySubject = await _context.SurveySubject
                 .Include(s => s.Category)
@@ -233,6 +265,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
+
             var surveyId = surveySubject.SurveyId;
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
@@ -271,12 +304,12 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            var survey = _context.Survey.Include(c=>c.Surveyors).SingleOrDefault(x => x.SurveyCategorys.Any(c => c.Id == id));
+            var survey = _context.Survey.Include(c => c.Surveyors).SingleOrDefault(x => x.SurveyCategorys.Any(c => c.Id == id));
             var surveyStatus = survey?.status;
-            var subjects = _context.SurveySubject.Include(x=>x.Category.Survey)
-                .Include(x => x.Survey.Surveyors).Include(c=>c.Questions)
-                .Where(x => x.Questions.Any()).Where(x => (DateTime.Now -x.Survey.Startdate).Days >= 0 && (x.Survey.EndDate - DateTime.Now).Days >= 0);
-            var surveyorIds = _context.Survey.Include(c=>c.Surveyors).SingleOrDefault(x=>x.Id == id)?.Surveyors;
+            var subjects = _context.SurveySubject.Include(x => x.Category.Survey)
+                .Include(x => x.Survey.Surveyors).Include(c => c.Questions)
+                .Where(x => x.Questions.Any()).Where(x => (DateTime.Now - x.Survey.Startdate).Days >= 0 && (x.Survey.EndDate - DateTime.Now).Days >= 0);
+            var surveyorIds = _context.Survey.Include(c => c.Surveyors).SingleOrDefault(x => x.Id == id)?.Surveyors;
             var useId = _usermanager.GetUserId(User);
 
             /*if (surveyStatus == "Closed")
@@ -295,13 +328,14 @@ namespace Surveyapp.Controllers
         {
             var surveySubject = _context.SurveySubject.Where(x => x.CategoryId == id);
             ViewBag.CategoryId = id;
-            var surveyId = _context.Survey.SingleOrDefault(x=>x.SurveyCategorys.Any(c=>c.Id==id))?.Id;
+            var surveyId = _context.Survey.SingleOrDefault(x => x.SurveyCategorys.Any(c => c.Id == id))?.Id;
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
             if (survey?.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId) == false)
             {
                 return StatusCode(403);
             }
+
             return PartialView(new SurveySubject());
         }
 
@@ -330,7 +364,7 @@ namespace Surveyapp.Controllers
                 //add the collection to the document
                 for (int k = 0; k < htmlarraylist.Count; k++)
                 {
-                    document.Add((IElement) htmlarraylist[k]);
+                    document.Add((IElement)htmlarraylist[k]);
                 }
 
                 document.Add(new Paragraph("And the same with indentation...."));
@@ -345,7 +379,6 @@ namespace Surveyapp.Controllers
                 document.Close();
                 string filepath = Path.Combine(filefolder, "parsetest.pdf");
                 return PhysicalFile(filepath, MimeTypes.GetMimeType("parsetest.pdf"), Path.GetFileName(filepath));
-
             }
             catch (Exception exx)
             {
@@ -355,7 +388,11 @@ namespace Surveyapp.Controllers
 
             return Content("some staff");
         }
+    }
 
-
+    public class DynamicSubjectValueViewModel
+    {
+        public string Name { get; set; }
+        public Dictionary<int, string> SelectValueOptions { get; set; }
     }
 }

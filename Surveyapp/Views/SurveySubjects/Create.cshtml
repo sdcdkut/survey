@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Create";
+    var newOtherProperties = new Dictionary<int, OtherProperties>();
+    var newDynamicSubjectValue = new Dictionary<int, Dictionary<int, DynamicSubjectValue>>();
 }
 
 @*
@@ -39,6 +41,8 @@
         <form asp-action="Create" id="new-subject-form">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="SurveyId" value="@ViewBag.SurveyId">
+            <input type="hidden" name="DynamicSubjectValue" value="@newDynamicSubjectValue">
+            <input type="hidden" name="OtherProperties" value="@newOtherProperties">
             <div>
                 <div style="display: flex;">
                     <div class="form-group" style="margin-right: 3%">
@@ -63,8 +67,39 @@
                         <textarea name="Description" cols="50" class="form-control">@ViewBag.Description</textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
+                    <div class="form-group">
+                        <label asp-for="AddAnotherSubjectOnSurveyTake" class="control-label"></label>
+                        <input asp-for="AddAnotherSubjectOnSurveyTake" onclick="DynamicSubjectValueCheck(this)"/>
+                        <span asp-validation-for="AddAnotherSubjectOnSurveyTake" class="text-danger"></span>
+                    </div>
+
                 </div>
-                <div class="other-property-div">
+                <div class="DynamicSubjectValue" style="display: none">
+                    <h4>subject Properties request on survey take</h4>
+                    <div class="d-flex DynamicSubjectValue-div boxshadow">
+                        <div class="form-group">
+                            <label asp-for="DynamicSubjectValue[0].Name" class="control-label"></label>
+                            <input asp-for="DynamicSubjectValue[0].Name"/>
+                            <span asp-validation-for="DynamicSubjectValue[0].Name" class="text-danger"></span>
+                        </div>
+                        <div class="form-group ">
+                            <label class="control-label">Select Value Options</label>
+                            <div class="SelectValueOptions-group ">
+                                <div class="SelectValueOptions-div">
+                                    <input type="text" placeholder="select option" name="DynamicSubjectValue[0].SelectValueOptions[0]">
+                                    <a class="btn btn-info btn-sm" onclick="addOption(this,0)">Add another selective option</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <p style="width: auto;margin-left: 3%;margin-top: 2%">
+                                <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addDynamicSubjectValue(this)">Add another dynamic subject select option</a>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="other-property-div" style="margin-top: 2%">
                     <h4>Other subject Properties</h4>
                     <div class="d-flex Property-group">
                         <div class="form-group" style="width: auto;margin-left: 3%">
@@ -136,22 +171,58 @@
             x++; //input field increment
             //add input field
             $(".other-property-div").append('<div class="d-flex Property-group">'+
-                                  '<div class="form-group" style="width: auto;margin-left: 3%">'+
-                                  '    <label style="margin-right: 3%" class="control-label">Name</label>'+
-                                  '    <input name="OtherProperties['+nextPropElement+'].Name" style="width: auto;" class="form-control"/>'+
-                                  '</div>'+
-                                  '<div class="form-group" style="width: auto;margin-left: 3%">'+
-                                  '    <label style="margin-right: 3%" class="control-label">Value</label>'+
-                                  '    <input name="OtherProperties['+nextPropElement+'].Value" style="width: auto;" class="form-control"/>'+
-                                  '</div>'+
-                                  '<p style="width: auto;margin-left: 3%;margin-top: 2%">'+
-                                  '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject property</a>'+
-                                  '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info remove_field">remove property</a>'+
-                                  '</p>'+
-                                  '</div>');
+                                          '<div class="form-group" style="width: auto;margin-left: 3%">'+
+                                          '    <label style="margin-right: 3%" class="control-label">Name</label>'+
+                                          '    <input name="OtherProperties['+nextPropElement+'].Name" style="width: auto;" class="form-control"/>'+
+                                          '</div>'+
+                                          '<div class="form-group" style="width: auto;margin-left: 3%">'+
+                                          '    <label style="margin-right: 3%" class="control-label">Value</label>'+
+                                          '    <input name="OtherProperties['+nextPropElement+'].Value" style="width: auto;" class="form-control"/>'+
+                                          '</div>'+
+                                          '<p style="width: auto;margin-left: 3%;margin-top: 2%">'+
+                                          '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addpropertyfield(this)">Add another subject property</a>'+
+                                          '    <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info remove_field">remove property</a>'+
+                                          '</p>'+
+                                          '</div>');
          //add focus on last input
-        $(element).closest(".wrapper").find('.form-group:last-child input').focus()
+        $(element).closest(".other-property-div").find('.form-group:last-child input').focus()
         }
+    }
+    function addDynamicSubjectValue(element){
+        var propElements = $(element).closest(".DynamicSubjectValue").find(".DynamicSubjectValue-div").length;
+        var nextPropElement = parseInt(propElements)+1;
+        $(".DynamicSubjectValue").append('<div class="d-flex DynamicSubjectValue-div boxshadow">'+
+                                         '     <div class="form-group">'+
+                                         '         <label class="control-label">Field Name</label>'+
+                                         '         <input name="DynamicSubjectValue['+nextPropElement+'].Name" required/>'+
+                                         '     </div>'+
+                                         '     <div class="form-group ">'+
+                                         '         <label class="control-label">Select Value Options</label>'+
+                                         '         <div class="SelectValueOptions-group">'+
+                                         '              <div class="SelectValueOptions-div">'+
+                                         '                  <input type="text" placeholder="select option" name="DynamicSubjectValue['+nextPropElement+'].SelectValueOptions[0]">'+
+                                         '                  <a class="btn btn-info btn-sm" onclick="addOption(this,'+nextPropElement+')">Add another selective option</a>'+
+                                         '              </div>'+
+                                         '         </div>'+
+                                         '     </div>'+
+                                         '     <div>'+
+                                         '         <p style="width: auto;margin-left: 3%;margin-top: 2%">'+
+                                         '             <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addDynamicSubjectValue(this)">Add another dynamic subject select option</a>'+
+                                         '             <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addDynamicSubjectValue(this)">remove subject select option</a>'+
+                                         '         </p>'+
+                                         '     </div>'+
+                                         '</div>');
+        //add focus on last input
+        $(element).closest(".wrapper").find('.form-group:last-child input').focus()
+    }
+    function addOption(element,SubjectValueNumber) {
+      var propElements = $(element).closest(".SelectValueOptions-group").find(".SelectValueOptions-div").length;
+      var nextPropElement = parseInt(propElements)+1;
+      $(element).closest(".SelectValueOptions-group").append('<div class="SelectValueOptions-div">'+
+                                               '     <input type="text" placeholder="select option" name="DynamicSubjectValue['+SubjectValueNumber+'].SelectValueOptions['+nextPropElement+']">'+
+                                               '     <a class="btn btn-info btn-sm" onclick="addOption(this)">Add another selective option</a>' +
+                                               '     <a class="btn btn-sm btn-info remove_field">remove option</a>'+
+                                               '</div>');
     }
     //when user click on remove button
     $(document).on("click",".remove_field", function(e){ 
@@ -159,6 +230,19 @@
         $(this).closest('div.Property-group').remove(); //remove input field
         x--; //inout field decrement
         });
+    function DynamicSubjectValueCheck(element) {
+      if ($(element).is(":checked")){
+          $(".DynamicSubjectValue").show();
+      }else {
+          $(".DynamicSubjectValue").hide();
+      }
+    }
+    function removeOption(element) {
+      $(element).closest('.SelectValueOptions-div').remove();
+    }
+    function removeDynamicSubjectValue(element) {
+      $(element).closest('.DynamicSubjectValue-div').remove();
+    }
     // $(".wrapper").on("input","input[name='PropertyName'], input[name='PropertyValue']", function(e){ 
     //     var PropertyName = $(this).closest('div.form-group').find('input[name="PropertyName"]').val();
     //     var PropertyValue = $(this).closest('div.form-group').find('input[name="PropertyValue"]').val();

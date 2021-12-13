@@ -5,6 +5,8 @@
 @{
     ViewBag.Title = "Survey Questions";
     Layout = "_Layout";
+    var surveySubject = Model?.FirstOrDefault()?.Subject;
+    var newOtherProperties = new Dictionary<int, OtherProperties>();
 }
 <style>
         .FixedHeader_Cloned{
@@ -30,10 +32,10 @@
         </li>
     </ol>
 </nav>
-<h3>@ViewBag.SubjectName Survey Questions <small style="font-style: italic">(NB: questionnaire marked (<span style="color: red">*</span>) requires a score)</small></h3>
 @*if there is questions*@
 @if (Model!.Any())
 {
+    var anotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake == true?"true":"false";
     @*<div class="row">
         <div class="col-md-8">
             <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
@@ -114,8 +116,42 @@
             </form>
         </div>
     </div>*@
-    <h5 style="font-style: italic">@Model.FirstOrDefault()?.Subject?.Description</h5>
+    <h3>@surveySubject?.Name </h3>
+    if (surveySubject?.OtherProperties != null)
+    {
+        foreach (var otherProperty in surveySubject?.OtherProperties)
+        {
+            <label style="font-weight: bolder">@otherProperty.Name</label>
+            <span>:</span>
+            <span>@otherProperty.Value</span>
+        }
+    }
+    <br/>
+    <small style="font-style: italic">(NB: questionnaire marked (<span style="color: red">*</span>) requires a score)</small>
+    <h5 style="font-style: italic">@surveySubject?.Description</h5>
     <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
+    <input type="hidden" name="dynamicSubjectValue" value="@newOtherProperties"/>
+    <input type="hidden" name="addAnotherSubjectOnSurveyTake" value="@anotherSubjectOnSurveyTake"/>
+    <input type="hidden" name="subjectName" value="@surveySubject.Name">
+    <div class="col-md-12" style="width: 100%!important;">
+        @if (surveySubject!.AddAnotherSubjectOnSurveyTake)
+        {
+            var counter = 0;
+            foreach (var subjectValue in surveySubject.DynamicSubjectValue)
+            {
+                counter++;
+                var subjectValueSelect = subjectValue.SelectValueOptions.Select(c => new SelectListItem
+                {
+                    Value = c,
+                    Text = c
+                });
+                <label>@subjectValue.Name</label>
+                <input type="hidden" name="dynamicSubjectValue[@counter].Name" value="@subjectValue.Name"/>
+                <select style="width: 20%!important;" name="dynamicSubjectValue[@counter].Value" asp-items="subjectValueSelect" required="required"></select>
+            }
+        }
+    </div>
+    
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <table border="0" class="table table-striped table-hover table-bordered display">
     <thead style="position: sticky; top: 0;">
@@ -172,6 +208,7 @@
                             {
                                 <span title="@response.Value">@response.Name</span>
                                 <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                 <input type="radio" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
                             }
                         }
@@ -184,6 +221,7 @@
                                 Text = v.Name
                             });
                             <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                            <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                             if (question?.AnswerRequired == true)
                             {
                                 <select required name="@quizResponseName" asp-items="@responseDictionary"></select>
@@ -199,6 +237,7 @@
                             {
                                 <span style="text-align: center" title="@response.Value">@response.Name</span>
                                 <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                 <input type="hidden" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
                                 <textarea  class="tableradio" name="quizResponse[@question.Id].ResponseText" @required></textarea>
                             }
@@ -248,6 +287,7 @@
                                     {
                                         <span title="@response.Value">@response.Name</span>
                                         <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                         <input type="radio" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
                                     }
                                 }
@@ -260,6 +300,7 @@
                                         Text = v.Name
                                     });
                                     <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                    <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                     if (question?.AnswerRequired == true)
                                     {
                                         <select required name="@quizResponseName" asp-items="@responseDictionary"></select>
@@ -275,6 +316,7 @@
                                     {
                                         <span style="text-align: center" title="@response.Value">@response.Name</span>
                                         <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                         <input type="hidden" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
                                         <input class="tableradio" name="quizResponse[@question.Id].ResponseText" @required/>
                                     }
@@ -294,11 +336,11 @@
             <h3 style="background-color:Lavender;">Survey questions require login</h3>
         }
     }
-    @*check if survey is of type Closed*@
+    @*check if survey is of type SelectiveParticipants*@
     @if (Model.Any(x => x.Subject.Survey.status == "SelectiveParticipants"))
     {
         //check if user is loged in
-        if (User.Identity!.IsAuthenticated && Model.Any(c=>c.Subject.Survey.SurveyParticipants.Any(v=>v.ParticipantId == _usermanager.GetUserId(User))))
+        if (User.Identity!.IsAuthenticated && Model.Any(c => c.Subject.Survey.SurveyParticipants.Any(v => v.ParticipantId == _usermanager.GetUserId(User))))
         {
             @foreach (var quiz in Model.GroupBy(c => c.QuestionGroup))
             {
@@ -334,6 +376,7 @@
                                     {
                                         <span title="@response.Value">@response.Name</span>
                                         <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                         <input type="radio" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
                                     }
                                 }
@@ -346,6 +389,7 @@
                                         Text = v.Name
                                     });
                                     <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                    <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                     if (question?.AnswerRequired == true)
                                     {
                                         <select required name="@quizResponseName" asp-items="@responseDictionary"></select>
@@ -361,6 +405,7 @@
                                     {
                                         <span style="text-align: center" title="@response.Value">@response.Name</span>
                                         <input type="hidden" name="quizResponse[@question.Id].QuestionId" value="@question.Id" @required/>
+                                        <input type="hidden" name="quizResponse[@question.Id].QuestionText" value="@question.question" @required/>
                                         <input type="hidden" class="tableradio" name="quizResponse[@question.Id].Response" value="@response.Value" @required/>
                                         <input class="tableradio" name="quizResponse[@question.Id].ResponseText" @required/>
                                     }
@@ -407,7 +452,7 @@
         var table = $('.table').DataTable({
             fresponsive: true,
             paging: false,
-            "pageLength": 25,
+            "pageLength": 50,
             autoWidth: true,
             "ordering": false,
             bFilter: false

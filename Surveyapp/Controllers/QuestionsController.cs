@@ -182,6 +182,7 @@ namespace Surveyapp.Controllers
                     var counter = 0;
                     foreach (var newquiz in questionAssociate.Questions)
                     {
+                        if (_context.Question.Any(c=>c.question  == newquiz.question && c.SubjectId == (int)id)) continue;
                         var newQuiz = new Question
                         {
                             SubjectId = (int)id,
@@ -189,7 +190,7 @@ namespace Surveyapp.Controllers
                             question = newquiz.question,
                             QuestionGroupId = newquiz.QuestionGroupId
                         };
-                        _context.Add(newQuiz);
+                        await _context.Question.AddAsync(newQuiz);
                         counter++;
                     }
 

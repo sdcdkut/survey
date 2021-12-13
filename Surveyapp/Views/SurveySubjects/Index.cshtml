@@ -39,6 +39,12 @@
         <th>
             @Html.DisplayNameFor(model => model.Name)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AddAnotherSubjectOnSurveyTake)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DynamicallyCreated)
+        </th>
         <th></th>
     </tr>
     </thead>
@@ -49,11 +55,17 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
                 <br/>
-                    @foreach (var otherProp in item.OtherProperties)
-                    {
-                        <label style="font-weight: bolder">@otherProp.Name</label> <span>:</span> <span>@otherProp.Value</span>
-                        <br/>
-                    }
+                @foreach (var otherProp in item.OtherProperties)
+                {
+                    <label style="font-weight: bolder">@otherProp.Name</label> <span>:</span> <span>@otherProp.Value</span>
+                    <br/>
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AddAnotherSubjectOnSurveyTake)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DynamicallyCreated)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" title="edit @item.Name">

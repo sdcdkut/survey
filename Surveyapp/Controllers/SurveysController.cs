@@ -307,7 +307,7 @@ namespace Surveyapp.Controllers
                 surveyContext = surveyContext.Where(x => x.Survey.Surveyors.All(c => c.ActiveStatus && c.SurveyorId != _usermanager.GetUserId(User))).ToList();
             }
 
-            surveyContext = surveyContext.Where(x => x.Questions.Any()).Where(x => x.Survey.approvalStatus == "Approved" && x.Survey.ListedOnSurveyListPage).ToList();
+            surveyContext = surveyContext.Where(x => x.Questions.Any()).Where(x => x.Survey.approvalStatus == "Approved" && !x.DynamicallyCreated && x.Survey.ListedOnSurveyListPage).ToList();
             return View(surveyContext);
         }
 
@@ -455,6 +455,15 @@ namespace Surveyapp.Controllers
                 Text = c.Name,
                 Selected = true
             }).ToList();
+            if (surveySubjects.Any(c=>c.AddAnotherSubjectOnSurveyTake))
+            {
+                ViewBag.surveySubjects = surveySubjects.Where(c=>c.AddAnotherSubjectOnSurveyTake).Take(1).Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name,
+                    Selected = true
+                }).ToList();
+            }
             ViewBag.Participants = _context.Users.ToList().Select(c => new SelectListItem
             {
                 Value = c.Id,
@@ -499,7 +508,7 @@ namespace Surveyapp.Controllers
                         Permission = surveyors.Permission,
                         ActiveStatus = surveyors.ActiveStatus,
                         SurveyId = newSurvey.Id,
-                        SurveyorId = surveyors.SurveyorId
+                        SurveyorId = surveyors.SurveyorId,
                     });
                 });
                 participants?.ToList().ForEach(async surveyParticipants =>
@@ -532,7 +541,10 @@ namespace Surveyapp.Controllers
                                 CategoryId = newSurveyCategory.Id,
                                 OtherProperties = surveySubject.OtherProperties,
                                 ResponseTypeId = surveySubject.ResponseTypeId,
-                                SurveyId = newSurvey.Id
+                                SurveyId = newSurvey.Id,
+                                DynamicallyCreated = surveySubject.DynamicallyCreated,
+                                DynamicSubjectValue = surveySubject.DynamicSubjectValue,
+                                AddAnotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake
                             };
                             if (_context.SurveySubject.Any(c => c == newSurveySubject)) continue;
                             await _context.SurveySubject.AddAsync(newSurveySubject);
@@ -592,7 +604,10 @@ namespace Surveyapp.Controllers
                             Name = surveySubject.Name,
                             OtherProperties = surveySubject.OtherProperties,
                             ResponseTypeId = surveySubject.ResponseTypeId,
-                            SurveyId = newSurvey.Id
+                            SurveyId = newSurvey.Id,
+                            DynamicallyCreated = surveySubject.DynamicallyCreated,
+                            DynamicSubjectValue = surveySubject.DynamicSubjectValue,
+                            AddAnotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake
                         };
                         if (_context.SurveySubject.Any(c => c == newSurveySubject)) continue;
                         await _context.SurveySubject.AddAsync(newSurveySubject);

@@ -60,10 +60,10 @@ namespace Surveyapp.Models
             {
                 entity.HasIndex(e => e.Id);
 
-                /*entity.Property(e => e.OtherProperties).IsRequired().
+                /*entity.Property(e => e.DynamicSubjectValue).IsRequired().
                     HasConversion(
                         x => JsonConvert.SerializeObject(x),
-                        v => v== null? new Dictionary<string, string>(): JsonConvert.DeserializeObject<Dictionary<string, string>>(v));*/
+                        v => v== null? new List<DynamicSubjectValue>(): JsonConvert.DeserializeObject<List<DynamicSubjectValue>>(v));*/
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.SurveySubjects)
@@ -89,15 +89,9 @@ namespace Surveyapp.Models
             modelBuilder.Entity<Question>(entity =>
             {
                 entity.HasIndex(e => e.Id);
+                entity.HasIndex(c => new { c.question, c.SubjectId }).IsUnique();
                 entity.HasMany(p => p.SurveyResponses)
                     .WithOne(t => t.question)
-                    .OnDelete(DeleteBehavior.Cascade);
-            });
-            modelBuilder.Entity<SurveyResponse>(entity =>
-            {
-                entity.HasIndex(e => e.Id);
-                entity.HasOne(p => p.question)
-                    .WithMany(t => t.SurveyResponses)
                     .OnDelete(DeleteBehavior.Cascade);
             });
             modelBuilder.Entity<SurveyResponse>(entity =>
@@ -106,9 +100,9 @@ namespace Surveyapp.Models
                 entity.HasOne(d => d.Respondant)
                     .WithMany(p => p.SurveyResponses)
                     .OnDelete(DeleteBehavior.ClientSetNull);
-                entity.HasOne(d => d.question)
-                    .WithMany(p => p.SurveyResponses)
-                    .OnDelete(DeleteBehavior.ClientSetNull);
+                entity.HasOne(p => p.question)
+                    .WithMany(t => t.SurveyResponses)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
