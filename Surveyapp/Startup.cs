@@ -46,8 +46,7 @@ namespace Surveyapp
                 DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10)
             };
             services.AddDbContext<SurveyContext>(options =>
-                options.UseNpgsql( /*"Server=172.16.32.24;Database=survey;user id=dkutexams;password=D3kut@3xams123#@!??*;MultipleActiveResultSets=true"*/
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseNpgsql(Configuration.GetConnectionString("LiveConnection")));//LiveConnection;DefaultConnection
             /*services.AddIdentity<ApplicationUser, IdentityRole>(Options =>
             {
                 Options.Lockout = LockOutOption;
