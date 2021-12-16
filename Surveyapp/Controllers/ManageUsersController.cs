@@ -18,12 +18,14 @@ namespace Surveyapp.Controllers
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly SurveyContext _context;
-        public ManageUsersController(SurveyContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public ManageUsersController(SurveyContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             this.userManager = userManager;
             this.roleManager = roleManager;
+            _signInManager = signInManager;
         }
 
         [HttpGet]
@@ -445,10 +447,12 @@ namespace Surveyapp.Controllers
         {
             throw new NotImplementedException();
         }
-
+        //[Authorize(AuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)]
+        //[RequestSizeLimit(1074790400)]
+        //[DisableRequestSizeLimit]
         public IActionResult ExternalLogin()
         {
-            if (!HttpContext.User.Identity.IsAuthenticated)
+            /*if (!HttpContext.User.Identity.IsAuthenticated)
             {
                 /*var claims = new List<Claim>
                 {
@@ -457,27 +461,36 @@ namespace Surveyapp.Controllers
                     new Claim("onelogin-access-token", "sd")
                 };
                 var userIdentity = new ClaimsIdentity(claims, "login");
-                ClaimsPrincipal principal = new ClaimsPrincipal(userIdentity);*/
+                ClaimsPrincipal principal = new ClaimsPrincipal(userIdentity);#1#
                 //await HttpContext.SignInAsync(principal);
                 //HttpContext.GetOwinContext().Authentication.Challenge(OpenIdConnectAuthenticationDefaults.AuthenticationType);
                 return Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectDefaults.AuthenticationScheme);
-            }
+            }*/
 
             return RedirectToAction("Index","Home");
         }
 
-        [Authorize(AuthenticationSchemes = (CookieAuthenticationDefaults.AuthenticationScheme + "," + OpenIdConnectDefaults.AuthenticationScheme))]
+        [Authorize(/*AuthenticationSchemes = (/*CookieAuthenticationDefaults.AuthenticationScheme + "," +#1# OpenIdConnectDefaults.AuthenticationScheme)*/)]
         public async Task<IActionResult> Signout()
         {
             //return RedirectToAction(nameof(SignIn));
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
+            //await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/" });
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties { RedirectUri = "/" });
+            await _signInManager.SignOutAsync();
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties { RedirectUri = "/" });
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme, new AuthenticationProperties { RedirectUri = "/" });
+
+            await HttpContext.SignOutAsync();
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            // Clear the existing external cookie to ensure a clean login process
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             var authSignOut = new AuthenticationProperties
             {
                 RedirectUri = Url.Action("Index", "Home")
             };
             //return RedirectToAction(nameof(Index));
-            return SignOut(authSignOut, CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+            return SignOut(authSignOut, /*CookieAuthenticationDefaults.AuthenticationScheme,*/ OpenIdConnectDefaults.AuthenticationScheme);
         }
     }
 }
