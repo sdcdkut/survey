@@ -1,9 +1,10 @@
-﻿@model Surveyapp.Models.SurveySubject
+﻿@using Surveyapp.Controllers
+@model Surveyapp.Models.SurveySubject
 
 @{
     ViewData["Title"] = "Create";
     var newOtherProperties = new Dictionary<int, OtherProperties>();
-    var newDynamicSubjectValue = new Dictionary<int, Dictionary<int, DynamicSubjectValue>>();
+    var newDynamicSubjectValue = new Dictionary<int, DynamicSubjectValueViewModel>();
 }
 
 @*
@@ -100,6 +101,7 @@
 
                 </div>
                 <div class="other-property-div" style="margin-top: 2%">
+                    <input type="hidden" asp-for="OtherProperties" value="@newOtherProperties">
                     <h4>Other subject Properties</h4>
                     <div class="d-flex Property-group">
                         <div class="form-group" style="width: auto;margin-left: 3%">
@@ -208,20 +210,21 @@
                                          '     <div>'+
                                          '         <p style="width: auto;margin-left: 3%;margin-top: 2%">'+
                                          '             <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addDynamicSubjectValue(this)">Add another dynamic subject select option</a>'+
-                                         '             <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="addDynamicSubjectValue(this)">remove subject select option</a>'+
+                                         '             <a style="width: auto;margin-top: 5%" class="btn btn-sm btn-info" onclick="removeDynamicSubjectValue(this)">remove subject select option</a>'+
                                          '         </p>'+
                                          '     </div>'+
                                          '</div>');
         //add focus on last input
-        $(element).closest(".wrapper").find('.form-group:last-child input').focus()
+        $(element).closest(".DynamicSubjectValue").find('.form-group:last-child input').focus()
     }
     function addOption(element,SubjectValueNumber) {
       var propElements = $(element).closest(".SelectValueOptions-group").find(".SelectValueOptions-div").length;
       var nextPropElement = parseInt(propElements)+1;
+      console.log(nextPropElement)
       $(element).closest(".SelectValueOptions-group").append('<div class="SelectValueOptions-div">'+
                                                '     <input type="text" placeholder="select option" name="DynamicSubjectValue['+SubjectValueNumber+'].SelectValueOptions['+nextPropElement+']">'+
-                                               '     <a class="btn btn-info btn-sm" onclick="addOption(this)">Add another selective option</a>' +
-                                               '     <a class="btn btn-sm btn-info remove_field">remove option</a>'+
+                                               '     <a class="btn btn-info btn-sm" onclick="addOption(this,'+SubjectValueNumber+')">Add another selective option</a>' +
+                                               '     <a class="btn btn-sm btn-info remove_field" onclick="removeOption(this)">remove option</a>'+
                                                '</div>');
     }
     //when user click on remove button

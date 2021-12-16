@@ -1,9 +1,10 @@
-﻿@model Surveyapp.Models.SurveySubject
+﻿@using Surveyapp.Controllers
+@model Surveyapp.Models.SurveySubject
 
 @{
     ViewData["Title"] = "Edit";
     var newOtherProperties = new Dictionary<int, OtherProperties>();
-    var newDynamicSubjectValue = new Dictionary<int, Dictionary<int, DynamicSubjectValue>>();
+    var newDynamicSubjectValue = new Dictionary<int, DynamicSubjectValueViewModel>();
 }
 
 @*<h1>Edit</h1>*@
@@ -78,7 +79,7 @@
                 }
                 <div class="DynamicSubjectValue col-md-12" style="display: @display">
                     <h4>subject Properties request <small>(input)</small> on survey take</h4>
-                    @if (Model!.DynamicSubjectValue.Any())
+                    @if (Model?.DynamicSubjectValue != null && Model.DynamicSubjectValue.Any())
                     {
                         for (var i = 0; i < Model.DynamicSubjectValue.Count; i++)
                         {
@@ -134,9 +135,9 @@
                     {
                         <div class="d-flex DynamicSubjectValue-div boxshadow">
                             <div class="form-group">
-                                <label asp-for="DynamicSubjectValue[0].Name" class="control-label"></label>
-                                <input asp-for="DynamicSubjectValue[0].Name"/>
-                                <span asp-validation-for="DynamicSubjectValue[0].Name" class="text-danger"></span>
+                                <label class="control-label">Name</label>
+                                <input name="DynamicSubjectValue[0].Name"/>
+                                @*<span asp-validation-for="DynamicSubjectValue[0].Name" class="text-danger"></span>*@
                             </div>
                             <div class="form-group ">
                                 <label class="control-label">Select Value Options</label>
@@ -306,7 +307,7 @@
           var nextPropElement = parseInt(propElements)+1;
           $(element).closest(".SelectValueOptions-group").append('<div class="SelectValueOptions-div d-inline-flex">'+
                                                    '     <input type="text" placeholder="select option" name="DynamicSubjectValue['+SubjectValueNumber+'].SelectValueOptions['+nextPropElement+']">'+
-                                                   '     <a class="btn btn-info btn-sm" onclick="addOption(this)">Add another selective option</a>' +
+                                                   '     <a class="btn btn-info btn-sm" onclick="addOption(this,'+SubjectValueNumber+')">Add another selective option</a>' +
                                                    '     <a class="btn btn-sm btn-info remove_field" onclick="removeOption(this)">remove option</a>'+
                                                    '</div>');
         }
