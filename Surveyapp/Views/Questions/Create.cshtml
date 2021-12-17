@@ -96,8 +96,8 @@
                     </div>
                     <div class="form-group" style="margin-right: 3%">
                         <label asp-for="AnswerRequired" class="control-label"></label>
-                        <input type="hidden" value="false" name="Question[0].AnswerRequired" style="width: auto;" class="form-control"/>
                         <input type="checkbox" value="true" name="Question[0].AnswerRequired" checked="checked" style="width: auto;" class="form-control"/>
+                        <input type="hidden" value="false" name="Question[0].AnswerRequired" style="width: auto;" class="form-control"/>
                         <span asp-validation-for="AnswerRequired" class="text-danger"></span>
                     </div>
                     <p class="col-md-8">
@@ -151,8 +151,8 @@
                                       '    </div>' +
                                        '<div class="form-group" style="margin-right: 3%">'+
                                        '     <label class="control-label">AnswerRequired</label>'+
-                                       '     <input type="hidden" value="false" name="Question[0].AnswerRequired" style="width: auto;" class="form-control"/>'+
-                                       '     <input type="checkbox" value="true" name="Question[0].AnswerRequired" checked="checked" style="width: auto;" class="form-control"/>'+
+                                       '     <input type="checkbox" value="true" name="Question['+nextQuestionDiv+'].AnswerRequired" checked="checked" style="width: auto;" class="form-control"/>'+
+                                       '     <input type="hidden" value="false" name="Question['+nextQuestionDiv+'].AnswerRequired" style="width: auto;" class="form-control"/>'+
                                        '</div>'+
                                       '<div class="col-md-7">'+
                                      '     <p class="col-md-3"><a href="javascript:void(0);" onclick="addquestionfield(this)" title="Add another question field" class="add_fields new_add_field_button fas fa-plus-circle"></a></p>'+

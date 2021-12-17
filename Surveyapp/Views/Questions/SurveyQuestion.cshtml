@@ -35,7 +35,7 @@
 @*if there is questions*@
 @if (Model!.Any())
 {
-    var anotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake == true?"true":"false";
+    var anotherSubjectOnSurveyTake = surveySubject?.AddAnotherSubjectOnSurveyTake == true?"true":"false";
     @*<div class="row">
         <div class="col-md-8">
             <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
@@ -116,6 +116,7 @@
             </form>
         </div>
     </div>*@
+    <h3>@surveySubject?.Survey?.Name</h3>
     <h3>@surveySubject?.Name </h3>
     if (surveySubject?.OtherProperties != null)
     {
