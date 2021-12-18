@@ -75,21 +75,34 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             {
                 return Page();
             }*/
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties { RedirectUri = "/" });
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties {RedirectUri = "/"});
             await _signInManager.SignOutAsync();
-            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties { RedirectUri = "/" });
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme, new AuthenticationProperties { RedirectUri = "/" });
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new OpenIdConnectChallengeProperties {RedirectUri = "/"});
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme, new AuthenticationProperties {RedirectUri = "/"});
 
             await HttpContext.SignOutAsync();
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-            var authSignOut = new AuthenticationProperties
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                RedirectUri = Url.Action("Index", "Home")
-            };
-            return SignOut(authSignOut, OpenIdConnectDefaults.AuthenticationScheme);
+                var authSignOut = new AuthenticationProperties
+                {
+                    RedirectUri = Url.Action("Index", "Home")
+                };
+                return SignOut(authSignOut, OpenIdConnectDefaults.AuthenticationScheme);
+            }
+
+            if (returnUrl != null)
+            {
+                return LocalRedirect(returnUrl);
+            }
+            else
+            {
+                return Page();
+            }
         }
     }
 }
