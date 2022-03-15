@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Surveyapp.Models;
 
@@ -19,12 +20,16 @@ namespace Surveyapp.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LogoutModel> _logger;
+        private readonly IConfiguration _configuration;
         private readonly IAuthenticationSchemeProvider _authenticationSchemeProvider;
 
-        public LogoutModel(SignInManager<ApplicationUser> signInManager, ILogger<LogoutModel> logger, IAuthenticationSchemeProvider authenticationSchemeProvider)
+        public LogoutModel(SignInManager<ApplicationUser> signInManager, ILogger<LogoutModel> logger,
+            IConfiguration configuration,
+            IAuthenticationSchemeProvider authenticationSchemeProvider)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _configuration = configuration;
             _authenticationSchemeProvider = authenticationSchemeProvider;
         }
 
@@ -87,9 +92,24 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             var authSignOut = new AuthenticationProperties
             {
-                RedirectUri = Url.Action("Index", "Home")
+                RedirectUri = returnUrl != null ? LocalRedirect(returnUrl).Url : Url.Action("Index", "Home")
             };
-            return SignOut(authSignOut, OpenIdConnectDefaults.AuthenticationScheme);
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var openIdAuthority = _configuration["openIdAuthority:live"];
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                return SignOut(authSignOut, OpenIdConnectDefaults.AuthenticationScheme);
+            }
+            _logger.LogInformation("User logged out.");
+            if (returnUrl != null)
+            {
+                return LocalRedirect(returnUrl);
+            }
+            else
+            {
+                return Page();
+            }
         }
     }
 }

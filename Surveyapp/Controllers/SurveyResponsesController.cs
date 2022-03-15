@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -82,9 +83,9 @@ namespace Surveyapp.Controllers
             {
                 var surveyResponseSubject = subjectSurvey?.SurveySubjects.FirstOrDefault(v =>
                 {
-                    var dic = v.OtherProperties.ToDictionary(b => b.Name, b => b.Value);
-                    var dic2 = dynamicSubjectValue?.Values?.ToDictionary(b => b.Name, b => b.Value);
-                    return dic2 != null && dic.SequenceEqual(dic2) && v.Name == subjectName;
+                    var dic = v?.OtherProperties?.ToDictionary(b => b?.Name??"", b => b?.Value);
+                    var dic2 = dynamicSubjectValue?.Values?.ToDictionary(b => b?.Name??"", b => b?.Value);
+                    return dic != null && dic2 != null && dic.SequenceEqual(dic2) && v.Name == subjectName;
                 });
                 if (surveyResponseSubject == null)
                 {
@@ -401,6 +402,7 @@ namespace Surveyapp.Controllers
             ViewBag.Time = (DateTime.Now - DateTime.Now).Minutes;
             ViewBag.CategoryId = surveySubject?.CategoryId;
             ViewBag.SubjectName = surveySubject?.Name;
+            ViewBag.otherProperties= surveySubject?.OtherProperties != null && surveySubject.OtherProperties.Any()? JsonSerializer.Serialize(surveySubject.OtherProperties.Select(c=> new {c.Name,c.Value})):"";
             ViewBag.SurveyId = surveySubject?.SurveyId;
             ViewBag.avgScore = avgScore;
             ViewBag.SubjectResult = _context.ResponseType.ToList().SelectMany(x => x.ResponseDictionary).FirstOrDefault(x => x.Value == avgScore)?.Value;

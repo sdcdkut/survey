@@ -67,10 +67,10 @@
         var surveyResponse = Context.SurveyResponse.Include(c => c.question.Subject)
             .Where(c => c.question.Subject.SurveyId == SurveyId).ToList();
         //var responseType = Context.ResponseType.ToList();
-        foreach (var item in Model?.OrderBy(x => x.Id).GroupBy(c => c.QuestionGroup)!)
+        foreach (var item in Model?.OrderBy(x => x.Id).GroupBy(c => c.QuestionGroup.Name)!)
         {
             <tr>
-                <td colspan="5" style="font-weight: bolder;text-align: center">@item.Key?.Name</td>
+                <td colspan="5" style="font-weight: bolder;text-align: center">@item.Key</td>
                 <td style="display: none"></td>
                 <td style="display: none"></td>
                 <td style="display: none"></td>
@@ -133,10 +133,18 @@
 @section Scripts
 {
     <script>
+        var otherpropString= `@Html.Raw(ViewBag.otherProperties)`
+        var otherprop= JSON.parse(otherpropString)
+        var propElement = $("<ul style='list-style: none'>")
+        $.each(otherprop,function (id,val){
+            var info = $("<li><span style='font-weight: bold'>"+val.Value+"</span> : <span>"+val.Name+"</span></li>");
+            info.appendTo(propElement);
+        })
         $(document).ready(function() {
             var table = $('#question-result-table').DataTable( {
                 "pageLength": 50,
-                stateSave: true,
+                stateSave: false,
+                "ordering": false,
                 orderCellsTop: true,
                 fixedHeader: true,
                 dom: 'Brlftip',
@@ -144,15 +152,43 @@
                     {
                         extend: 'pdf',
                         text: '<span title="only visible columns will be exported to excel">Export to pdf</span>',
-                        title: "@ViewBag.SubjectName Survey Report",
+                        //title: "@ViewBag.SubjectName Survey Report",
                         className: 'btn btn-sm btn-xs',
                         orientation: 'landscape',
                         //pageSize: 'LEGAL',
-                        filename:'@ViewBag.SubjectName Survey Report',
+                        //filename:'@ViewBag.SubjectName @ViewBag.otherProperties Survey Report',
                         exportOptions: {
                             page: 'all'
                         },
-                        messageTop: "@ViewBag.SubjectName Overall perfromance : @ViewBag.SubjectResult (@ViewBag.avgScore)",
+                        //messageTop: "@ViewBag.SubjectName "+$(propElement).html()+" Overall performance : @ViewBag.SubjectResult (@ViewBag.avgScore)",
+                        messageTop: function () {
+                            var SubjectOtherProp = [];
+                            SubjectOtherProp.push("@ViewBag.SubjectName ");
+                            $.each(otherprop,function (id,val){
+                                SubjectOtherProp.push(" "+val.Name+" ("+val.Value+") ");
+                            })
+                            SubjectOtherProp.push(" Overall performance :  @ViewBag.SubjectResult (@ViewBag.avgScore) ");
+                            return SubjectOtherProp.join("");
+                        },
+                        title: function () {
+                            var SubjectOtherProp = [];
+                            SubjectOtherProp.push("@ViewBag.SubjectName ");
+                            $.each(otherprop,function (id,val){
+                                SubjectOtherProp.push(" "+val.Name+" ("+val.Value+") ");
+                            })
+                            SubjectOtherProp.push(" Survey Report");
+                            return SubjectOtherProp.join("");
+                        },
+                        filename: function () {
+                            var SubjectOtherProp = [];
+                            SubjectOtherProp.push("@ViewBag.SubjectName ");
+                            $.each(otherprop,function (id,val){
+                                SubjectOtherProp.push(" "+val.Name+" ("+val.Value+") ");
+                            })
+                            SubjectOtherProp.push(" Survey Report");
+                            return SubjectOtherProp.join("");
+                        },
+                        messageBottom: null,
                         alignment: "center",
                         customize: function (doc) {
                             //doc.content[1].table.headerRows = 2;
@@ -162,7 +198,7 @@
                                         {
                                             alignment: 'center',
                                             color:'#727c8c',
-                                            text: ['Page ', { text: page.toString(), pageBreak: 'before' }, ' of ', { text: pages.toString() }, '\n genetated by @User.Identity.Name on(@DateTime.Now) ']
+                                            text: ['Page ', { text: page.toString(), pageBreak: 'before' }, ' of ', { text: pages.toString() }, '\n genetated by @User.Identity?.Name on(@DateTime.Now) ']
                                         }
                                     ],
                                 }
