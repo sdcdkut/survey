@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -15,8 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Internal;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 using Surveyapp.Services;
 
 namespace Surveyapp
@@ -74,7 +71,7 @@ namespace Surveyapp
             services.AddAuthentication()
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, config =>
                 {
-                    config.Authority = HostingEnvironment.IsDevelopment() ? Configuration["openIdAuthority:live"] : Configuration["openIdAuthority:live"];
+                    config.Authority = HostingEnvironment.IsDevelopment() ? Configuration["openIdAuthority:live"] : Configuration["openIdAuthority:liveHttp"];
                     config.ClientId = Configuration["Client:ClientId"];
                     config.ClientSecret = Configuration["Client:ClientSecret"];
                     config.SaveTokens = true;
@@ -178,7 +175,7 @@ namespace Surveyapp
                     options.SessionStore = new InMemoryTicketStore(new MemoryCache(new MemoryCacheOptions
                     {
                         SizeLimit = 322302030000000000,
-                        ExpirationScanFrequency = TimeSpan.FromSeconds(4),
+                        ExpirationScanFrequency = TimeSpan.FromHours(12),
                     }));
                 });
             //services.Configure<CookiePolicyOptions>(options => { options.Secure = CookieSecurePolicy.Always; });
@@ -213,9 +210,9 @@ namespace Surveyapp
             }
             else
             {
-                app.UseDeveloperExceptionPage();
+                //app.UseDeveloperExceptionPage();
                 app.UseStatusCodePagesWithReExecute("/StatusCode/{0}");
-                //app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }

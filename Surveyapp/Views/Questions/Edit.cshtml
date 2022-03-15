@@ -69,14 +69,15 @@
             </div>
             <div class="form-group">
                 <label asp-for="AnswerRequired" class="control-label"></label>
-                <input type="hidden" name="AnswerRequired" value="false" class="form-control" />
                 @if (Model?.AnswerRequired == true)
                 {
+                    <input type="hidden" name="AnswerRequired" value="false" class="form-control" />
                     <input type="checkbox" name="AnswerRequired" checked="checked" value="true" class="form-control"/>
                 }
                 else
                 {
-                    <input type="checkbox" name="AnswerRequired" class="form-control"/>
+                    <input type="checkbox" name="AnswerRequired" value="true" class="form-control"/>
+                    <input type="hidden" name="AnswerRequired" value="false" class="form-control" />
                 }
                 <span asp-validation-for="AnswerRequired" class="text-danger"></span>
             </div>
