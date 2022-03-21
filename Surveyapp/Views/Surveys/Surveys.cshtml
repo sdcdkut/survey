@@ -50,7 +50,7 @@
             }
             if ((item.Survey.EndDate - DateTime.Now).Days <= 0)
             {
-                dateStatus = " Survey Expired";
+                dateStatus = $" Survey Expired {item.Survey.EndDate:d} (Contact Admin to extend the survey end date)";
             }
             <tr>
                 <td>
@@ -155,7 +155,7 @@
                         /*if survey enddate has passed*/
                         if ((item.Survey.EndDate - DateTime.Now).Days <= 0)
                         {
-                            <button class="btn btn-sm btn-info" disabled="disabled"> Survey Expired</button>
+                            <button class="btn btn-sm btn-info" disabled="disabled"> Survey Expired <small>(@item.Survey.EndDate.ToString("d") (Contact Admin to extend the survey end date))</small></button>
                         }
                     }
 
