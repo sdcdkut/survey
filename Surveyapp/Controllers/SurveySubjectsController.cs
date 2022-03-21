@@ -8,12 +8,17 @@ using Surveyapp.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using MimeKit;
 
 namespace Surveyapp.Controllers
@@ -22,12 +27,19 @@ namespace Surveyapp.Controllers
     {
         private readonly SurveyContext _context;
         private readonly UserManager<ApplicationUser> _usermanager;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IBackgroundTaskQueue _queue;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IWebHostEnvironment _iHostingEnvironment;
 
-        public SurveySubjectsController(IWebHostEnvironment hostingEnvironment, SurveyContext context, UserManager<ApplicationUser> userManager)
+        public SurveySubjectsController(IWebHostEnvironment hostingEnvironment, SurveyContext context, UserManager<ApplicationUser> userManager
+        , IHttpClientFactory httpClientFactory, IBackgroundTaskQueue queue, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _usermanager = userManager;
+            _httpClientFactory = httpClientFactory;
+            _queue = queue;
+            _serviceScopeFactory = serviceScopeFactory;
             _iHostingEnvironment = hostingEnvironment;
         }
 
@@ -339,6 +351,33 @@ namespace Surveyapp.Controllers
             return PartialView(new SurveySubject());
         }
 
+        public async Task<IActionResult> UpdateSubjects()
+        {
+            _queue.QueueBackgroundWorkItem(async token =>
+            {
+                using var scope = _serviceScopeFactory.CreateScope();
+                var scopedServices = scope.ServiceProvider;
+                var httpClient = _httpClientFactory.CreateClient("Workman");
+                var httpResponseMessage = await httpClient.GetAsync(
+                    "api/Units/lecturerunits", token);
+
+                if (httpResponseMessage.IsSuccessStatusCode)
+                {
+                    var lecturerUnits =
+                        await httpResponseMessage.Content.ReadFromJsonAsync<List<LecturerUnits>>(cancellationToken: token);
+                    
+                }
+                else
+                {
+                    Console.WriteLine("{0} ({1})",
+                        (int)httpResponseMessage.StatusCode,
+                        httpResponseMessage.ReasonPhrase);
+                }
+                await Task.Delay(TimeSpan.FromSeconds(5), token);
+            });
+            return Ok("In progress..");
+        }
+
         public IActionResult Page_Load_file()
         {
             //create document
@@ -394,5 +433,32 @@ namespace Surveyapp.Controllers
     {
         public string Name { get; set; }
         public Dictionary<int, string> SelectValueOptions { get; set; }
+    }
+
+    public class LecturerUnits
+    {
+        public string unit { get; set; }
+        public List<Lecturers> lectures { get; set; }
+        public List<SemesterGroups> semesterGroups { get; set; }
+    }
+
+    public class SemesterGroups
+    {
+        public string semester { get; set; }
+        public int semesterId { get; set; }
+        public int academicYearId { get; set; }
+        public string academicYear { get; set; }
+        public string programme { get; set; }
+        public int programmeId { get; set; }
+        public string department { get; set; }
+        public int departmentId { get; set; }
+        public string school { get; set; }
+        public int schoolId { get; set; }
+    }
+
+    public class Lecturers
+    {
+        public string lecturer { get; set; }
+        public Guid lecturerId { get; set; }
     }
 }

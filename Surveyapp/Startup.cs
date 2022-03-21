@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Surveyapp.Models;
@@ -14,7 +14,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Net.Http.Headers;
 using Surveyapp.Services;
+using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace Surveyapp
 {
@@ -165,19 +167,16 @@ namespace Surveyapp
                 })
                 .Services.ConfigureApplicationCookie(options =>
                 {
-                    //options.Cookie.HttpOnly = true;
-                    options.ExpireTimeSpan = TimeSpan.FromHours(12);
-                    options.LoginPath = "/Identity/Account/Login";
-                    options.LogoutPath = "/Identity/Account/Login";
-                    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                    options.SlidingExpiration = true;
-                    options.ExpireTimeSpan = TimeSpan.FromHours(12);
-                    options.SessionStore = new InMemoryTicketStore(new MemoryCache(new MemoryCacheOptions
-                    {
-                        SizeLimit = 322302030000000000,
-                        ExpirationScanFrequency = TimeSpan.FromHours(12),
-                    }));
+                    CookieSettings(services, options);
                 });
+            services.AddHttpClient("Workman", httpClient =>
+            {
+                httpClient.BaseAddress = new Uri("https://workman.dkut.ac.ke/");
+                httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/vnd.github.v3+json");
+                httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "HttpRequestsSample");
+            });
+            services.AddHostedService<QueuedHostedService>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();  
             //services.Configure<CookiePolicyOptions>(options => { options.Secure = CookieSecurePolicy.Always; });
             services.Configure<KestrelServerOptions>(opt =>
             {
@@ -248,6 +247,19 @@ namespace Surveyapp
                     pattern: "{controller=Home}/{action=Index}/{userId?}");
                 routes.MapRazorPages();
             });
+        }
+
+        private static void CookieSettings(IServiceCollection services, CookieAuthenticationOptions options)
+        {
+            var scope = services.BuildServiceProvider();
+            var memoryCache = scope?.GetRequiredService<IMemoryCache>();
+            options.Cookie.HttpOnly = true;
+            options.ExpireTimeSpan = TimeSpan.FromHours(12);
+            options.LoginPath = "/Identity/Account/Login";
+            options.LogoutPath = "/Identity/Account/Login";
+            options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            options.SlidingExpiration = true;
+            options.SessionStore = new InMemoryTicketStore(memoryCache);
         }
     }
 }
