@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,14 +19,17 @@ namespace Surveyapp.Areas.Identity.Pages.Account
         private readonly ILogger<LoginModel> _logger;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SurveyContext _context;
 
         public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger,
-            RoleManager<IdentityRole> userRole, UserManager<ApplicationUser> usermanager)
+            RoleManager<IdentityRole> userRole, UserManager<ApplicationUser> usermanager,
+            SurveyContext context)
         {
             _signInManager = signInManager;
             _logger = logger;
             _roleManager = userRole;
             _userManager = usermanager;
+            _context = context;
         }
 
         [BindProperty]
@@ -43,8 +45,9 @@ namespace Surveyapp.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            //[EmailAddress]
+            [Display(Name = "Email or Reg/Staff No_")]
+            public string EmailOrNo { get; set; }
 
             [Required]
             [DataType(DataType.Password)]
@@ -61,7 +64,7 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                 ModelState.AddModelError(string.Empty, ErrorMessage);
             }
 
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
 
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -73,23 +76,23 @@ namespace Surveyapp.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                ApplicationUser appUser = await _userManager.FindByEmailAsync(Input.Email);
+                var appUser = _context.Users.FirstOrDefault(c=>c.Email == Input.EmailOrNo || c.No == Input.EmailOrNo);
                 
-                ApplicationUser userid = _userManager.FindByEmailAsync(Input.Email).Result;
+                //var userid = _userManager.FindByEmailAsync(Input.Email).Result;
                 if (appUser != null)
                 {
-                    // if (!_userManager.IsEmailConfirmedAsync(userid).Result)
-                    // {
-                    //     ModelState.AddModelError(string.Empty, "Email not confirmed!");
-                    //     return Page();
-                    // }
+                    if (!_userManager.IsEmailConfirmedAsync(appUser).Result)
+                    {
+                        ModelState.AddModelError(string.Empty, "Email not confirmed!");
+                        return Page();
+                    }
                     var result = await _signInManager.PasswordSignInAsync(/*Input.Email*/appUser, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                     if (result.Succeeded)
                     {

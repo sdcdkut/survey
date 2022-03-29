@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Surveyapp.Controllers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;

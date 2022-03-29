@@ -50,18 +50,18 @@
                     </li> -->
                     @if (User.Identity!.IsAuthenticated)
                     {
-                            @*if (User.IsInRole("Surveyor"))
-                            {*@
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Surveys" asp-action="Index">My surveys</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="SurveyResponses" asp-action="SurveyResults">Survey Results</a>
-                        </li>
-                        <li>
-                            <a class="nav-link text-dark" asp-controller="ResponseTypes" asp-action="Index">Response Types</a>
-                        </li>
-                            @*}*@
+                        if (!User.IsInRole("Student"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Surveys" asp-action="Index">My surveys</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SurveyResponses" asp-action="SurveyResults">Survey Results</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" asp-controller="ResponseTypes" asp-action="Index">Response Types</a>
+                            </li>
+                        }
                     }
                     @if (User.IsInRole("Admin"))
                     {

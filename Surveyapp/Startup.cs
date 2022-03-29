@@ -55,10 +55,10 @@ namespace Surveyapp
                 Options.SignIn.RequireConfirmedEmail = true;
 
             });*/
-            services.AddIdentity<ApplicationUser, IdentityRole>(Options =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
-                    Options.Lockout = LockOutOption;
-                    Options.SignIn.RequireConfirmedEmail = false;
+                    options.Lockout = LockOutOption;
+                    options.SignIn.RequireConfirmedEmail = true;
                 })
                 .AddEntityFrameworkStores<SurveyContext>()
                 .AddDefaultTokenProviders();

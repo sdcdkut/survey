@@ -14,7 +14,7 @@ namespace Surveyapp.Services
             //adding customs roles
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            string[] roleNames = { "Admin", "Surveyor", "Surveyee" };
+            string[] roleNames = { "Admin", "Surveyor", "Surveyee" ,"Student"};
             IdentityResult roleResult;
             foreach (var roleName in roleNames)
             {

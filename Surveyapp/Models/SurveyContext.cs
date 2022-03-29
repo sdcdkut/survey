@@ -1,11 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Surveyapp.Models
 {
@@ -28,6 +22,10 @@ namespace Surveyapp.Models
         public DbSet<QuestionGroup> QuestionGroups { get; set; }
         public DbSet<SurveyResponse> SurveyResponse { get; set; }
         public DbSet<SurveyParticipants> SurveyParticipants { get; set; }
+        public DbSet<Course> Courses { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<SchoolOrInstitution> SchoolOrInstitutions { get; set; }
+        public DbSet<Campus> Campus { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

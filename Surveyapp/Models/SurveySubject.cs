@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Surveyapp.Models
 {
@@ -35,6 +32,8 @@ namespace Surveyapp.Models
         [Display(Name = "Add Subject On Survey Take")]
         public bool AddAnotherSubjectOnSurveyTake { get; set; } = false;
 
+        public int? CourseId { get; set; }
+        public int? DepartmentId { get; set; }
         [Column(TypeName = "jsonb")] public List<DynamicSubjectValue> DynamicSubjectValue { get; set; } = new();
         [ForeignKey("SurveyId")] public virtual Survey Survey { get; set; }
 
@@ -42,6 +41,9 @@ namespace Surveyapp.Models
 
         /*public int SubjectTypeId { get; set; }*/
         [ForeignKey("CategoryId")] public virtual SurveyCategory Category { get; set; }
+        [ForeignKey("CourseId")] public virtual Course Course { get; set; }
+
+        [ForeignKey("DepartmentId")] public virtual Department Department { get; set; }
 
         //[ForeignKey("SubjectTypeId")]
         //public virtual SurveySubject SubjectType { get; set; }

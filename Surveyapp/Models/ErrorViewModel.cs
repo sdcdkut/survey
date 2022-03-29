@@ -1,5 +1,3 @@
-using System;
-
 namespace Surveyapp.Models
 {
     public class ErrorViewModel

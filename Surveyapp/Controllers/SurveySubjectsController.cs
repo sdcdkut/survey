@@ -8,12 +8,10 @@ using Surveyapp.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
@@ -33,7 +31,7 @@ namespace Surveyapp.Controllers
         private readonly IWebHostEnvironment _iHostingEnvironment;
 
         public SurveySubjectsController(IWebHostEnvironment hostingEnvironment, SurveyContext context, UserManager<ApplicationUser> userManager
-        , IHttpClientFactory httpClientFactory, IBackgroundTaskQueue queue, IServiceScopeFactory serviceScopeFactory)
+            , IHttpClientFactory httpClientFactory, IBackgroundTaskQueue queue, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _usermanager = userManager;
@@ -117,6 +115,16 @@ namespace Surveyapp.Controllers
                 Text = $"{v.ResponseName} ({v.DisplayOptionType})",
                 Value = v.Id.ToString()
             });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}"
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}"
+            });
             return View();
         }
 
@@ -128,7 +136,8 @@ namespace Surveyapp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId,AddAnotherSubjectOnSurveyTake,DynamicSubjectValue")] SurveySubject surveySubject,
+            [Bind("Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId,AddAnotherSubjectOnSurveyTake,DynamicSubjectValue,CourseId,DepartmentId")]
+            SurveySubject surveySubject,
             Dictionary<int, OtherProperties> OtherProperties,
             Dictionary<int, DynamicSubjectValueViewModel> DynamicSubjectValue)
         {
@@ -161,6 +170,18 @@ namespace Surveyapp.Controllers
                 Text = $"{v.ResponseName} ({v.DisplayOptionType})",
                 Value = v.Id.ToString(),
                 Selected = v.Id == surveySubject.ResponseTypeId
+            });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == surveySubject.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == surveySubject.DepartmentId
             });
             return View(surveySubject);
         }
@@ -197,6 +218,18 @@ namespace Surveyapp.Controllers
                 Value = v.Id.ToString(),
                 Selected = v.Id == surveySubject.ResponseTypeId
             });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == surveySubject.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == surveySubject.DepartmentId
+            });
             return View(surveySubject);
         }
 
@@ -208,7 +241,8 @@ namespace Surveyapp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            [Bind("Id,Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId,AddAnotherSubjectOnSurveyTake,DynamicSubjectValue")] SurveySubject surveySubject,
+            [Bind("Id,Name,ResponseTypeId,Description,SurveyId,OtherProperties,CategoryId,AddAnotherSubjectOnSurveyTake,DynamicSubjectValue,CourseId,DepartmentId")]
+            SurveySubject surveySubject,
             Dictionary<int, OtherProperties> OtherProperties,
             Dictionary<int, DynamicSubjectValueViewModel> DynamicSubjectValue)
         {
@@ -219,7 +253,7 @@ namespace Surveyapp.Controllers
 
             surveySubject.OtherProperties = OtherProperties?.Select(c => new OtherProperties { Name = c.Value.Name, Value = c.Value.Value }).ToList();
             surveySubject.DynamicSubjectValue = null;
-            if (surveySubject.AddAnotherSubjectOnSurveyTake )
+            if (surveySubject.AddAnotherSubjectOnSurveyTake)
             {
                 surveySubject.DynamicSubjectValue = DynamicSubjectValue?.Select(c => new DynamicSubjectValue
                 {
@@ -227,6 +261,7 @@ namespace Surveyapp.Controllers
                     SelectValueOptions = c.Value.SelectValueOptions.Select(v => v.Value).ToList()
                 }).ToList();
             }
+
             if (ModelState.IsValid)
             {
                 try
@@ -256,6 +291,18 @@ namespace Surveyapp.Controllers
                 Text = $"{v.ResponseName} ({v.DisplayOptionType})",
                 Value = v.Id.ToString(),
                 Selected = v.Id == surveySubject.ResponseTypeId
+            });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == surveySubject.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == surveySubject.DepartmentId
             });
             return View(surveySubject);
         }
@@ -351,13 +398,15 @@ namespace Surveyapp.Controllers
             return PartialView(new SurveySubject());
         }
 
-        public async Task<IActionResult> UpdateSubjects()
+        public async Task<IActionResult> UpdateSubjects(int subjectId)
         {
+            int? surveyId = null;
             _queue.QueueBackgroundWorkItem(async token =>
             {
                 using var scope = _serviceScopeFactory.CreateScope();
                 var scopedServices = scope.ServiceProvider;
                 var httpClient = _httpClientFactory.CreateClient("Workman");
+                var surveyContext = scopedServices.GetRequiredService<SurveyContext>();
                 var httpResponseMessage = await httpClient.GetAsync(
                     "api/Units/lecturerunits", token);
 
@@ -365,7 +414,63 @@ namespace Surveyapp.Controllers
                 {
                     var lecturerUnits =
                         await httpResponseMessage.Content.ReadFromJsonAsync<List<LecturerUnits>>(cancellationToken: token);
-                    
+                    var subject = surveyContext.SurveySubject.FirstOrDefault(c => c.Id == subjectId);
+                    var dynamicSubjectValues = subject?.DynamicSubjectValue;
+                    surveyId = subject?.SurveyId;
+                    var groups = lecturerUnits?.SelectMany(c => c.semesterGroups.Select(v => new
+                    {
+                        course = v.programme,
+                        v.semester,
+                        v.school,
+                        v.academicYear,
+                        c.unit,
+                        lecturers = c.lectures
+                    }).SelectMany(d => d.lecturers.Select(v => new
+                    {
+                        d.course,
+                        d.school,
+                        d.semester,
+                        d.academicYear,
+                        c.unit,
+                        v.lecturer
+                    }))).ToList();
+                    var newDynamicValues = new List<DynamicSubjectValue>();
+                    if (groups != null)
+                    {
+                        newDynamicValues.Add(new DynamicSubjectValue
+                        {
+                            Name = "Course",
+                            SelectValueOptions = groups.GroupBy(c => c.course).Select(v => v.Key).Distinct().ToList()
+                        });
+                        newDynamicValues.Add(new DynamicSubjectValue
+                        {
+                            Name = "School",
+                            SelectValueOptions = groups.GroupBy(c => c.school).Select(v => v.Key).Distinct().ToList()
+                        });
+                        newDynamicValues.Add(new DynamicSubjectValue
+                        {
+                            Name = "Semester",
+                            SelectValueOptions = groups.GroupBy(c => c.semester).Select(v => v.Key).Distinct().ToList()
+                        });
+                        newDynamicValues.Add(new DynamicSubjectValue
+                        {
+                            Name = "AcademicYear",
+                            SelectValueOptions = groups.GroupBy(c => c.academicYear).Select(v => v.Key).Distinct().ToList()
+                        });
+                        newDynamicValues.Add(new DynamicSubjectValue
+                        {
+                            Name = "Lecturer",
+                            SelectValueOptions = groups.GroupBy(c => c.lecturer).Select(v => v.Key).Distinct().ToList()
+                        });
+                        newDynamicValues.Add(new DynamicSubjectValue
+                        {
+                            Name = "Unit",
+                            SelectValueOptions = groups.GroupBy(c => c.unit).Select(v => v.Key).Distinct().ToList()
+                        });
+
+                        if (subject != null) subject.DynamicSubjectValue = newDynamicValues;
+                        await surveyContext.SaveChangesAsync(token);
+                    }
                 }
                 else
                 {
@@ -373,9 +478,11 @@ namespace Surveyapp.Controllers
                         (int)httpResponseMessage.StatusCode,
                         httpResponseMessage.ReasonPhrase);
                 }
+
                 await Task.Delay(TimeSpan.FromSeconds(5), token);
             });
-            return Ok("In progress..");
+            TempData["FeedbackMessage"] = $"Update subject In progress..";
+            return RedirectToAction(nameof(Index), new { id = surveyId });
         }
 
         public IActionResult Page_Load_file()

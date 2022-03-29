@@ -1,7 +1,7 @@
 ﻿@model Surveyapp.Models.Survey
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Survey";
 }
 
 @*<h1>Create</h1>*@
@@ -67,12 +67,39 @@
                 <select asp-for="status" class="form-control" asp-items="statusSelect" onchange="surveyTypechange(this)"></select>
                 <span asp-validation-for="status" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="ForStudents" class="control-label"></label>
+                <input asp-for="ForStudents" min="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control"/>
+                <span asp-validation-for="ForStudents" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ForStaff" class="control-label"></label>
+                <input asp-for="ForStaff" min="@($"{DateTime.Now:yyyy-MM-dd}")" class="form-control"/>
+                <span asp-validation-for="ForStaff" class="text-danger"></span>
+            </div>
             <div class="form-group Participants" style="display: none">
                 <label asp-for="SurveyParticipants" class="control-label"></label>
                 @*<input asp-for="status" class="form-control" />*@
                 <select name="Participants" multiple="multiple" asp-items="ViewBag.Participants" class="form-control">
                 </select>
                 <span asp-validation-for="status" class="text-danger"></span>
+            </div>
+            <div>
+                <h5>Optional(s)</h5>
+                <div class="form-group">
+                    <label asp-for="CourseId" class="control-label"></label>
+                    <select asp-for="CourseId" data-allow-clear="true" class="form-control" asp-items="ViewBag.courses">
+                        <option value="" selected="selected"></option>
+                    </select>
+                    <span asp-validation-for="CourseId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="DepartmentId" class="control-label"></label>
+                    <select asp-for="DepartmentId" data-allow-clear="true" class="form-control" asp-items="ViewBag.departments">
+                        <option value="" selected="selected"></option>
+                    </select>
+                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                </div>
             </div>
             @*<div class="form-group">
                 <label asp-for="SurveyerId" class="control-label"></label>

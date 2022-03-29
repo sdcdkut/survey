@@ -18,7 +18,7 @@ namespace Surveyapp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.0")
+                .HasAnnotation("ProductVersion", "6.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -167,6 +167,12 @@ namespace Surveyapp.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -179,6 +185,9 @@ namespace Surveyapp.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("No")
+                        .HasColumnType("text");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -207,7 +216,14 @@ namespace Surveyapp.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<int?>("UserType")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -217,6 +233,70 @@ namespace Surveyapp.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Campus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Campus");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Course", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.ToTable("Courses");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Department", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("SchoolOrInstitutionId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SchoolOrInstitutionId");
+
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("Surveyapp.Models.Question", b =>
@@ -312,6 +392,30 @@ namespace Surveyapp.Migrations
                     b.ToTable("ResponseType");
                 });
 
+            modelBuilder.Entity("Surveyapp.Models.SchoolOrInstitution", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CampusId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampusId");
+
+                    b.ToTable("SchoolOrInstitutions");
+                });
+
             modelBuilder.Entity("Surveyapp.Models.Survey", b =>
                 {
                     b.Property<int>("Id")
@@ -323,11 +427,23 @@ namespace Surveyapp.Migrations
                     b.Property<string>("ApplicationUserId")
                         .HasColumnType("text");
 
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("ForStaff")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("ForStudents")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("ListedOnSurveyListPage")
                         .HasColumnType("boolean");
@@ -349,6 +465,10 @@ namespace Surveyapp.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("Id");
 
@@ -480,6 +600,12 @@ namespace Surveyapp.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("CourseId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -505,6 +631,10 @@ namespace Surveyapp.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("Id");
 
@@ -566,6 +696,39 @@ namespace Surveyapp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Surveyapp.Models.ApplicationUser", b =>
+                {
+                    b.HasOne("Surveyapp.Models.Course", "Course")
+                        .WithMany("ApplicationUsers")
+                        .HasForeignKey("CourseId");
+
+                    b.HasOne("Surveyapp.Models.Department", "Department")
+                        .WithMany("ApplicationUsers")
+                        .HasForeignKey("DepartmentId");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Course", b =>
+                {
+                    b.HasOne("Surveyapp.Models.Department", "Department")
+                        .WithMany("Courses")
+                        .HasForeignKey("DepartmentId");
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Department", b =>
+                {
+                    b.HasOne("Surveyapp.Models.SchoolOrInstitution", "SchoolOrInstitution")
+                        .WithMany("Departments")
+                        .HasForeignKey("SchoolOrInstitutionId");
+
+                    b.Navigation("SchoolOrInstitution");
+                });
+
             modelBuilder.Entity("Surveyapp.Models.Question", b =>
                 {
                     b.HasOne("Surveyapp.Models.QuestionGroup", "QuestionGroup")
@@ -612,11 +775,32 @@ namespace Surveyapp.Migrations
                     b.Navigation("Creator");
                 });
 
+            modelBuilder.Entity("Surveyapp.Models.SchoolOrInstitution", b =>
+                {
+                    b.HasOne("Surveyapp.Models.Campus", "Campus")
+                        .WithMany("SchoolOrInstitutions")
+                        .HasForeignKey("CampusId");
+
+                    b.Navigation("Campus");
+                });
+
             modelBuilder.Entity("Surveyapp.Models.Survey", b =>
                 {
                     b.HasOne("Surveyapp.Models.ApplicationUser", null)
                         .WithMany("Surveys")
                         .HasForeignKey("ApplicationUserId");
+
+                    b.HasOne("Surveyapp.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId");
+
+                    b.HasOne("Surveyapp.Models.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("Surveyapp.Models.SurveyCategory", b =>
@@ -688,6 +872,14 @@ namespace Surveyapp.Migrations
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Surveyapp.Models.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId");
+
+                    b.HasOne("Surveyapp.Models.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
+
                     b.HasOne("Surveyapp.Models.ResponseType", "ResponseType")
                         .WithMany("SurveySubjects")
                         .HasForeignKey("ResponseTypeId");
@@ -700,6 +892,10 @@ namespace Surveyapp.Migrations
 
                     b.Navigation("Category");
 
+                    b.Navigation("Course");
+
+                    b.Navigation("Department");
+
                     b.Navigation("ResponseType");
 
                     b.Navigation("Survey");
@@ -710,6 +906,23 @@ namespace Surveyapp.Migrations
                     b.Navigation("SurveyResponses");
 
                     b.Navigation("Surveys");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Campus", b =>
+                {
+                    b.Navigation("SchoolOrInstitutions");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Course", b =>
+                {
+                    b.Navigation("ApplicationUsers");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.Department", b =>
+                {
+                    b.Navigation("ApplicationUsers");
+
+                    b.Navigation("Courses");
                 });
 
             modelBuilder.Entity("Surveyapp.Models.Question", b =>
@@ -727,6 +940,11 @@ namespace Surveyapp.Migrations
                     b.Navigation("Questions");
 
                     b.Navigation("SurveySubjects");
+                });
+
+            modelBuilder.Entity("Surveyapp.Models.SchoolOrInstitution", b =>
+                {
+                    b.Navigation("Departments");
                 });
 
             modelBuilder.Entity("Surveyapp.Models.Survey", b =>

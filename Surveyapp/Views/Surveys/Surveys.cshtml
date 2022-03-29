@@ -1,12 +1,11 @@
 @model IEnumerable<Surveyapp.Models.SurveySubject>
 @inject SurveyContext _context
 @inject UserManager<ApplicationUser> _userManager
-@using System.Text.RegularExpressions;
-@using Microsoft.EntityFrameworkCore
 
 @{
     ViewBag.Title = "Available Surveys";
     Layout = "_Layout";
+    var currentUser = _context.Users.FirstOrDefault(c => c.Id == _userManager.GetUserId(User));
 }
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -77,7 +76,24 @@
                         @*if survey is open for anonymous take*@
                         @if (item.Survey.status == "Open")
                         {
-                            <a class="btn-block btn-sm btn btn-secondary" asp-action="SurveyQuestion" asp-route-id="@item.Id" asp-controller="Questions">Take survey</a>
+                            bool? canTakeSurvey = true;
+                            if (item.Survey.ForStudents)
+                            {
+                                canTakeSurvey = currentUser?.UserType == UserType.Student;
+                            }
+
+                            if (item.Survey?.CourseId is not null)
+                            {
+                                canTakeSurvey = currentUser?.CourseId == item.Survey?.CourseId;
+                            }
+                            if (canTakeSurvey == true)
+                            {
+                                <a class="btn-block btn-sm btn btn-secondary" asp-action="SurveyQuestion" asp-route-id="@item.Id" asp-controller="Questions">Take survey</a>
+                            }
+                            else
+                            {
+                                <p style="color: darkred">You are not allowed to take this survey</p>
+                            }
                             @*<button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
                             <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
                                 @if (item.Survey.SurveyCategorys.Count > 0)
@@ -102,8 +118,18 @@
                         @*if survey is closed and require login for anonymous take*@
                         @if (item.Survey.status == "Closed")
                         {
+                            bool? canTakeSurvey = true;
+                            if (item.Survey.ForStudents)
+                            {
+                                canTakeSurvey = currentUser?.UserType == UserType.Student;
+                            }
+
+                            if (item.Survey?.CourseId is not null)
+                            {
+                                canTakeSurvey = currentUser?.CourseId == item.Survey?.CourseId;
+                            }
                             //check if user is logged in
-                            if (User.Identity!.IsAuthenticated)
+                            if (User.Identity!.IsAuthenticated && canTakeSurvey == true)
                             {
                                 <a class="btn-block btn-sm btn btn-secondary" asp-action="SurveyQuestion" asp-route-id="@item.Id" asp-controller="Questions">Take survey</a>
                                 @*<button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
@@ -134,8 +160,18 @@
                         }
                         @if (item.Survey.status == "SelectiveParticipants")
                         {
+                            bool? canTakeSurvey = true;
+                            if (item.Survey.ForStudents)
+                            {
+                                canTakeSurvey = currentUser?.UserType == UserType.Student;
+                            }
+
+                            if (item.Survey?.CourseId is not null)
+                            {
+                                canTakeSurvey = currentUser?.CourseId == item.Survey?.CourseId;
+                            }
                             //check if user is participant
-                            if (User.Identity!.IsAuthenticated && item.Survey.SurveyParticipants.Any(v => v.ParticipantId == _userManager.GetUserId(User)))
+                            if (User.Identity!.IsAuthenticated && canTakeSurvey == true && item.Survey.SurveyParticipants.Any(v => v.ParticipantId == _userManager.GetUserId(User)))
                             {
                                 <a class="btn-block btn-sm btn btn-secondary" asp-action="SurveyQuestion" asp-route-id="@item.Id" asp-controller="Questions">Take survey</a>
                             }

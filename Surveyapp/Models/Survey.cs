@@ -1,12 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Surveyapp.Models
 {
@@ -27,13 +23,20 @@ namespace Surveyapp.Models
         [DataType(DataType.Date)] [Required] public DateTime EndDate { get; set; }
         [Required] public string status { get; set; }
         public string approvalStatus { get; set; }
+        public int? CourseId { get; set; }
+        public int? DepartmentId { get; set; }
+        public bool ForStudents { get; set; } = false;
+        public bool ForStaff { get; set; } = false;
         [Display(Name = "Listed On SurveyList Page")]
         public bool ListedOnSurveyListPage { get; set; } = true;
-
         //[Required]
         //public string SurveyerId { get; set; }
         //[ForeignKey("SurveyerId")]
         //public virtual ApplicationUser Surveyer { get; set; }
+        [ForeignKey("CourseId")]
+        public virtual Course Course { get; set; }
+        [ForeignKey("DepartmentId")]
+        public virtual Department Department { get; set; }
         public virtual ICollection<SurveyCategory> SurveyCategorys { get; set; }
         public virtual ICollection<SurveySubject> SurveySubjects { get; set; }
         public virtual ICollection<Surveyors> Surveyors { get; set; }

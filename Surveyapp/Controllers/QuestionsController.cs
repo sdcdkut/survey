@@ -36,11 +36,11 @@ namespace Surveyapp.Controllers
             ViewBag.CategoryId = surveySubject?.CategoryId;
             ViewBag.SubjectName = surveySubject?.Name;
             //ViewBag.ResponType = _context.ResponseType.Count(x=>x.Subject.Id == id);
-            var surveyContext = _context.Question.Include(q => q.ResponseType).Include(c=>c.QuestionGroup)
+            var surveyContext = _context.Question.Include(q => q.ResponseType).Include(c => c.QuestionGroup)
                 .Include(q => q.Subject.Survey).Where(x => x.SubjectId == id);
             var useId = _usermanager.GetUserId(User);
             var survey = await _context.Survey.Include(c => c.Surveyors).ThenInclude(c => c.Surveyor).FirstOrDefaultAsync(c => c.Id == surveySubject.SurveyId);
-            if (survey != null && !survey.Surveyors.Any(c=>c.ActiveStatus && c.SurveyorId == useId))
+            if (survey != null && !survey.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId))
             {
                 return StatusCode(403);
             }
@@ -175,14 +175,14 @@ namespace Surveyapp.Controllers
                     return StatusCode(403);
                 }
 
-                var questionAssociate = _context.SurveySubject.Include(x => x.Questions).ThenInclude(c=>c.QuestionGroup).SingleOrDefault(x => x.Id == subId);
+                var questionAssociate = _context.SurveySubject.Include(x => x.Questions).ThenInclude(c => c.QuestionGroup).SingleOrDefault(x => x.Id == subId);
                 //var responseType = _context.ResponseType.SingleOrDefault(x => x.SubjectId == subId);
                 if (questionAssociate?.Questions != null)
                 {
                     var counter = 0;
                     foreach (var newquiz in questionAssociate.Questions)
                     {
-                        if (_context.Question.Any(c=>c.question  == newquiz.question && c.SubjectId == (int)id)) continue;
+                        if (_context.Question.Any(c => c.question == newquiz.question && c.SubjectId == (int)id)) continue;
                         var newQuiz = new Question
                         {
                             SubjectId = (int)id,
@@ -221,7 +221,7 @@ namespace Surveyapp.Controllers
 
             var useId = _usermanager.GetUserId(User);
             var survey = await _context.Survey.Include(c => c.Surveyors).ThenInclude(c => c.Surveyor).FirstOrDefaultAsync(c => c.Id == question.Subject.SurveyId);
-            if (!survey.Surveyors.Any(c=>c.ActiveStatus &&c.SurveyorId == useId))
+            if (!survey.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId))
             {
                 return StatusCode(403);
             }
@@ -291,7 +291,7 @@ namespace Surveyapp.Controllers
         }
 
         // GET: Questions/Delete/5
-        [Authorize(/*Roles = "Surveyor"*/)]
+        [Authorize( /*Roles = "Surveyor"*/)]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -309,8 +309,8 @@ namespace Surveyapp.Controllers
             }
 
             var useId = _usermanager.GetUserId(User);
-            var survey = await _context.Survey.Include(c=>c.Surveyors).FirstOrDefaultAsync(c=>c.Id == question.Subject.SurveyId);
-            if (survey?.Surveyors.Any(c=> c.ActiveStatus && c.SurveyorId == useId) == false)
+            var survey = await _context.Survey.Include(c => c.Surveyors).FirstOrDefaultAsync(c => c.Id == question.Subject.SurveyId);
+            if (survey?.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId) == false)
             {
                 return StatusCode(403);
             }
@@ -352,9 +352,64 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
+            var surveySubject = _context.SurveySubject.Include(x => x.Category).SingleOrDefault(x => x.Id == id);
+            var survey = _context.Survey.Include(c=>c.SurveyParticipants).ToList().FirstOrDefault(c => c.Id == surveySubject?.SurveyId);
+            var currentUser = _context.Users.FirstOrDefault(c => c.Id == _usermanager.GetUserId(User));
+            var canTakeSurvey = false;
+
+            if (survey is not null)
+            {
+                switch (survey.status)
+                {
+                    case "Open":
+                        if (survey.ForStudents)
+                        {
+                            canTakeSurvey = currentUser?.UserType == UserType.Student;
+                        }
+
+                        if (survey?.CourseId is not null)
+                        {
+                            canTakeSurvey = currentUser?.CourseId == survey?.CourseId;
+                        }
+
+                        break;
+                    case "Closed":
+                        if (survey.ForStudents)
+                        {
+                            canTakeSurvey = currentUser?.UserType == UserType.Student;
+                        }
+
+                        if (survey?.CourseId is not null)
+                        {
+                            canTakeSurvey = currentUser?.CourseId == survey?.CourseId;
+                        }
+
+                        canTakeSurvey = User.Identity?.IsAuthenticated is true;
+                        break;
+                    case "SelectiveParticipants":
+                        if (survey.ForStudents)
+                        {
+                            canTakeSurvey = currentUser?.UserType == UserType.Student;
+                        }
+
+                        if (survey?.CourseId is not null)
+                        {
+                            canTakeSurvey = currentUser?.CourseId == survey?.CourseId;
+                        }
+
+                        canTakeSurvey = survey.SurveyParticipants.Any(c => c.ParticipantId == currentUser?.Id);
+                        break;
+                }
+            }
+
+            if (canTakeSurvey == false)
+            {
+                return Content("SORRY, You are not allowed to take the survey");
+            }
+
             ViewBag.SubjectName = _context.SurveySubject.SingleOrDefault(x => x.Id == id)?.Name;
-            ViewBag.SurveyId = _context.SurveySubject.Include(x => x.Category).SingleOrDefault(x => x.Id == id)?.SurveyId;
-            var questions = _context.Question.Include(x => x.ResponseType).Include(c=>c.SurveyResponses).Include(c => c.QuestionGroup)
+            ViewBag.SurveyId = surveySubject?.SurveyId;
+            var questions = _context.Question.Include(x => x.ResponseType).Include(c => c.SurveyResponses).Include(c => c.QuestionGroup)
                 .Include(x => x.Subject.Category.Survey.SurveyParticipants)
                 .Include(x => x.Subject.Survey.SurveyParticipants).Where(x => x.SubjectId == id).ToList();
             //if user is logged in
@@ -380,8 +435,8 @@ namespace Surveyapp.Controllers
 
             var subject = await _context.SurveySubject.Include(x => x.Category).SingleOrDefaultAsync(x => x.Id == subjectid);
             var useId = _usermanager.GetUserId(User);
-            var survey = await _context.Survey.Include(c=>c.Surveyors).FirstOrDefaultAsync(c=>c.Id == subject.SurveyId);
-            if (survey?.Surveyors.Any(c=> c.ActiveStatus && c.SurveyorId == useId) == false)
+            var survey = await _context.Survey.Include(c => c.Surveyors).FirstOrDefaultAsync(c => c.Id == subject.SurveyId);
+            if (survey?.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId) == false)
             {
                 return StatusCode(403);
             }

@@ -23,6 +23,23 @@
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Input.IsStudent"></label>
+                <input asp-for="Input.IsStudent" class="form-control" />
+                <span asp-validation-for="Input.IsStudent" class="text-danger"></span>
+            </div>
+            <div class="student-div" style="display: none">
+                <div class="form-group">
+                    <label asp-for="Input.RegNo"></label>
+                    <input asp-for="Input.RegNo" class="form-control" />
+                    <span asp-validation-for="Input.RegNo" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.CourseId"></label>
+                    <select asp-for="Input.CourseId" asp-items="ViewBag.Courses" class="form-control"></select>
+                    <span asp-validation-for="Input.CourseId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
                 <label asp-for="Input.Password"></label>
                 <input asp-for="Input.Password" class="form-control" />
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
@@ -39,4 +56,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script >
+        $("#Input_IsStudent").change(function () {
+            if ($(this).is(":checked")) {
+                $(".student-div").show();
+                $("#Input_CourseId").attr("required", "required");
+                $("#Input_RegNo").attr("required", "required");
+            } else {
+                $(".student-div").hide();
+                $("#Input_CourseId").removeAttr("required");
+                $("#Input_RegNo").removeAttr("required");
+            }
+        });
+    </script>
 }

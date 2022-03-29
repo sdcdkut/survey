@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Surveyapp.Models;
-using Surveyapp.Services;
 
 namespace Surveyapp.Controllers
 {
@@ -70,6 +66,16 @@ namespace Surveyapp.Controllers
                 Value = c.Id,
                 Text = c.UserName
             });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}"
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}"
+            });
             return View();
         }
 
@@ -79,7 +85,8 @@ namespace Surveyapp.Controllers
         [Authorize( /*Roles = "Surveyor"*/)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Startdate,Description,EndDate,status,ListedOnSurveyListPage")] Survey survey, string[] participants)
+        public async Task<IActionResult> Create([Bind("Id,Name,Startdate,Description,EndDate,status,ListedOnSurveyListPage,CourseId,DepartmentId,ForStudents,ForStaff")] Survey survey,
+            string[] participants)
         {
             //survey.SurveyerId = _usermanager.GetUserId(User);
             survey.approvalStatus = "Approved";
@@ -124,13 +131,37 @@ namespace Surveyapp.Controllers
                     Text = c.UserName,
                     Selected = participants.Contains(c.Id)
                 });
-                return RedirectToAction(nameof(Create) ,"SurveySubjects",new {id = survey.Id });
+                ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = $"{c.Code}:{c.Name}",
+                    Selected = c.Id == survey.CourseId
+                });
+                ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = $"{c.Code}:{c.Name}",
+                    Selected = c.Id == survey.DepartmentId
+                });
+                return RedirectToAction(nameof(Create), "SurveySubjects", new { id = survey.Id });
             }
 
             ViewBag.Participants = _context.Users.Select(c => new SelectListItem
             {
                 Value = c.Id,
                 Text = c.UserName
+            });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.DepartmentId
             });
             return View(survey);
         }
@@ -170,6 +201,18 @@ namespace Surveyapp.Controllers
                 Text = c.UserName,
                 Selected = survey.SurveyParticipants.Any(v => v.ParticipantId == c.Id)
             });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.DepartmentId
+            });
             return View(survey);
         }
 
@@ -181,7 +224,7 @@ namespace Surveyapp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id,
-            [Bind("Id,Name,Startdate,EndDate,status,Description,SurveyerId,approvalStatus,ListedOnSurveyListPage,SurveyParticipants")]
+            [Bind("Id,Name,Startdate,EndDate,status,Description,SurveyerId,approvalStatus,ListedOnSurveyListPage,SurveyParticipants,CourseId,DepartmentId,ForStudents,ForStaff")]
             Survey survey, string[] SurveyParticipants)
         {
             var surveyEdit = await _context.Survey.Include(c => c.SurveyParticipants).FirstOrDefaultAsync(c => c.Id == id);
@@ -207,6 +250,10 @@ namespace Surveyapp.Controllers
                     surveyEdit.approvalStatus = survey.approvalStatus;
                     surveyEdit.ListedOnSurveyListPage = survey.ListedOnSurveyListPage;
                     surveyEdit.SurveyParticipants = SurveyParticipants?.Select(c => new SurveyParticipants { ParticipantId = c, SurveyId = survey.Id }).ToList();
+                    surveyEdit.CourseId = survey?.CourseId;
+                    surveyEdit.DepartmentId = survey?.DepartmentId;
+                    surveyEdit.ForStudents = survey?.ForStudents ?? false;
+                    surveyEdit.ForStaff = survey?.ForStaff ?? false;
                     _context.Update(surveyEdit);
                     await _context.SaveChangesAsync();
                 }
@@ -240,6 +287,18 @@ namespace Surveyapp.Controllers
                 Value = c.Id,
                 Text = c.UserName,
                 Selected = survey.SurveyParticipants.Any(v => v.ParticipantId == c.Id)
+            });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.DepartmentId
             });
             return View(survey);
         }
@@ -300,14 +359,15 @@ namespace Surveyapp.Controllers
         public async Task<IActionResult> Surveys()
         {
             var surveyContext = await _context.SurveySubject.Include(s => s.Survey.Surveyors).ThenInclude(c => c.Surveyor)
-                .Include(x => x.Category).Include(c => c.Questions).Include(c=>c.Survey.SurveyParticipants).ToListAsync();
+                .Include(x => x.Category).Include(c => c.Questions).Include(c => c.Survey.SurveyParticipants).ToListAsync();
             if (User.Identity!.IsAuthenticated)
             {
                 //display surveys not created by current logged in user
                 surveyContext = surveyContext.Where(x => x.Survey.Surveyors.All(c => c.ActiveStatus && c.SurveyorId != _usermanager.GetUserId(User))).ToList();
             }
 
-            surveyContext = surveyContext.Where(x => x.Questions.Any()).Where(x => x.Survey.approvalStatus == "Approved" && !x.DynamicallyCreated && x.Survey.ListedOnSurveyListPage).ToList();
+            surveyContext = surveyContext.Where(x => x.Questions.Any()).Where(x => x.Survey.approvalStatus == "Approved" && !x.DynamicallyCreated && x.Survey.ListedOnSurveyListPage)
+                .ToList();
             return View(surveyContext);
         }
 
@@ -455,20 +515,33 @@ namespace Surveyapp.Controllers
                 Text = c.Name,
                 Selected = true
             }).ToList();
-            if (surveySubjects.Any(c=>c.AddAnotherSubjectOnSurveyTake))
+            if (surveySubjects.Any(c => c.AddAnotherSubjectOnSurveyTake))
             {
-                ViewBag.surveySubjects = surveySubjects.Where(c=>c.AddAnotherSubjectOnSurveyTake).Take(1).Select(c => new SelectListItem
+                ViewBag.surveySubjects = surveySubjects.Where(c => c.AddAnotherSubjectOnSurveyTake).Take(1).Select(c => new SelectListItem
                 {
                     Value = c.Id.ToString(),
                     Text = c.Name,
                     Selected = true
                 }).ToList();
             }
+
             ViewBag.Participants = _context.Users.ToList().Select(c => new SelectListItem
             {
                 Value = c.Id,
                 Text = c.UserName,
                 Selected = survey?.SurveyParticipants.Any(v => v.ParticipantId == c.Id) == true
+            });
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.DepartmentId
             });
             return View(survey);
         }
@@ -494,7 +567,11 @@ namespace Surveyapp.Controllers
                 Startdate = Startdate,
                 EndDate = EndDate,
                 Name = survey?.Name,
-                ListedOnSurveyListPage = survey?.ListedOnSurveyListPage ?? true
+                ListedOnSurveyListPage = survey?.ListedOnSurveyListPage ?? true,
+                CourseId = survey?.CourseId,
+                DepartmentId = survey?.DepartmentId,
+                ForStudents = survey?.ForStudents ?? false,
+                ForStaff = survey?.ForStaff ?? false
             };
             try
             {
@@ -544,7 +621,9 @@ namespace Surveyapp.Controllers
                                 SurveyId = newSurvey.Id,
                                 DynamicallyCreated = surveySubject.DynamicallyCreated,
                                 DynamicSubjectValue = surveySubject.DynamicSubjectValue,
-                                AddAnotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake
+                                AddAnotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake,
+                                CourseId = surveySubject?.CourseId,
+                                DepartmentId = surveySubject?.DepartmentId
                             };
                             if (_context.SurveySubject.Any(c => c == newSurveySubject)) continue;
                             await _context.SurveySubject.AddAsync(newSurveySubject);
@@ -607,7 +686,9 @@ namespace Surveyapp.Controllers
                             SurveyId = newSurvey.Id,
                             DynamicallyCreated = surveySubject.DynamicallyCreated,
                             DynamicSubjectValue = surveySubject.DynamicSubjectValue,
-                            AddAnotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake
+                            AddAnotherSubjectOnSurveyTake = surveySubject.AddAnotherSubjectOnSurveyTake,
+                            CourseId = surveySubject?.CourseId,
+                            DepartmentId = surveySubject?.DepartmentId
                         };
                         if (_context.SurveySubject.Any(c => c == newSurveySubject)) continue;
                         await _context.SurveySubject.AddAsync(newSurveySubject);
@@ -672,6 +753,18 @@ namespace Surveyapp.Controllers
                     Value = c.Id,
                     Text = c.UserName,
                     Selected = survey?.SurveyParticipants.Any(v => v.ParticipantId == c.Id) == true
+                });
+                ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = $"{c.Code}:{c.Name}",
+                    Selected = c.Id == survey.CourseId
+                });
+                ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = $"{c.Code}:{c.Name}",
+                    Selected = c.Id == survey.DepartmentId
                 });
                 return View(survey);
             }
