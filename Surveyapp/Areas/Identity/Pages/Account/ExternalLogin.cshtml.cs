@@ -18,15 +18,18 @@ namespace Surveyapp.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SurveyContext _context;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
+            SurveyContext context,
             ILogger<ExternalLoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _context = context;
             _logger = logger;
         }
 
@@ -58,7 +61,7 @@ namespace Surveyapp.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Content("~/");
+            returnUrl ??= Url.Content("~/");
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
@@ -66,6 +69,8 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             }
 
             var info = await _signInManager.GetExternalLoginInfoAsync();
+            var email = info.Principal.FindFirstValue("Email");
+            var PFNO = info.Principal.FindFirstValue("PFNO");
             if (info == null)
             {
                 ErrorMessage = "Error loading external login information.";
@@ -83,6 +88,10 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                     return RedirectToPage("./Lockout");
                 }
 
+                user1.UserType = UserType.Normal;
+                user1.EmailConfirmed = true;
+                user1.No = PFNO;
+                await _context.SaveChangesAsync();
                 var props3 = new AuthenticationProperties();
                 props3.StoreTokens(info.AuthenticationTokens ?? Array.Empty<AuthenticationToken>());
                 props3.IsPersistent = true;
@@ -128,14 +137,17 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                     };*/
                     var claims = info.Principal?.Claims.ToList();
 
-                    var email = info.Principal.FindFirstValue("Email");
+                    ;
                     var excitingUser = await _userManager.FindByEmailAsync(email);
                     if (excitingUser is null)
                     {
                         var user = new ApplicationUser
                         {
                             UserName = email,
-                            Email = email
+                            Email = email,
+                            UserType = UserType.Normal,
+                            EmailConfirmed = true,
+                            No = PFNO
                         };
                         var newUser = await _userManager?.CreateAsync(user, "Password12#")!;
                         if (!newUser.Succeeded) return Page();
@@ -152,6 +164,10 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                         return LocalRedirect(returnUrl);
                     }
 
+                    excitingUser.UserType = UserType.Normal;
+                    excitingUser.EmailConfirmed = true;
+                    excitingUser.No = PFNO;
+                    await _context.SaveChangesAsync();
                     foreach (var claim in claims)
                     {
                         await _userManager!.AddClaimAsync(excitingUser, claim);

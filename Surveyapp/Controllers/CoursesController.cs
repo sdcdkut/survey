@@ -64,7 +64,7 @@ namespace Surveyapp.Controllers
         // GET: Courses/Create
         public IActionResult Create()
         {
-            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Id");
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Name");
             return View();
         }
 
@@ -82,7 +82,7 @@ namespace Surveyapp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Id", course.DepartmentId);
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Name", course.DepartmentId);
             return View(course);
         }
 
@@ -100,7 +100,7 @@ namespace Surveyapp.Controllers
                 return NotFound();
             }
 
-            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Id", course.DepartmentId);
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Name", course.DepartmentId);
             return View(course);
         }
 
@@ -138,7 +138,7 @@ namespace Surveyapp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Id", course.DepartmentId);
+            ViewData["DepartmentId"] = new SelectList(_context.Departments, "Id", "Name", course.DepartmentId);
             return View(course);
         }
 
@@ -375,7 +375,7 @@ namespace Surveyapp.Controllers
                 await Task.Delay(TimeSpan.FromSeconds(5), token);
             });
             TempData["FeedbackMessage"] = $"Update of Students as user In progress..";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("ListUsers","ManageUsers");
         }
     }
 }

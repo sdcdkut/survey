@@ -5,35 +5,86 @@
 }
 
 <h1 class="text-success">All Users</h1>
+<a class="btn btn-primary mb-3 mt-3" asp-area="Identity" asp-page="/Account/Register">Add new Users</a>
+<a class="pull-right btn btn-primary btn-sm" asp-controller="Courses" asp-action="ImportStudents"> Update Students users <small>(from Workload system)</small></a>
 @if (Model.Any())
 {
-    foreach (var user in Model)
-    {
-        <div class="card mb-3">
-            <div class="card-header">
-                Role Id: @user.Id
+    <table class="table users">
+        <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th>
+                Email
+            </th>
+            <th>
+                Phone Number
+            </th>
+            <th>
+                No
+            </th>
+            <th>
+                User Type
+            </th>
+            <th>Course/Department</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    @*<table class="users">
+        @foreach (var user in Model)
+        {
+            var group = user.Course?.Name ?? user.Department?.Name;
+            <tr>
+                <td>@user.UserName</td>
+                <td>@user.Email</td>
+                <td>@user.PhoneNumber</td>
+                <td>@user.No</td>
+                <td>@user.UserType</td>
+                <td>@group</td>
+                <td>
+                    <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post">
+                        <a class="btn btn-warning"
+                           asp-action="EditUser" asp-controller="ManageUsers"
+                           asp-route-id="@user.Id">
+                            Edit
+                        </a>
+                        <button type="submit" class="btn btn-outline-danger"
+                                onclick="return confirm('Are you sure that you want to delete user : @user.UserName')">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            <div class="card mb-3">
+                <div class="card-header">
+                    Role Id: @user.Id
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        @user.UserName -> @user?.UserType user -> (@user?.Course?.Name @user.Department?.Name)
+                    </h5>
+                </div>
+                <div class="card-footer">
+                    <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post">
+                        <a class="btn btn-warning"
+                           asp-action="EditUser" asp-controller="ManageUsers"
+                           asp-route-id="@user.Id">
+                            Edit
+                        </a>
+                        <button type="submit" class="btn btn-outline-danger"
+                                onclick="return confirm('Are you sure that you want to delete user : @user.UserName')">
+                            Delete
+                        </button>
+                    </form>
+                </div>
             </div>
-            <div class="card-body">
-                <h5 class="card-title">
-                    @user.UserName
-                </h5>
-            </div>
-            <div class="card-footer">
-                <form asp-action="DeleteUser" asp-route-id="@user.Id" method="post">
-                    <a class="btn btn-warning"
-                       asp-action="EditUser" asp-controller="ManageUsers"
-                       asp-route-id="@user.Id">
-                        Edit
-                    </a>
-                    <button type="submit" class="btn btn-outline-danger"
-                            onclick="return confirm('Are you sure that you want to delete user : @user.UserName')">
-                        Delete
-                    </button>
-                </form>
-            </div>
-        </div>
+        }
+        </tbody>#1#
 
-    }
+    </table>*@
 }
 else
 {
@@ -53,8 +104,36 @@ else
     </div>
 }
 
-<hr/>
-<a class="btn btn-primary mb-3 mt-3"
-   asp-area="Identity" asp-page="/Account/Register">
-    Add new Users
-</a>
+@section Scripts
+{
+    <script>
+        var usersTable = $(".users").DataTable({
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "paging": true,
+             autoWidth: true,
+            stateSave: true,
+            //colReorder: true,
+            "ajax": {
+                "url": "@Url.Action("LoadUsers")",
+                "type": "POST",
+                "datatype": "json"
+            },
+            columns: [
+                { data: "name",name: "Name", autoWidth: true },
+                { data: "email" ,name: "Email", autoWidth: true},
+                { data: "phoneNumber",name: "phoneNumber", autoWidth: true },
+                { data: "no",name: "No", autoWidth: true },
+                { data: "userType",name: "userType", autoWidth: true },
+                { data: "groupName",name: "groupName", autoWidth: true },
+                {
+                    data: null,
+                    "render": function (data, type, row) {
+                        return '<a href="/ManageUsers/DeleteUser?id='+data.id+'" class="editor_edit" onclick="return confirm(`Are you sure that you want to delete user : '+data.name+'`)" title="Delete '+data.name+'">Delete</a>';
+                    }
+                }
+            ],
+        });
+    </script>
+}

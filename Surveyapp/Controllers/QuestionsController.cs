@@ -353,7 +353,7 @@ namespace Surveyapp.Controllers
             }
 
             var surveySubject = _context.SurveySubject.Include(x => x.Category).SingleOrDefault(x => x.Id == id);
-            var survey = _context.Survey.Include(c=>c.SurveyParticipants).ToList().FirstOrDefault(c => c.Id == surveySubject?.SurveyId);
+            var survey = _context.Survey.Include(c => c.SurveyParticipants).ToList().FirstOrDefault(c => c.Id == surveySubject?.SurveyId);
             var currentUser = _context.Users.FirstOrDefault(c => c.Id == _usermanager.GetUserId(User));
             var canTakeSurvey = false;
 
@@ -362,6 +362,7 @@ namespace Surveyapp.Controllers
                 switch (survey.status)
                 {
                     case "Open":
+                        canTakeSurvey = true;
                         if (survey.ForStudents)
                         {
                             canTakeSurvey = currentUser?.UserType == UserType.Student;
@@ -374,6 +375,7 @@ namespace Surveyapp.Controllers
 
                         break;
                     case "Closed":
+                        canTakeSurvey = User.Identity?.IsAuthenticated is true;
                         if (survey.ForStudents)
                         {
                             canTakeSurvey = currentUser?.UserType == UserType.Student;
@@ -384,9 +386,9 @@ namespace Surveyapp.Controllers
                             canTakeSurvey = currentUser?.CourseId == survey?.CourseId;
                         }
 
-                        canTakeSurvey = User.Identity?.IsAuthenticated is true;
                         break;
                     case "SelectiveParticipants":
+                        canTakeSurvey = survey.SurveyParticipants.Any(c => c.ParticipantId == currentUser?.Id);
                         if (survey.ForStudents)
                         {
                             canTakeSurvey = currentUser?.UserType == UserType.Student;
@@ -397,7 +399,6 @@ namespace Surveyapp.Controllers
                             canTakeSurvey = currentUser?.CourseId == survey?.CourseId;
                         }
 
-                        canTakeSurvey = survey.SurveyParticipants.Any(c => c.ParticipantId == currentUser?.Id);
                         break;
                 }
             }

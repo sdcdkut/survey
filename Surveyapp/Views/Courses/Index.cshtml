@@ -1,14 +1,13 @@
 @model IEnumerable<Surveyapp.Models.Course>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Courses";
 }
-
-<h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<a class="pull-right btn btn-sm btn-primary" asp-action="ImportCourses"> Update courses</a>
 <table class="table">
     <thead>
         <tr>
@@ -34,7 +33,7 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Department.Id)
+                @Html.DisplayFor(modelItem => item.Department.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

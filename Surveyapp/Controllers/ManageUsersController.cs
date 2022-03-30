@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
+using Surveyapp.CodeHelpers;
+using System.Linq.Dynamic.Core;
 
 namespace Surveyapp.Controllers
 {
@@ -19,6 +21,7 @@ namespace Surveyapp.Controllers
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly SurveyContext _context;
+
         public ManageUsersController(SurveyContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
@@ -33,6 +36,7 @@ namespace Surveyapp.Controllers
             var surveyContext = _context.Survey.Include(c => c.Surveyors).ThenInclude(c => c.Surveyor);
             return View(await surveyContext.ToListAsync());
         }
+
         [HttpGet]
         public async Task<IActionResult> ReassignSurvey(string id)
         {
@@ -45,7 +49,7 @@ namespace Surveyapp.Controllers
         [HttpPost]
         public async Task<IActionResult> ReassignSurvey(Survey survey, string surveyOwner)
         {
-            var surveyupdate = _context.Survey.Include(c=>c.Surveyors).SingleOrDefault(x => x.Id == survey.Id);
+            var surveyupdate = _context.Survey.Include(c => c.Surveyors).SingleOrDefault(x => x.Id == survey.Id);
             var surveyors = _context.Surveyors.Where(c => c.SurveyId == survey.Id).ToList();
             //surveyupdate.SurveyerId = survey.SurveyerId;
             try
@@ -55,7 +59,8 @@ namespace Surveyapp.Controllers
                     surveyor.Owner = surveyor.SurveyorId == surveyOwner;
                     _context.Surveyors.Update(surveyor);
                 }
-                if (!_context.Surveyors.Any(c=>c.SurveyorId == surveyOwner && c.SurveyId == survey.Id))
+
+                if (!_context.Surveyors.Any(c => c.SurveyorId == surveyOwner && c.SurveyId == survey.Id))
                 {
                     await _context.Surveyors.AddAsync(new Surveyors
                     {
@@ -66,6 +71,7 @@ namespace Surveyapp.Controllers
                         SurveyId = survey.Id
                     });
                 }
+
                 //_context.Survey.Update(surveyupdate);
                 await _context.SaveChangesAsync();
             }
@@ -80,6 +86,7 @@ namespace Surveyapp.Controllers
                     throw;
                 }
             }
+
             TempData["FeedbackMessage"] = $"survey edited successfully";
             return RedirectToAction(nameof(UserSurvey));
         }
@@ -118,9 +125,10 @@ namespace Surveyapp.Controllers
                 {
                     userrole.IsSelected = false;
                 }
-                users.Add(userrole);
 
+                users.Add(userrole);
             }
+
             return View(users);
         }
 
@@ -128,7 +136,6 @@ namespace Surveyapp.Controllers
         [HttpPost]
         public async Task<IActionResult> EditUsersInRole(List<UserRole> model, string roleId)
         {
-
             var role = await roleManager.FindByIdAsync(roleId);
             if (role == null)
             {
@@ -136,7 +143,7 @@ namespace Surveyapp.Controllers
                 return View("NotFound");
             }
 
-            for (int i = 0; i < model.Count; i++)
+            for (var i = 0; i < model.Count; i++)
             {
                 var user = await userManager.FindByIdAsync(model[i].UserId);
 
@@ -153,6 +160,7 @@ namespace Surveyapp.Controllers
                 {
                     continue;
                 }
+
                 if (result.Succeeded)
                 {
                     if (i < (model.Count - 1))
@@ -165,6 +173,7 @@ namespace Surveyapp.Controllers
                     }
                 }
             }
+
             return RedirectToAction("EditRole", new { Id = roleId });
         }
 
@@ -177,8 +186,122 @@ namespace Surveyapp.Controllers
         [HttpGet]
         public IActionResult ListUsers()
         {
-            var users = userManager.Users;
+            var users = userManager.Users.Include(c => c.Course).Include(c => c.Department);
             return View(users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoadUsers([FromForm] Datatable.DtParameters parameters)
+        {
+            var sd = HttpContext.Request.Query["draw"];
+            var recordsTotal = 0;
+            
+            try
+            {
+                var userList = (from user in _context.Users.Include(x => x.Course)
+                        .Include(x => x.Department).ToList()
+                    select new
+                    {
+                        user.Id,
+                        name = user.UserName,
+                        user.Email,
+                        user.PhoneNumber,
+                        userType = user.UserType.ToString(),
+                        user.No,
+                        groupName = user.Course?.Name ?? user.Department?.Name
+                    }).ToList();
+                var searchBy = parameters.Search?.Value;
+                var orderCriteria = "semester";
+                var orderAscendingDirection = true;
+                if (parameters.Order != null)
+                {
+                    orderCriteria = parameters.Columns[parameters.Order[0].Column].Data ?? "name";
+                    orderAscendingDirection = parameters.Order[0].Dir.ToString().ToLower() == "asc";
+                }
+
+                if (!string.IsNullOrEmpty(searchBy))
+                {
+                    userList = userList.Where(m => m.name?.ToUpper().Contains(searchBy.ToUpper()) == true
+                                                   || m.Email?.ToUpper().Contains(searchBy.ToUpper()) == true
+                                                   || m.PhoneNumber?.ToUpper().Contains(searchBy.ToUpper()) == true
+                                                   || m.userType?.ToUpper().Contains(searchBy.ToUpper()) == true
+                                                   || m.No?.ToUpper().Contains(searchBy.ToUpper()) == true
+                                                   || m.groupName?.ToUpper().Contains(searchBy.ToUpper()) == true).ToList();
+                }
+
+                userList = orderAscendingDirection
+                    ? userList.AsQueryable().OrderByDynamic(orderCriteria, Datatable.DtOrderDir.Asc).ToList()
+                    : userList.AsQueryable().OrderByDynamic(orderCriteria, Datatable.DtOrderDir.Desc).ToList();
+                
+                var filteredResultsCount = userList.Count;
+                var totalResultsCount = await _context.Users.CountAsync();
+
+                return Json(new Datatable.DtResult<dynamic>
+                {
+                    Draw = parameters.Draw,
+                    RecordsTotal = totalResultsCount,
+                    RecordsFiltered = filteredResultsCount,
+                    Data = userList
+                        .Skip(parameters.Start)
+                        .Take(parameters.Length).ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(false);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult GetCustomers()
+        {
+            try
+            {
+                var draw = Request.Form["draw"].FirstOrDefault();
+                var start = Request.Form["start"].FirstOrDefault();
+                var length = Request.Form["length"].FirstOrDefault();
+                var sortColumn = Request.Form["columns[" + Request.Form["order[0][column]"].FirstOrDefault() + "][name]"].FirstOrDefault();
+                var sortColumnDirection = Request.Form["order[0][dir]"].FirstOrDefault();
+                var searchValue = Request.Form["search[value]"].FirstOrDefault();
+                var pageSize = length != null ? Convert.ToInt32(length) : 0;
+                var skip = start != null ? Convert.ToInt32(start) : 0;
+                var recordsTotal = 0;
+                var customerData = (from user in _context.Users.Include(x => x.Course)
+                        .Include(x => x.Department).ToList()
+                    select new
+                    {
+                        user.Id,
+                        name = user.UserName,
+                        user.Email,
+                        user.PhoneNumber,
+                        userType = user.UserType.ToString(),
+                        user.No,
+                        groupName = user.Course?.Name ?? user.Department?.Name
+                    }).ToList();
+                if (!(string.IsNullOrEmpty(sortColumn) && string.IsNullOrEmpty(sortColumnDirection)))
+                {
+                    customerData = customerData.AsQueryable().OrderBy(sortColumn + " " + sortColumnDirection).ToList();
+                }
+
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    customerData = customerData.Where(m => m.name?.ToUpper().Contains(searchValue.ToUpper()) == true
+                                                           || m.Email?.ToUpper().Contains(searchValue.ToUpper()) == true
+                                                           || m.PhoneNumber?.ToUpper().Contains(searchValue.ToUpper()) == true
+                                                           || m.userType?.ToUpper().Contains(searchValue.ToUpper()) == true
+                                                           || m.No?.ToUpper().Contains(searchValue.ToUpper()) == true
+                                                           || m.groupName?.ToUpper().Contains(searchValue.ToUpper()) == true).ToList();
+                }
+
+                recordsTotal = customerData.Count;
+                var data = customerData.Skip(skip).Take(pageSize).ToList();
+                var jsonData = new { draw = draw, recordsFiltered = recordsTotal, recordsTotal = recordsTotal, data = data };
+                return Ok(jsonData);
+            }
+            catch (Exception ex)
+            {
+                return Json(false);
+            }
         }
 
         [HttpGet]
@@ -192,6 +315,7 @@ namespace Surveyapp.Controllers
                 ViewBag.ErrorMessage = $"User with Id {userId} cannot be found";
                 return View("NotFound");
             }
+
             var model = new List<UserRolesViewModel>();
             foreach (var role in roleManager.Roles)
             {
@@ -208,8 +332,10 @@ namespace Surveyapp.Controllers
                 {
                     userRolesViewModel.IsSelected = false;
                 }
+
                 model.Add(userRolesViewModel);
             }
+
             return View(model);
         }
 
@@ -222,6 +348,7 @@ namespace Surveyapp.Controllers
                 ViewBag.ErrorMessage = $"User with Id {userId} cannot be found";
                 return View("NotFound");
             }
+
             var roles = await userManager.GetRolesAsync(user);
             var result = await userManager.RemoveFromRolesAsync(user, roles);
             if (!result.Succeeded)
@@ -234,6 +361,7 @@ namespace Surveyapp.Controllers
             {
                 result = await userManager.AddToRoleAsync(user, role);
             }
+
             if (!result.Succeeded)
             {
                 ModelState.AddModelError("", "Cannot add selected roles to user");
@@ -244,10 +372,11 @@ namespace Surveyapp.Controllers
             {
                 TempData["FeedbackMessage"] = $"user role edited successfully";
             }
+
             return RedirectToAction("EditUser", new { Id = userId });
         }
 
-        [HttpPost]
+        //[HttpPost]
         public async Task<IActionResult> DeleteUser(string id)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -264,10 +393,12 @@ namespace Surveyapp.Controllers
                     TempData["FeedbackMessage"] = $"user deleted successfully";
                     return RedirectToAction("ListUsers");
                 }
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
+
                 return View("ListUsers");
             }
         }
@@ -289,10 +420,12 @@ namespace Surveyapp.Controllers
                     TempData["FeedbackMessage"] = $"role deleted successfully";
                     return RedirectToAction("ListRoles");
                 }
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
+
                 return View("ListRoles");
             }
         }
@@ -306,6 +439,7 @@ namespace Surveyapp.Controllers
                 ViewBag.ErrorMessage = $"User with Id {id} cannot be found";
                 return View("NotFound");
             }
+
             var userRoles = await userManager.GetRolesAsync(user);
             var locked = false;
             var dif = (user.LockoutEnd - DateTime.Now).Value.Seconds;
@@ -313,6 +447,7 @@ namespace Surveyapp.Controllers
             {
                 locked = true;
             }
+
             var model = new EditUserViewModel
             {
                 Id = user.Id,
@@ -355,6 +490,7 @@ namespace Surveyapp.Controllers
                 {
                     ModelState.AddModelError("", error.Description);
                 }
+
                 return View(model);
             }
         }
@@ -364,23 +500,25 @@ namespace Surveyapp.Controllers
         {
             if (ModelState.IsValid)
             {
-                IdentityRole identityRole = new IdentityRole
+                var identityRole = new IdentityRole
                 {
                     Name = model.RoleName
                 };
 
-                IdentityResult result = await roleManager.CreateAsync(identityRole);
+                var result = await roleManager.CreateAsync(identityRole);
 
                 if (result.Succeeded)
                 {
                     TempData["FeedbackMessage"] = $"role created successfully";
                     return RedirectToAction("ListRoles", "ManageUsers");
                 }
-                foreach (IdentityError error in result.Errors)
+
+                foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
             }
+
             return View(model);
         }
 
@@ -400,6 +538,7 @@ namespace Surveyapp.Controllers
                 ViewBag.ErrorMessage = $"Role with Id {id} cannot be found";
                 return View("NotFound");
             }
+
             var model = new EditRoleViewModel
             {
                 Id = role.Id,
@@ -412,6 +551,7 @@ namespace Surveyapp.Controllers
                     model.Users.Add(user.UserName);
                 }
             }
+
             return View(model);
         }
 
@@ -434,10 +574,12 @@ namespace Surveyapp.Controllers
                     TempData["FeedbackMessage"] = $"role edited successfully";
                     return RedirectToAction("ListRoles", "ManageUsers");
                 }
+
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
+
                 return View(model);
             }
         }
@@ -446,6 +588,7 @@ namespace Surveyapp.Controllers
         {
             throw new NotImplementedException();
         }
+
         //[Authorize(AuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)]
         //[RequestSizeLimit(1074790400)]
         //[DisableRequestSizeLimit]
@@ -466,10 +609,10 @@ namespace Surveyapp.Controllers
                 return Challenge(new AuthenticationProperties { RedirectUri = "/" }, OpenIdConnectDefaults.AuthenticationScheme);
             }*/
 
-            return RedirectToAction("Index","Home");
+            return RedirectToAction("Index", "Home");
         }
 
-        [Authorize(/*AuthenticationSchemes = (/*CookieAuthenticationDefaults.AuthenticationScheme + "," +#1# OpenIdConnectDefaults.AuthenticationScheme)*/)]
+        [Authorize( /*AuthenticationSchemes = (/*CookieAuthenticationDefaults.AuthenticationScheme + "," +#1# OpenIdConnectDefaults.AuthenticationScheme)*/)]
         public async Task<IActionResult> Signout()
         {
             //return RedirectToAction(nameof(SignIn));
