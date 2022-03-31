@@ -78,3 +78,6 @@ table.fixedHeader-locked {
 .boxshadow{
     box-shadow: 0 15px 25px #a9e6ec
 }
+.nav-link{
+  font-size: 1.0rem!important;
+}
