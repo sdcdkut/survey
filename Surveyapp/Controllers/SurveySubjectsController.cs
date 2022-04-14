@@ -54,7 +54,8 @@ namespace Surveyapp.Controllers
             var surveyId = id;
             ViewBag.SurveyId = surveyId;
             var surveyContext = _context.SurveySubject.Include(s => s.Category)
-                .Include(c => c.Survey).Where(x => x.SurveyId == id);
+                .Include(c => c.Survey).Where(x => x.SurveyId == id)
+                .Where(c=>!c.DynamicallyCreated);
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
             if (survey?.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId) == false)
@@ -118,12 +119,14 @@ namespace Surveyapp.Controllers
             ViewBag.courses = _context.Courses.Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
-                Text = $"{c.Code}:{c.Name}"
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.CourseId
             });
             ViewBag.departments = _context.Departments.Select(c => new SelectListItem
             {
                 Value = c.Id.ToString(),
-                Text = $"{c.Code}:{c.Name}"
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == survey.DepartmentId
             });
             return View();
         }

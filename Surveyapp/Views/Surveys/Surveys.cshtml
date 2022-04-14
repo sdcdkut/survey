@@ -82,7 +82,7 @@
                                 canTakeSurvey = currentUser?.UserType == UserType.Student;
                             }
 
-                            if (item.Survey?.CourseId is not null)
+                            if (item?.CourseId is not null)
                             {
                                 canTakeSurvey = currentUser?.CourseId == item.Survey?.CourseId;
                             }
@@ -119,39 +119,49 @@
                         @if (item.Survey.status == "Closed")
                         {
                             bool? canTakeSurvey = true;
+                            var surveyMassage = "";
                             if (item.Survey.ForStudents)
                             {
                                 canTakeSurvey = currentUser?.UserType == UserType.Student;
+                                surveyMassage = canTakeSurvey == false ? "is for students" : "";
                             }
 
-                            if (item.Survey?.CourseId is not null)
+                            if (item?.CourseId is not null)
                             {
                                 canTakeSurvey = currentUser?.CourseId == item.Survey?.CourseId;
+                                surveyMassage = canTakeSurvey == false ? $"is for {item.Course?.Name} students" : "";
                             }
                             //check if user is logged in
-                            if (User.Identity!.IsAuthenticated && canTakeSurvey == true)
+                            if (User.Identity!.IsAuthenticated)
                             {
-                                <a class="btn-block btn-sm btn btn-secondary" asp-action="SurveyQuestion" asp-route-id="@item.Id" asp-controller="Questions">Take survey</a>
-                                @*<button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
-                                <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
-                                    @if (item.SurveyCategorys.Count > 0)
-                                    {
-                                        <p>Choose Survey Subject categories</p>
-                                        <ul style="width:inherit">
-                                            @{
-                                                var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x => x.SurveySubjects.Any(a => a.Questions.Any()));
-                                                foreach (var category in surveyCategory)
-                                                {
-                                                    <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
-                                                }
-                                            }
-                                        </ul>
-                                    }
-                                    else
-                                    {
-                                        <p>Survey Subject categories Not set</p>
-                                    }
-                                </div>*@
+                                if (canTakeSurvey == true)
+                                {
+                                    <a class="btn-block btn-sm btn btn-secondary" asp-action="SurveyQuestion" asp-route-id="@item.Id" asp-controller="Questions">Take survey</a>
+                                                                   @*<button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
+                                                                   <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
+                                                                       @if (item.SurveyCategorys.Count > 0)
+                                                                       {
+                                                                           <p>Choose Survey Subject categories</p>
+                                                                           <ul style="width:inherit">
+                                                                               @{
+                                                                                   var surveyCategory = _context.SurveyCategory.Where(x => x.SurveyId == item.Id).Where(x => x.SurveySubjects.Any(a => a.Questions.Any()));
+                                                                                   foreach (var category in surveyCategory)
+                                                                                   {
+                                                                                       <li><a asp-controller="SurveySubjects" asp-action="SurveySubjects" asp-route-id="@category.Id">@category.CategoryName</a></li>
+                                                                                   }
+                                                                               }
+                                                                           </ul>
+                                                                       }
+                                                                       else
+                                                                       {
+                                                                           <p>Survey Subject categories Not set</p>
+                                                                       }
+                                                                   </div>*@
+                                }
+                                else
+                                {
+                                    <p style="color: darkred">@surveyMassage</p>
+                                }
                             }
                             else
                             {
@@ -177,7 +187,9 @@
                             }
                             else
                             {
-                                <p style="color: indianred"> <small>Only selected participants allowed</small></p>
+                                <p style="color: indianred">
+                                    <small>Only selected participants allowed</small>
+                                </p>
                             }
                         }
                     } /*else the suveydate has not started or has ended*/

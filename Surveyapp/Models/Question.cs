@@ -12,10 +12,13 @@ namespace Surveyapp.Models
         }
         public int Id { get; set; }
         [Required]
+        [Display(Name = "Subject")]
         public int SubjectId { get; set; }
 
+        [Display(Name = "Question Group")]
         public int? QuestionGroupId { get; set; }
         [Required]
+        [Display(Name = "Response Type")]
         public int ResponseTypeId { get; set; }
 
         public bool? AnswerRequired { get; set; } = true;
@@ -25,8 +28,9 @@ namespace Surveyapp.Models
         [ForeignKey("SubjectId")]
         public virtual SurveySubject Subject { get; set; }
         [ForeignKey("QuestionGroupId")]
+        [Display(Name = "Question Group")]
         public virtual QuestionGroup QuestionGroup { get; set; }
-
+        [Display(Name = "Response Type")]
         [ForeignKey("ResponseTypeId")] public virtual ResponseType ResponseType { get; set; }
         public virtual ICollection<SurveyResponse> SurveyResponses { get; set; }
     }

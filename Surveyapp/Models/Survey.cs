@@ -23,9 +23,16 @@ namespace Surveyapp.Models
         [DataType(DataType.Date)] [Required] public DateTime EndDate { get; set; }
         [Required] public string status { get; set; }
         public string approvalStatus { get; set; }
+        [Display(Name = "Course")]
         public int? CourseId { get; set; }
+
+        [Display(Name = "Department")]
         public int? DepartmentId { get; set; }
+
+        [Display(Name = "For Students")]
         public bool ForStudents { get; set; } = false;
+
+        [Display(Name = "For Staff")]
         public bool ForStaff { get; set; } = false;
         [Display(Name = "Listed On SurveyList Page")]
         public bool ListedOnSurveyListPage { get; set; } = true;

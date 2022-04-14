@@ -114,19 +114,19 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                     UserType = Input.IsStudent?UserType.Student:UserType.Normal
                 };
 
-                var result = await _userManager.CreateAsync(user, Input.Password);
                 if (_context.Users.Any(c => c.Email == Input.Email))
                 {
                     ModelState.AddModelError(string.Empty, "Email already exists");
                     return Page();
                 }
 
-                if (_context.Users.Any(c => c.No == Input.RegNo))
+                if (!string.IsNullOrEmpty(Input.RegNo) && _context.Users.Any(c => c.No == Input.RegNo))
                 {
                     ModelState.AddModelError(string.Empty, "Student already exists");
                     return Page();
                 }
 
+                var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");

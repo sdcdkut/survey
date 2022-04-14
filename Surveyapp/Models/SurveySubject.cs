@@ -32,8 +32,9 @@ namespace Surveyapp.Models
         [Display(Name = "Add Subject On Survey Take")]
         public bool AddAnotherSubjectOnSurveyTake { get; set; } = false;
 
-        public int? CourseId { get; set; }
-        public int? DepartmentId { get; set; }
+        [Display(Name = "Course")] public int? CourseId { get; set; }
+
+        [Display(Name = "Department")] public int? DepartmentId { get; set; }
         [Column(TypeName = "jsonb")] public List<DynamicSubjectValue> DynamicSubjectValue { get; set; } = new();
         [ForeignKey("SurveyId")] public virtual Survey Survey { get; set; }
 

@@ -2,7 +2,7 @@
 @inject SurveyContext _context
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "questions";
 }
 
 <style>
@@ -176,7 +176,10 @@
                 @Html.DisplayFor(modelItem => item.ResponseType.ResponseName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.AnswerRequired)
+                @{
+                    var answerRequired = item.AnswerRequired??false;
+                }
+                @Html.DisplayFor(modelItem => answerRequired)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id" title="Edit"><i class="fa fa-edit"></i></a> |
@@ -187,3 +190,8 @@
 }
     </tbody>
 </table>
+@section Scripts{
+    <script>
+    var table = $('table').DataTable();
+    </script>
+}
