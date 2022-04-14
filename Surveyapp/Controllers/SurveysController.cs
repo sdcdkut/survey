@@ -255,23 +255,17 @@ namespace Surveyapp.Controllers
                     surveyEdit.ForStudents = survey?.ForStudents ?? false;
                     surveyEdit.ForStaff = survey?.ForStaff ?? false;
                     _context.Update(surveyEdit);
-                    if (surveyEdit.CourseId is not null)
+                    _context.SurveySubject.Where(c => c.SurveyId == surveyEdit.Id).ToList().ForEach(subject =>
                     {
-                        _context.SurveySubject.Where(c=>c.SurveyId == surveyEdit.Id).ToList().ForEach(subject =>
-                        {
-                            subject.CourseId = surveyEdit.CourseId;
-                            _context.Update(subject);
-                        });
-                    }
+                        subject.CourseId = surveyEdit.CourseId;
+                        _context.Update(subject);
+                    });
 
-                    if (surveyEdit.DepartmentId is not null)
+                    _context.SurveySubject.Where(c => c.SurveyId == surveyEdit.Id).ToList().ForEach(subject =>
                     {
-                        _context.SurveySubject.Where(c => c.SurveyId == surveyEdit.Id).ToList().ForEach(subject =>
-                        {
-                            subject.DepartmentId = surveyEdit.DepartmentId;
-                            _context.Update(subject);
-                        });
-                    }
+                        subject.DepartmentId = surveyEdit.DepartmentId;
+                        _context.Update(subject);
+                    });
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -377,10 +371,10 @@ namespace Surveyapp.Controllers
         {
             var surveyContext = await _context.SurveySubject.Include(s => s.Survey.Surveyors).ThenInclude(c => c.Surveyor)
                 .Include(x => x.Category)
-                .Include(c=>c.Course.Department)
+                .Include(c => c.Course.Department)
                 .Include(c => c.Survey.Course.Department)
                 .Include(c => c.Questions).Include(c => c.Survey.SurveyParticipants)
-                .Where(c=>(c.Survey.EndDate-DateTime.Now).Days>-25).ToListAsync();
+                .Where(c => (c.Survey.EndDate - DateTime.Now).Days > -25).ToListAsync();
             if (User.Identity!.IsAuthenticated)
             {
                 //display surveys not created by current logged in user
