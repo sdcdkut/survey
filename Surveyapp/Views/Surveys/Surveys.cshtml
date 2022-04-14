@@ -77,14 +77,17 @@
                         @if (item.Survey.status == "Open")
                         {
                             bool? canTakeSurvey = true;
+                            var surveyMassage = "You are not allowed to take this survey";
                             if (item.Survey.ForStudents)
                             {
                                 canTakeSurvey = currentUser?.UserType == UserType.Student;
+                                surveyMassage = canTakeSurvey == false ? "is for students" : "";
                             }
 
                             if (item?.CourseId is not null)
                             {
                                 canTakeSurvey = currentUser?.CourseId == item.Survey?.CourseId;
+                                surveyMassage = canTakeSurvey == false ? $"is for {item.Course?.Name} students" : "";
                             }
                             if (canTakeSurvey == true)
                             {
@@ -92,7 +95,7 @@
                             }
                             else
                             {
-                                <p style="color: darkred">You are not allowed to take this survey</p>
+                                <p style="color: darkred">@surveyMassage</p>
                             }
                             @*<button class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#@Regex.Replace(item.name, @"\s", "")" aria-expanded="false" aria-controls="collapseExample">Take Survey</button>
                             <div id="@Regex.Replace(item.name, @"\s", "")" class="collapse" style="width:80%">
