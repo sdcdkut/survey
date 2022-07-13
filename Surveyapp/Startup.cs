@@ -47,7 +47,7 @@ namespace Surveyapp
                 MaxFailedAccessAttempts = 13,
                 DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10)
             };
-            services.AddDbContext<SurveyContext>(options =>
+            services.AddDbContextPool<SurveyContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("LiveConnection"))); //LiveConnection;DefaultConnection
             /*services.AddIdentity<ApplicationUser, IdentityRole>(Options =>
             {
