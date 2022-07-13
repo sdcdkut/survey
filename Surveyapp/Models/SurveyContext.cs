@@ -5,10 +5,6 @@ namespace Surveyapp.Models
 {
     public class SurveyContext : IdentityDbContext<ApplicationUser>
     {
-        public SurveyContext()
-        {
-
-        }
         public SurveyContext(DbContextOptions<SurveyContext> options) : base(options)
         {
 
