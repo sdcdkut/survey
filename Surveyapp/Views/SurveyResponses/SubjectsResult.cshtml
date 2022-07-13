@@ -5,6 +5,8 @@
 @{
     ViewBag.Title = "Subject Result";
     Layout = "_Layout";
+    var survey = Model?.FirstOrDefault()?.Survey;
+    var surveyName = survey != null ? $"{survey?.Name} ({survey.Startdate:d} - {survey.EndDate:d})":"";
     int? res = 1;
 }
 <style>
@@ -30,12 +32,12 @@
         </li>
         <li class="breadcrumb-item active">
             <a>
-                <span>Subject Results</span>
+                <span>@surveyName Subject Results</span>
             </a>
         </li>
     </ol>
 </nav>
-<h2>Subject Results</h2>
+<h3>@surveyName Subject Results</h3>
 <table class="table table-striped table-hover table-bordered display" id="subject-result-table">
     <thead>
     <tr>

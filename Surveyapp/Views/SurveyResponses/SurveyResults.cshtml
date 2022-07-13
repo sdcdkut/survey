@@ -20,7 +20,9 @@
             <th>
                 Survey @Html.DisplayNameFor(model => model.Name)
             </th>
-            
+            <th>
+                Survey Dates
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -35,6 +37,9 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
+            <td>
+                From @item?.Startdate.ToString("D") to @item?.EndDate.ToString("D")
+            </td>
             @*<td>
                 @Html.DisplayFor(modelItem => item.Respondant.Id)
             </td>
@@ -42,7 +47,7 @@
                 @Html.DisplayFor(modelItem => item.question.question)
             </td>*@
             <td width="40%">
-                <a asp-controller="SurveyResponses" class="btn btn-sm btn-secondary" asp-action="SubjectsResult" asp-route-id="@item.Id">View Subjects Result</a>
+                <a asp-controller="SurveyResponses" class="btn btn-sm btn-secondary" asp-action="SubjectsResult" asp-route-id="@item?.Id">View Subjects Result</a>
                 @* <button $1$asp-action="TakeSurvey" asp-route-id="@item.Id"#1# class="btn-block btn-sm btn btn-secondary" data-toggle="collapse" data-target="#Result-@resultCounter" aria-expanded="false" aria-controls="collapseExample">View Result <i class="fa fa-eye"></i></button> *@
                 @*<div id="Result-@resultCounter" class="collapse" style="width:80%">
                     @if (item.SurveyCategorys.Count > 0)
