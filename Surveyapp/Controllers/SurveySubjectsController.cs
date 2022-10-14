@@ -58,6 +58,9 @@ namespace Surveyapp.Controllers
                 .Where(c=>!c.DynamicallyCreated);
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
+            var httpClient = _httpClientFactory.CreateClient("Workman");
+            var httpResponseMessage = await httpClient.GetAsync("api/Units/Courses");
+            var courses = await httpResponseMessage.Content.ReadFromJsonAsync<List<Course>>();
             if (survey?.Surveyors.Any(c => c.ActiveStatus && c.SurveyorId == useId) == false)
             {
                 return StatusCode(403);
@@ -536,6 +539,11 @@ namespace Surveyapp.Controllers
             }
 
             return Content("some staff");
+        }
+
+        public IActionResult UpdateSubjectsFromWorkload(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 

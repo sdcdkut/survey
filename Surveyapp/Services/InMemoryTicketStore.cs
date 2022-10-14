@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Surveyapp.Services
 {
@@ -11,10 +10,10 @@ namespace Surveyapp.Services
     {
         private const string KeyPrefix = "AuthSessionStore-";
 
-        //private IDistributedCache _cache;
-        private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _cache;
+        //private readonly IMemoryCache _cache;
 
-        public InMemoryTicketStore( /*RedisCacheOptions options*/ IMemoryCache cache)
+        public InMemoryTicketStore( /*RedisCacheOptions options*/ IDistributedCache cache)
         {
             //_cache = new RedisCache(options);
             _cache = cache;
@@ -37,12 +36,13 @@ namespace Surveyapp.Services
                 options.SetAbsoluteExpiration(expiresUtc.Value);
             }
 
-            //byte[] val = SerializeToBytes(ticket);
-            _cache.Set(key, ticket, new MemoryCacheEntryOptions
+            byte[] val = SerializeToBytes(ticket);
+            _cache.Set(key, val, new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow =
                     TimeSpan.FromHours(12),
-                Size = 322302030000000000
+                //Size = 322302030000000000,
+                SlidingExpiration = TimeSpan.FromHours(12)
             });
             return Task.FromResult(0);
         }
@@ -51,7 +51,10 @@ namespace Surveyapp.Services
         {
             //byte[] bytes = null;
             //bytes = _cache.Get(key) as byte[];
-            var ticket = _cache.Get(key) as AuthenticationTicket;
+            //var ticket = _cache.Get(key) as AuthenticationTicket;
+            //return Task.FromResult(ticket);
+            var bytes = _cache.Get(key);
+            var ticket = DeserializeFromBytes(bytes);
             return Task.FromResult(ticket);
         }
 

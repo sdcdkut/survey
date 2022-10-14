@@ -1,4 +1,10 @@
 ﻿using System;
+using System.Net.Http;
+using System.Security.Authentication;
+using System.Security.Claims;
+using Community.Microsoft.Extensions.Caching.PostgreSql;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -12,8 +18,10 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.Net.Http.Headers;
 using Surveyapp.Services;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -47,8 +55,8 @@ namespace Surveyapp
                 MaxFailedAccessAttempts = 13,
                 DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10)
             };
-            services.AddDbContextPool<SurveyContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("LiveConnection"))); //LiveConnection;DefaultConnection
+            var connectionString = Configuration.GetConnectionString("LiveConnection"); //LiveConnection;DefaultConnection
+            services.AddDbContextPool<SurveyContext>(options => options.UseNpgsql(connectionString));
             /*services.AddIdentity<ApplicationUser, IdentityRole>(Options =>
             {
                 Options.Lockout = LockOutOption;
@@ -59,9 +67,12 @@ namespace Surveyapp
                 {
                     options.Lockout = LockOutOption;
                     options.SignIn.RequireConfirmedEmail = true;
+                    options.User.AllowedUserNameCharacters = string.Empty
+                        /*"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+'"*/;
                 })
                 .AddEntityFrameworkStores<SurveyContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddUserValidator<UsernameValidator<ApplicationUser>>();
             services.AddSession(option => { option.IdleTimeout = TimeSpan.FromHours(12); }
             );
 
@@ -70,8 +81,43 @@ namespace Surveyapp
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddMemoryCache();
+            services.AddDistributedPostgreSqlCache(setup =>
+            {
+                setup.ConnectionString = connectionString;
+                setup.SchemaName = Configuration["PgCache:SchemaName"];
+                setup.TableName = Configuration["PgCache:TableName"];
+                setup.CreateInfrastructure = !string.IsNullOrWhiteSpace(Configuration["PgCache:CreateInfrastructure"]);
+                setup.ExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
+            });
+            //services.AddDataProtection().PersistKeysToDbContext<Infrastructure.DataProtectionDbContext>();
+            // OR .PersistKeysToStackExchangeRedis
+            //var configManager = new ConfigurationManager<OpenIdConnectConfiguration>("https://accounts.google.com/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever());
+            /*var configManager = new OpenIdConnectConfiguration
+            {
+                AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth",
+                EndSessionEndpoint = "https://accounts.google.com/o/oauth2/revoke",
+                Issuer = "https://accounts.google.com",
+                JwksUri = "https://www.googleapis.com/oauth2/v3/certs",
+                TokenEndpoint = "https://oauth2.googleapis.com/token",
+                UserInfoEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo",
+                ResponseTypesSupported = { "code", "token", "id_token", "code token", "code id_token", "token id_token", "code token id_token", "none" },
+                SubjectTypesSupported = { "public" },
+                IdTokenSigningAlgValuesSupported = { "RS256" },
+                ScopesSupported = { "openid", "email", "profile" },
+                TokenEndpointAuthMethodsSupported = { "client_secret_post", "client_secret_basic" },
+                ClaimsSupported = { "aud", "email", "email_verified", "exp", "family_name", "given_name", "iat", "iss", "locale", "name", "picture", "sub" },
+                RequestUriParameterSupported = false,
+                GrantTypesSupported =
+                {
+                    "authorization_code",
+                    "refresh_token",
+                    "urn:ietf:params:oauth:grant-type:device_code",
+                    "urn:ietf:params:oauth:grant-type:jwt-bearer"
+                },
+            };*/
+
             services.AddAuthentication()
-                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, config =>
+                .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, "University Account", config =>
                 {
                     config.Authority = HostingEnvironment.IsDevelopment() ? Configuration["openIdAuthority:live"] : Configuration["openIdAuthority:liveHttp"];
                     config.ClientId = Configuration["Client:ClientId"];
@@ -165,27 +211,113 @@ namespace Surveyapp
                         }
                     };*/
                 })
-                .Services.ConfigureApplicationCookie(options =>
+                /*.AddGoogle("University Gmail Account", "University Gmail Account", options =>
                 {
-                    CookieSettings(services, options);
-                });
+                    var clientHandler = new HttpClientHandler();
+                    clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                    clientHandler.SslProtocols = SslProtocols.Tls12;
+                    options.BackchannelHttpHandler = clientHandler;
+                    options.ClientId = Configuration["Google:ClientId"];
+                    options.ClientSecret = Configuration["Google:ClientSecret"];
+                    options.SaveTokens = true;
+                })*/
+                .AddOpenIdConnect("University Gmail Account", "University Gmail Account", options =>
+                {
+                    var clientHandler = new HttpClientHandler();
+                    clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+                    clientHandler.SslProtocols = SslProtocols.Tls12;
+                    options.BackchannelHttpHandler = clientHandler;
+                    options.ClientId = Configuration["Google:ClientId"];
+                    options.ClientSecret = Configuration["Google:ClientSecret"];
+                    options.SaveTokens = true;
+                    options.Authority = "https://accounts.google.com";
+                    options.CallbackPath = "/signin-oidc-google";
+                    //options.Configuration = configManager;
+                    options.MetadataAddress = "https://accounts.google.com/.well-known/openid-configuration";
+                    /*options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = "name",
+                        ValidateIssuerSigningKey = true
+                    };*/
+                    /*options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        IssuerSigningKeyResolver = (token, securityToken, kid, parameters) =>
+                        {
+                            /*var _clientHandler = new SocketsHttpHandler();
+                            _clientHandler.SslOptions.RemoteCertificateValidationCallback = (message, cert, chain, errors) => true;#1#
+                            //var certificate = new X509Certificate2(filePath, password, X509KeyStorageFlags.PersistKeySet);
+                            var _clientHandler = new HttpClientHandler();
+                            _clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                            _clientHandler.SslProtocols = SslProtocols.Tls12;
+                            var client = new HttpClient(_clientHandler);
+                            var response = client.GetAsync("https://www.googleapis.com/oauth2/v3/certs").Result;
+                            var responseString = response.Content.ReadAsStringAsync().Result;
+                            var keys = JsonConvert.DeserializeObject<List<JsonWebKey>>(responseString);
+                            return keys;
+                            /*?.Select(key => new X509SecurityKey(new X509Certificate2(Convert.FromBase64String(key.X5c[0]))))#1#
+                            //return new X509SecurityKey(new X509Certificate2(Convert.FromBase64String(token)));
+                        },
+                        ValidIssuers = new List<string>{"https://accounts.google.com"},
+                    };*/
+                    /*options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateAudience = true,
+                        ValidAudience = options.ClientId,
+
+                        ValidateIssuer = true,
+                        ValidIssuers = new[] { options.Authority },
+
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKeys = configManager.SigningKeys,
+
+                        RequireExpirationTime = true,
+                        ValidateLifetime = true,
+                        RequireSignedTokens = true,
+                    };*/
+                    //var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>("https://accounts.google.com/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever());
+                    //options.ResponseType = "code";
+                    //options.RequireHttpsMetadata = true;
+                    options.SaveTokens = true;
+                    options.Scope.Add("profile");
+                    options.Scope.Add("email");
+                    options.Scope.Add("openid");
+                    options.UsePkce = true;
+                    //options.SignInScheme= "Google";
+                    options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+                    options.ClaimActions.MapJsonKey("urn:google:profile", "link");
+                    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+                })
+                .Services.ConfigureApplicationCookie(options => { CookieSettings(services, options); });
             services.AddHttpClient("Workman", httpClient =>
             {
                 httpClient.BaseAddress = new Uri("https://workman.dkut.ac.ke/");
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/vnd.github.v3+json");
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "HttpRequestsSample");
             });
+            services.AddHttpClient("googleWellKnown", httpClient =>
+            {
+                httpClient.BaseAddress = new Uri("https://accounts.google.com/");
+            });
             services.AddHostedService<QueuedHostedService>();
-            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();  
+            services.AddHangfireServer();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(connectionString /*, new PostgreSqlStorageOptions{QueuePollInterval = TimeSpan.Zero,}*/));
             //services.Configure<CookiePolicyOptions>(options => { options.Secure = CookieSecurePolicy.Always; });
             services.Configure<KestrelServerOptions>(opt =>
             {
-                opt.Limits.MaxRequestBodySize = 1074790400;
-                opt.Limits.MaxRequestHeaderCount = 1074790400;
-                opt.Limits.MaxRequestHeadersTotalSize = 1074790400;
-                opt.Limits.MaxRequestBufferSize = 1074790400;
-                opt.Limits.MaxRequestLineSize = 1074790400;
-                opt.Limits.MaxRequestHeaderCount = 1074790400;
+                opt.Limits.MaxRequestBodySize = int.MaxValue;
+                opt.Limits.MaxRequestHeaderCount = int.MaxValue;
+                opt.Limits.MaxRequestHeadersTotalSize = int.MaxValue;
+                opt.Limits.MaxRequestBufferSize = int.MaxValue;
+                opt.Limits.MaxRequestLineSize = int.MaxValue;
+                opt.Limits.MaxRequestHeaderCount = int.MaxValue;
                 //opt.ConfigureEndpointDefaults(endpoint =>
                 //{
                 //    endpoint.
@@ -205,6 +337,7 @@ namespace Surveyapp
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                IdentityModelEventSource.ShowPII = true;
                 //app.UseDatabaseErrorPage();
             }
             else
@@ -218,6 +351,7 @@ namespace Surveyapp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseHangfireDashboard();
             app.UseRouting();
             //app.UseCookiePolicy();
 
@@ -252,7 +386,8 @@ namespace Surveyapp
         private static void CookieSettings(IServiceCollection services, CookieAuthenticationOptions options)
         {
             var scope = services.BuildServiceProvider();
-            var memoryCache = scope?.GetRequiredService<IMemoryCache>();
+            //var memoryCache = scope?.GetRequiredService<IMemoryCache>();
+            var memoryCache = scope?.GetRequiredService<IDistributedCache>();
             options.Cookie.HttpOnly = true;
             options.ExpireTimeSpan = TimeSpan.FromHours(12);
             options.LoginPath = "/Identity/Account/Login";

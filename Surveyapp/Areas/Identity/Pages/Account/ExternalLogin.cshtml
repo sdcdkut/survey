@@ -6,22 +6,54 @@
 
 <h1>@ViewData["Title"]</h1>
 <h4>Associate your @Model.LoginProvider account.</h4>
-<hr />
+<hr/>
 
 <p class="text-info">
     You've successfully authenticated with <strong>@Model.LoginProvider</strong>.
-    Please enter an email address for this site below and click the Register button to finish
+    Please enter an email address and Registration/Staff Number and click the Register button to finish
     logging in.
 </p>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control" />
+                <input asp-for="Input.Email" class="form-control"/>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Input.RegStaffNo"></label>
+                <input asp-for="Input.RegStaffNo" class="form-control"/>
+                <span asp-validation-for="Input.RegStaffNo" class="text-danger"></span>
+            </div>
+            <div class="d-flex flex-row">
+                <div class="form-group">
+                    <label asp-for="Input.IsStudent"></label>
+                    <input asp-for="Input.IsStudent" onchange="studentCheck(this)" class="form-control"/>
+                    <span asp-validation-for="Input.IsStudent" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.IsStaff"></label>
+                    <input asp-for="Input.IsStaff" onchange="staffCheck(this)" class="form-control AsStaff"/>
+                    <span asp-validation-for="Input.IsStaff" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="student-div" style="display: none">
+                <div class="form-group">
+                    <label asp-for="Input.CourseId"></label>
+                    <select asp-for="Input.CourseId" asp-items="ViewBag.Courses" class="form-control"></select>
+                    <span asp-validation-for="Input.CourseId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="staff-div" style="display: none">
+                <div class="form-group">
+                    <label asp-for="Input.DepartmentId"></label>
+                    <select asp-for="Input.DepartmentId" asp-items="ViewBag.Departments" class="form-control"></select>
+                    <span asp-validation-for="Input.DepartmentId" class="text-danger"></span>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary">Register</button>
         </form>
@@ -29,5 +61,31 @@
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
+    <script >
+        function studentCheck(element) {
+            if ($(element).is(":checked")) {
+                $(".AsStaff").removeAttr("checked").trigger("change");
+                $(".student-div").show();
+                $(".staff-div").hide();
+                $("#Input_CourseId").attr("required", "required");
+                $("#Input_DepartmentId").removeAttr("required");
+            } else {
+                $(".student-div").hide();
+                $("#Input_CourseId").removeAttr("required");
+            }
+        }
+        function staffCheck(element) {
+            if ($(element).is(":checked")) {
+                $("#Input_IsStudent").removeAttr("checked").trigger("change");
+                $(".staff-div").show();
+                $(".student-div").hide();
+                $("#Input_DepartmentId").attr("required", "required");
+                $("#Input_CourseId").removeAttr("required");
+            } else {
+                $(".staff-div").hide();
+                $("#Input_DepartmentId").removeAttr("required");
+            }
+        }
+    </script>
 }

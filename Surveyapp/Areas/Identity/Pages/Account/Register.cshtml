@@ -9,28 +9,35 @@
     <div class="col-md-4">
         <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <h4>Create a new account.</h4>
-            <hr />
+            <hr/>
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Input.UserName"></label>
-                <input asp-for="Input.UserName" class="form-control" />
+                <input asp-for="Input.UserName" class="form-control"/>
                 <span asp-validation-for="Input.UserName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control" />
+                <input asp-for="Input.Email" class="form-control"/>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Input.IsStudent"></label>
-                <input asp-for="Input.IsStudent" class="form-control" />
-                <span asp-validation-for="Input.IsStudent" class="text-danger"></span>
+            <div>
+                <div class="form-group">
+                    <label asp-for="Input.IsStudent"></label>
+                    <input asp-for="Input.IsStudent" onchange="studentCheck(this)" class="form-control"/>
+                    <span asp-validation-for="Input.IsStudent" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.IsStaff"></label>
+                    <input asp-for="Input.IsStaff" onchange="staffCheck(this)" class="form-control AsStaff"/>
+                    <span asp-validation-for="Input.IsStaff" class="text-danger"></span>
+                </div>
             </div>
             <div class="student-div" style="display: none">
                 <div class="form-group">
-                    <label asp-for="Input.RegNo"></label>
-                    <input asp-for="Input.RegNo" class="form-control" />
-                    <span asp-validation-for="Input.RegNo" class="text-danger"></span>
+                    <label asp-for="Input.RegStaffNo"></label>
+                    <input asp-for="Input.RegStaffNo" class="form-control"/>
+                    <span asp-validation-for="Input.RegStaffNo" class="text-danger"></span>
                 </div>
                 <div class="form-group">
                     <label asp-for="Input.CourseId"></label>
@@ -38,14 +45,26 @@
                     <span asp-validation-for="Input.CourseId" class="text-danger"></span>
                 </div>
             </div>
+            <div class="staff-div" style="display: none">
+                <div class="form-group">
+                    <label asp-for="Input.RegStaffNo"></label>
+                    <input asp-for="Input.RegStaffNo" class="form-control"/>
+                    <span asp-validation-for="Input.RegStaffNo" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Input.DepartmentId"></label>
+                    <select asp-for="Input.DepartmentId" asp-items="ViewBag.Departments" class="form-control"></select>
+                    <span asp-validation-for="Input.DepartmentId" class="text-danger"></span>
+                </div>
+            </div>
             <div class="form-group">
                 <label asp-for="Input.Password"></label>
-                <input asp-for="Input.Password" class="form-control" />
+                <input asp-for="Input.Password" class="form-control"/>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Input.ConfirmPassword"></label>
-                <input asp-for="Input.ConfirmPassword" class="form-control" />
+                <input asp-for="Input.ConfirmPassword" class="form-control"/>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
             <button type="submit" class="btn btn-primary">Register</button>
@@ -53,19 +72,33 @@
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script >
-        $("#Input_IsStudent").change(function () {
-            if ($(this).is(":checked")) {
-                $(".student-div").show();
-                $("#Input_CourseId").attr("required", "required");
-                $("#Input_RegNo").attr("required", "required");
-            } else {
-                $(".student-div").hide();
-                $("#Input_CourseId").removeAttr("required");
-                $("#Input_RegNo").removeAttr("required");
-            }
-        });
-    </script>
+@@section Scripts {
+<partial name="_ValidationScriptsPartial"/>
+<script >
+    function studentCheck(element) {
+        if ($(element).is(":checked")) {
+            $(".AsStaff").prop("checked", false).trigger("change");
+            $(".student-div").show();
+            $(".staff-div").hide();
+            $("#Input_CourseId").attr("required", "required");
+            $("#Input_DepartmentId").removeAttr("required");
+        } else {
+            $(".student-div").hide();
+            $("#Input_CourseId").removeAttr("required");
+        }
+    }
+    function staffCheck(element) {
+        if ($(element).is(":checked")) {
+            $("#Input_IsStudent").prop("checked", false).trigger("change");
+            $(".staff-div").show();
+            $(".student-div").hide();
+            $("#Input_DepartmentId").attr("required", "required");
+            $("#Input_CourseId").removeAttr("required");
+        } else {
+            $(".staff-div").hide();
+             $(element).prop("checked", false)
+            $("#Input_DepartmentId").removeAttr("required");
+        }
+    }
+</script>
 }

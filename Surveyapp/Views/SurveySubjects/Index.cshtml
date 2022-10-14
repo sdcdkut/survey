@@ -81,6 +81,11 @@
                 @*<a asp-controller="ResponseTypes" asp-action="Index" asp-route-id="@item.Id" title="view or add response to @item.Name">Response options</a> |*@
                 <a asp-controller="QuestionGroups" asp-action="index" asp-route-id="@item.Id" title="Add response options first in-order to add question">question groups</a>|
                 <a asp-controller="Questions" asp-action="index" asp-route-id="@item.Id" title="Add response options first in-order to add question">questions</a>
+                @if(item.AddAnotherSubjectOnSurveyTake && item.Survey.ForStudents)
+                {
+                    <span>|</span>
+                    <a asp-action="UpdateSubjectsFromWorkload" asp-route-id="@item.Id" title="Add response options first in-order to add question">Update options from Workload</a>
+                }
             </td>
         </tr>
     }

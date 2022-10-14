@@ -1,6 +1,7 @@
 @model IEnumerable<Surveyapp.Models.SurveySubject>
+@using Microsoft.EntityFrameworkCore;
+@using System.Linq;
 @inject SurveyContext Context
-@using Microsoft.EntityFrameworkCore
 
 @{
     ViewBag.Title = "Subject Result";

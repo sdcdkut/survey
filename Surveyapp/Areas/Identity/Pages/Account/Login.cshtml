@@ -7,13 +7,14 @@
 
 <h1>@ViewData["Title"]</h1>
 <div class="row">
+    @if (TempData["ConfirmMessage"] != null)
+    {
+        <p style="color: red">@TempData["ConfirmMessage"]</p>
+    }
     <div class="col-md-5">
         <section>
             <form id="account" method="post">
-                @if (TempData["ConfirmMessage"] != null)
-                {
-                    <p style="color: red">@TempData["ConfirmMessage"]</p>
-                }
+
                 <h4>Use a local account to log in.</h4>
                 <hr/>
                 <div asp-validation-summary="All" class="text-danger"></div>
@@ -51,13 +52,13 @@
     </div>
     <div class="col-md-6 col-md-offset-2">
         <section>
-            <h4>Use university account manager service to log in.</h4>
+            <h4>Use other account manager service to log in.</h4>
             <hr/>
             @*<a type="submit" class="btn btn-primary" asp-action="ExternalLogin" asp-controller="ManageUsers" value="University Account" title="Log in using your University Account">
                 <img src="~/img/dekut.png" alt="" style="width: 20%;height: 1%">
                 University Account
             </a>*@
-             @{
+            @{
                 if ((Model.ExternalLogins?.Count ?? 0) == 0)
                 {
                     <div>
@@ -74,16 +75,21 @@
                             <p>
                                 @foreach (var provider in Model.ExternalLogins)
                                 {
-                                    if (provider.Name == "OpenIdConnect")
+                                    <br/>
+                                    <br/>
+                                    if (provider.DisplayName == "University Account")
                                     {
-                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
-                                            <img src="~/img/dekut.png" alt="" style="width: 20%;height: 1%">
-                                            University Account
+                                        <button type="submit" style="width: 80%;" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                            <img src="~/img/dekut.png" alt="" style="width: 20%;">
+                                            @provider.DisplayName
                                         </button>
                                     }
                                     else
                                     {
-                                        <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                        <button type="submit" style="width: 80%;" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                            <img src="~/img/7123025_logo_google_g_icon.png" alt="" style="width: 8%;">
+                                            @provider.DisplayName
+                                        </button>
                                     }
                                 }
                             </p>

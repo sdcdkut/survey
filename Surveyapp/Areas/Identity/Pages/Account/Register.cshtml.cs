@@ -66,11 +66,12 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
-            [Display(Name = "As Student")] public bool IsStudent { get; set; } = false;
+            [Display(Name = "As DKUT Student")] public bool IsStudent { get; set; } = false;
             [Display(Name = "Course")] public int? CourseId { get; set; }
             [Display(Name = "Department")] public int? DepartmentId { get; set; }
-            [Display(Name = "Registration Number")]
-            public string RegNo { get; set; }
+            [Display(Name = "Registration/Staff Number")]
+            public string RegStaffNo { get; set; }
+            [Display(Name = "As DKUT Staff")]public bool IsStaff { get; set; } = false;
         }
 
         public void OnGet(string returnUrl = null)
@@ -95,12 +96,14 @@ namespace Surveyapp.Areas.Identity.Pages.Account
             ViewData["Courses"] = _context.Courses.Select(c => new SelectListItem
             {
                 Text = $"{c.Code} : {c.Name}",
-                Value = c.Id.ToString()
+                Value = c.Id.ToString(),
+                Selected = c.Id == Input.CourseId
             });
             ViewData["Departments"] = _context.Departments.Select(c => new SelectListItem
             {
                 Text = $"{c.Code} : {c.Name}",
-                Value = c.Id.ToString()
+                Value = c.Id.ToString(),
+                Selected = c.Id == Input.DepartmentId
             });
             if (ModelState.IsValid)
             {
@@ -108,9 +111,9 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                 {
                     UserName = Input.UserName,
                     Email = Input.Email,
-                    CourseId = Input?.CourseId,
-                    DepartmentId = Input?.DepartmentId,
-                    No = Input?.RegNo,
+                    CourseId = Input.IsStudent? Input?.CourseId: null,
+                    DepartmentId = Input.IsStaff?Input?.DepartmentId: null,
+                    No = Input?.RegStaffNo,
                     UserType = Input.IsStudent?UserType.Student:UserType.Normal
                 };
 
@@ -120,9 +123,9 @@ namespace Surveyapp.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                if (!string.IsNullOrEmpty(Input.RegNo) && _context.Users.Any(c => c.No == Input.RegNo))
+                if (!string.IsNullOrEmpty(Input.RegStaffNo) && _context.Users.Any(c => c.No == Input.RegStaffNo))
                 {
-                    ModelState.AddModelError(string.Empty, "Student already exists");
+                    ModelState.AddModelError(string.Empty, "Student/Staff already exists");
                     return Page();
                 }
 
