@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Identity;
 using Surveyapp.Models;
 
@@ -20,5 +21,15 @@ namespace Surveyapp.Services
             }
             return Task.FromResult(IdentityResult.Success);
         }        
+    }
+    public class MyAuthorizationFilter : IDashboardAuthorizationFilter
+    {
+        public bool Authorize(DashboardContext context)
+        {
+            var httpContext = context.GetHttpContext();
+
+            // Allow all authenticated users to see the Dashboard (potentially dangerous).
+            return httpContext.User.Identity is { IsAuthenticated: true };
+        }
     }
 }

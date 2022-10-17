@@ -297,10 +297,7 @@ namespace Surveyapp
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/vnd.github.v3+json");
                 httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, "HttpRequestsSample");
             });
-            services.AddHttpClient("googleWellKnown", httpClient =>
-            {
-                httpClient.BaseAddress = new Uri("https://accounts.google.com/");
-            });
+            services.AddHttpClient("googleWellKnown", httpClient => { httpClient.BaseAddress = new Uri("https://accounts.google.com/"); });
             services.AddHostedService<QueuedHostedService>();
             services.AddHangfireServer();
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -351,7 +348,6 @@ namespace Surveyapp
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseHangfireDashboard();
             app.UseRouting();
             //app.UseCookiePolicy();
 
@@ -380,6 +376,10 @@ namespace Surveyapp
                     name: "second",
                     pattern: "{controller=Home}/{action=Index}/{userId?}");
                 routes.MapRazorPages();
+            });
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new MyAuthorizationFilter() }
             });
         }
 
