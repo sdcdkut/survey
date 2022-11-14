@@ -11,7 +11,7 @@ namespace Surveyapp.Services
     {
         public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user)
         {                
-            if (user.UserName.Any(x=>x =='*'))
+            if (user.UserName?.Any(x=>x =='*') ==true)
             {
                 return Task.FromResult(IdentityResult.Failed(new IdentityError
                 {

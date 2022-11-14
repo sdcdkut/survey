@@ -229,3 +229,14 @@ table.fixedHeader-locked {
 #footer .credits a:hover {
   color: #f1f7ff;
 }
+.sticky-navigation {
+    position: sticky!important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    transition: all 0.3s ease;
+}
