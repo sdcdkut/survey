@@ -13,6 +13,7 @@ namespace Surveyapp
         public static void Main(string[] args)
         {
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.EnableStoredProcedureCompatMode", true);
             var host= CreateHostBuilder(args).Build();
             using (var scope = host.Services.CreateScope())
             {
