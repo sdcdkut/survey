@@ -130,7 +130,8 @@ else
                 {
                     data: null,
                     "render": function (data, type, row) {
-                        return '<a href="/ManageUsers/DeleteUser?id='+data.id+'" class="editor_edit" onclick="return confirm(`Are you sure that you want to delete user : '+data.name+'`)" title="Delete '+data.name+'">Delete</a>';
+                        return '<a href="/ManageUsers/EditUser?id='+data.id+'" class="editor_edit" title="Edit '+data.name+'">Edit</a>|' +
+                         '<a href="/ManageUsers/DeleteUser?id='+data.id+'" class="editor_edit" onclick="return confirm(`Are you sure that you want to delete user : '+data.name+'`)" title="Delete '+data.name+'">Delete</a>';
                     }
                 }
             ],

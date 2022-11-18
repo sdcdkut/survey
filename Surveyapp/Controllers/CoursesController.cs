@@ -203,16 +203,39 @@ namespace Surveyapp.Controllers
             var scopedServices = scope.ServiceProvider;
             var httpClient = _httpClientFactory.CreateClient("Workman");
             var surveyContext = scopedServices.GetRequiredService<SurveyContext>();
-            var httpResponseMessage = await httpClient.GetAsync(
-                "api/Units/Courses", token);
+            var httpResponseMessageCourses = await httpClient.GetAsync("api/Units/Courses", token);
+            var httpResponseMessageDepartments = await httpClient.GetAsync("api/Units/Departments", token);
 
-            if (httpResponseMessage.IsSuccessStatusCode)
+            if (httpResponseMessageCourses.IsSuccessStatusCode)
             {
-                var courses =
-                    await httpResponseMessage.Content.ReadFromJsonAsync<List<Surveyapp.Models.ViewModels.Course>>(cancellationToken: token);
+                var courses = await httpResponseMessageCourses.Content.ReadFromJsonAsync<List<Surveyapp.Models.ViewModels.Course>>(cancellationToken: token);
+                var departmentList = await httpResponseMessageDepartments.Content.ReadFromJsonAsync<List<Surveyapp.Models.ViewModels.Department>>(cancellationToken: token);
+                var systemDepartments = surveyContext.Departments.ToList();
+                var schoolOrInstitutions = surveyContext.SchoolOrInstitutions.ToList();
+                if (departmentList != null)
+                    foreach (var department in departmentList)
+                    {
+                        var departmentCheck = systemDepartments.FirstOrDefault(c => c?.Code == department?.Code && c?.Name == department?.Name);
+                        var schoolOrInstitution = schoolOrInstitutions.FirstOrDefault(c => c?.Name == department?.SchoolOrInstitution?.Name);
+                        //if (schoolOrInstitution is null) continue;
+                        if (department?.Code != null)
+                        {
+                            var newDepartment = new Department
+                            {
+                                Code = department?.Code,
+                                Name = department?.Name,
+                                SchoolOrInstitutionId = schoolOrInstitution?.Id
+                            };
+                            if (departmentCheck is not null) continue;
+                            surveyContext.Departments.Add(newDepartment);
+                        }
+
+                        await surveyContext.SaveChangesAsync(token);
+                    }
+
+
                 if (courses != null && courses.Any())
                 {
-                    var departments = courses.Select(c => c.Department).Distinct().ToList();
                     var schools = courses.Select(c => c.Department?.SchoolOrInstitution).Where(c=>c != null).DistinctBy(c=>c?.Name).ToList();
                     var campus = surveyContext.Campus.FirstOrDefault(c => c.Name == "Dedan Kimathi University of Technology");
                     if (campus is null)
@@ -238,34 +261,17 @@ namespace Surveyapp.Controllers
                         await surveyContext.SaveChangesAsync(token);
                     }
 
-                    foreach (var department in departments)
-                    {
-                        var departmentCheck = surveyContext.Departments.ToList().FirstOrDefault(c => c.Code == department?.Code && c.Name == department?.Name);
-                        var schoolOrInstitution = surveyContext.SchoolOrInstitutions.ToList().FirstOrDefault(c => c.Name == department?.SchoolOrInstitution?.Name);
-                        if (schoolOrInstitution is null) continue;
-                        var newDepartment = new Department
-                        {
-                            Code = department?.Code,
-                            Name = department?.Name,
-                            SchoolOrInstitutionId = schoolOrInstitution.Id
-                        };
-                        if (departmentCheck is not null) continue;
-                        surveyContext.Departments.Add(newDepartment);
-                        await surveyContext.SaveChangesAsync(token);
-                    }
+                    
 
-                    foreach (var course in courses)
+                    foreach (var newCourse in from course in courses let courseCheck = surveyContext.Courses.ToList().FirstOrDefault(c => c.Code == course?.Code && c.Name == course?.CouserName) 
+                        let department = surveyContext.Departments.ToList().FirstOrDefault(c => c.Code == course?.Department?.Code && c.Name == course?.Department?.Name) 
+                        where department is not null let newCourse = new Course
                     {
-                        var courseCheck = surveyContext.Courses.ToList().FirstOrDefault(c => c.Code == course?.Code && c.Name == course?.CouserName);
-                        var department = surveyContext.Departments.ToList().FirstOrDefault(c => c.Code == course?.Department?.Code && c.Name == course?.Department?.Name);
-                        if (department is null) continue;
-                        var newCourse = new Course
-                        {
-                            Code = course?.Code,
-                            Name = course?.CouserName,
-                            DepartmentId = department.Id
-                        };
-                        if (courseCheck is not null) continue;
+                        Code = course?.Code,
+                        Name = course?.CouserName,
+                        DepartmentId = department.Id
+                    } where courseCheck is null select newCourse)
+                    {
                         surveyContext.Courses.Add(newCourse);
                         await surveyContext.SaveChangesAsync(token);
                     }
@@ -322,8 +328,8 @@ namespace Surveyapp.Controllers
             else
             {
                 Console.WriteLine("{0} ({1})",
-                    (int)httpResponseMessage.StatusCode,
-                    httpResponseMessage.ReasonPhrase);
+                    (int)httpResponseMessageCourses.StatusCode,
+                    httpResponseMessageCourses.ReasonPhrase);
             }
         }
 

@@ -307,6 +307,7 @@ namespace Surveyapp
                 .UseRecommendedSerializerSettings()
                 .UsePostgreSqlStorage(connectionString /*, new PostgreSqlStorageOptions{QueuePollInterval = TimeSpan.Zero,}*/));
             //services.Configure<CookiePolicyOptions>(options => { options.Secure = CookieSecurePolicy.Always; });
+            services.AddScoped<ISyncStudent, SyncStudent>();
             services.Configure<KestrelServerOptions>(opt =>
             {
                 opt.Limits.MaxRequestBodySize = int.MaxValue;
@@ -381,6 +382,7 @@ namespace Surveyapp
             {
                 Authorization = new[] { new MyAuthorizationFilter() }
             });
+            RecurringJob.AddOrUpdate<ISyncStudent>("update-Student", x => x.SyncStudentTask(), Cron.Daily(3, 0));
         }
 
         private static void CookieSettings(IServiceCollection services, CookieAuthenticationOptions options)

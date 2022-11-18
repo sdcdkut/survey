@@ -29,7 +29,9 @@ namespace Surveyapp.ViewModel
         [Required]
         [DataType(DataType.DateTime)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy HH:mm:ss}")]
-        public DateTime LockEnd { get; set; }
+        public DateTime? LockEnd { get; set; }
+        public int? CourseId { get; set; }
+        public int? DepartmentId { get; set; }
 
     }
 }

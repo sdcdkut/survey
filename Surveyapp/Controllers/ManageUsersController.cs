@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Surveyapp.CodeHelpers;
 using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Surveyapp.Controllers
 {
@@ -195,7 +196,7 @@ namespace Surveyapp.Controllers
         {
             var sd = HttpContext.Request.Query["draw"];
             var recordsTotal = 0;
-            
+
             try
             {
                 var userList = (from user in _context.Users.Include(x => x.Course)
@@ -232,7 +233,7 @@ namespace Surveyapp.Controllers
                 userList = orderAscendingDirection
                     ? userList.AsQueryable().OrderByDynamic(orderCriteria, Datatable.DtOrderDir.Asc).ToList()
                     : userList.AsQueryable().OrderByDynamic(orderCriteria, Datatable.DtOrderDir.Desc).ToList();
-                
+
                 var filteredResultsCount = userList.Count;
                 var totalResultsCount = await _context.Users.CountAsync();
 
@@ -442,23 +443,34 @@ namespace Surveyapp.Controllers
 
             var userRoles = await userManager.GetRolesAsync(user);
             var locked = false;
-            var dif = (user.LockoutEnd - DateTime.Now).Value.Seconds;
-            if (dif > 0)
+            if (user.LockoutEnd != null)
             {
-                locked = true;
+                locked = user.LockoutEnd > DateTime.Now;
             }
 
             var model = new EditUserViewModel
             {
                 Id = user.Id,
                 Email = user.Email,
-                UserName = user.UserName,
-                PhoneNumber = user.PhoneNumber,
+                UserName = user?.UserName,
+                PhoneNumber = user?.PhoneNumber,
                 Roles = userRoles,
                 locked = locked,
                 //LockEnd = Convert.ToDateTime(user.LockoutEnd.ToString())
-                LockEnd = (user.LockoutEnd).Value.DateTime
             };
+            if (user.LockoutEnd.HasValue) model.LockEnd = user.LockoutEnd.Value.DateTime;
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == user.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == user.DepartmentId
+            });
 
             return View(model);
         }
@@ -467,32 +479,43 @@ namespace Surveyapp.Controllers
         public async Task<IActionResult> EditUser(EditUserViewModel model)
         {
             var user = await userManager.FindByIdAsync(model.Id);
+            ViewBag.courses = _context.Courses.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == user.CourseId
+            });
+            ViewBag.departments = _context.Departments.Select(c => new SelectListItem
+            {
+                Value = c.Id.ToString(),
+                Text = $"{c.Code}:{c.Name}",
+                Selected = c.Id == user.DepartmentId
+            });
             if (user == null)
             {
                 ViewBag.ErrorMessage = $"User with Id {model.Id} cannot be found";
                 return View("NotFound");
             }
-            else
+            user.Email = model.Email;
+            user.UserName = model.UserName;
+            user.PhoneNumber = model.PhoneNumber;
+            if (model.LockEnd != null)user.LockoutEnd = model.LockEnd;
+            user.CourseId = model.CourseId;
+            user.DepartmentId = model.DepartmentId;
+
+            var result = await userManager.UpdateAsync(user);
+            if (result.Succeeded)
             {
-                user.Email = model.Email;
-                user.UserName = model.UserName;
-                user.PhoneNumber = model.PhoneNumber;
-                user.LockoutEnd = model.LockEnd;
-
-                var result = await userManager.UpdateAsync(user);
-                if (result.Succeeded)
-                {
-                    TempData["FeedbackMessage"] = $"user edited successfully";
-                    return RedirectToAction("ListUsers");
-                }
-
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
-
-                return View(model);
+                TempData["FeedbackMessage"] = $"user edited successfully";
+                return RedirectToAction("ListUsers");
             }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View(model);
         }
 
         [HttpPost]
