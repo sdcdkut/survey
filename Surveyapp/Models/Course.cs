@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,12 +12,14 @@ namespace Surveyapp.Models
         }
 
         public int Id { get; set; }
-        public string Code { get; set; }
-        public string Name { get; set; }
+        public string? Code { get; set; }
+        public string? Name { get; set; }
+        [NotMapped]
+        public string? couserName { get; set; }
         public int? DepartmentId { get; set; }
-        [ForeignKey("DepartmentId")] public virtual Department Department { get; set; }
+        [ForeignKey("DepartmentId")] public virtual Department? Department { get; set; }
 
-        public ICollection<ApplicationUser> ApplicationUsers { get; set; }
+        public ICollection<ApplicationUser>? ApplicationUsers { get; set; }
     }
 
     public class Department
@@ -28,12 +31,12 @@ namespace Surveyapp.Models
         }
 
         public int Id { get; set; }
-        public string Code { get; set; }
-        public string Name { get; set; }
+        public string? Code { get; set; }
+        public string? Name { get; set; }
         public int? SchoolOrInstitutionId { get; set; }
-        [ForeignKey("SchoolOrInstitutionId")] public virtual SchoolOrInstitution SchoolOrInstitution { get; set; }
-        public ICollection<Course> Courses { get; set; }
-        public ICollection<ApplicationUser> ApplicationUsers { get; set; }
+        [ForeignKey("SchoolOrInstitutionId")] public virtual SchoolOrInstitution? SchoolOrInstitution { get; set; }
+        public ICollection<Course>? Courses { get; set; }
+        public ICollection<ApplicationUser>? ApplicationUsers { get; set; }
     }
 
     public class SchoolOrInstitution
@@ -44,11 +47,11 @@ namespace Surveyapp.Models
         }
 
         public int Id { get; set; }
-        public string Code { get; set; }
-        public string Name { get; set; }
+        public string? Code { get; set; }
+        public string? Name { get; set; }
         public int? CampusId { get; set; }
-        [ForeignKey("CampusId")] public virtual Campus Campus { get; set; }
-        public ICollection<Department> Departments { get; set; }
+        [ForeignKey("CampusId")] public virtual Campus? Campus { get; set; }
+        public ICollection<Department>? Departments { get; set; }
     }
 
     public class Campus
@@ -59,7 +62,7 @@ namespace Surveyapp.Models
         }
 
         public int Id { get; set; }
-        public string Name { get; set; }
-        public ICollection<SchoolOrInstitution> SchoolOrInstitutions { get; set; }
+        public string? Name { get; set; }
+        public ICollection<SchoolOrInstitution>? SchoolOrInstitutions { get; set; }
     }
 }

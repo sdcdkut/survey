@@ -8,6 +8,7 @@ using Surveyapp.Services;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -16,8 +17,10 @@ using System.Threading.Tasks;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using MimeKit;
+using Newtonsoft.Json;
 
 namespace Surveyapp.Controllers
 {
@@ -55,7 +58,7 @@ namespace Surveyapp.Controllers
             ViewBag.SurveyId = surveyId;
             var surveyContext = _context.SurveySubject.Include(s => s.Category)
                 .Include(c => c.Survey).Where(x => x.SurveyId == id)
-                .Where(c=>!c.DynamicallyCreated);
+                .Where(c => !c.DynamicallyCreated);
             var useId = _usermanager.GetUserId(User);
             var survey = _context.Survey.Include(c => c.Surveyors).FirstOrDefault(c => c.Id == surveyId);
             var httpClient = _httpClientFactory.CreateClient("Workman");
@@ -418,8 +421,7 @@ namespace Surveyapp.Controllers
 
                 if (httpResponseMessage.IsSuccessStatusCode)
                 {
-                    var lecturerUnits =
-                        await httpResponseMessage.Content.ReadFromJsonAsync<List<LecturerUnits>>(cancellationToken: token);
+                    var lecturerUnits = await httpResponseMessage.Content.ReadFromJsonAsync<List<LecturerUnits>>(cancellationToken: token);
                     var subject = surveyContext.SurveySubject.FirstOrDefault(c => c.Id == subjectId);
                     var dynamicSubjectValues = subject?.DynamicSubjectValue;
                     surveyId = subject?.SurveyId;
@@ -541,42 +543,264 @@ namespace Surveyapp.Controllers
             return Content("some staff");
         }
 
-        public IActionResult UpdateSubjectsFromWorkload(int id)
+        public async Task<IActionResult> UpdateSubjectsFromWorkload(int id)
         {
-            throw new NotImplementedException();
+            ViewBag.SurveySubjectId = id;
+            var httpClient = _httpClientFactory.CreateClient("Workman");
+            //var query = new Dictionary<string, string>{ {"active", "true"} };
+            var httpResponseMessage = await httpClient.GetAsync("api/Units/AcademicYears?active=true");
+            var httpResponseMessageCourses = await httpClient.GetAsync("api/Units/Courses");
+            if (httpResponseMessageCourses.IsSuccessStatusCode)
+            {
+                var coursesString = await httpResponseMessageCourses.Content.ReadAsStringAsync();
+                var courses = JsonConvert.DeserializeObject<List<Course>>(coursesString);
+                ViewBag.Courses = courses?.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = $"{c.Code}-{c.Name ?? c.couserName}"
+                });
+            }
+
+            if (httpResponseMessage.IsSuccessStatusCode)
+            {
+                var academicYearsString = await httpResponseMessage.Content.ReadAsStringAsync();
+                var academicYears = JsonConvert.DeserializeObject<List<AcademicYear>>(academicYearsString);
+                ViewBag.academicYears = academicYears?.Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                });
+            }
+
+            return View();
+        }
+
+        public async Task<IActionResult> GetYearSemesters(int? academicYearId, string courseIds)
+        {
+            var httpClient = _httpClientFactory.CreateClient("Workman");
+            var courseIdsArray = courseIds?.Split(',');
+            var courseIdsQuery = string.Join("", courseIdsArray?.Select(c => $"&courseIds={c}") ?? new List<string>());
+            //var courseIdsQuery = courseIdsArray?.Length>0? $"&courseIds={string.Join(",", courseIds)}": "";
+            var httpResponseMessage = await httpClient.GetAsync($"api/Units/CourseSemesters?academicYearId={academicYearId}{courseIdsQuery}");
+            if (!httpResponseMessage.IsSuccessStatusCode) return Json(false);
+            var semesters = await httpResponseMessage.Content.ReadFromJsonAsync<List<Semester>>();
+            return Json(semesters?.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = $"{c.Startdate:MMMM}({c.Startdate:MM/dd/yyyy}) - {c.EndDate:MMMM}({c.EndDate:MM/dd/yyyy}" }).Distinct());
+        }
+
+        public async Task<IActionResult> UpdateSubjectValueOptions(int surveySubjectId, Dictionary<int, DynamicSubjectValue> selectValueOptions)
+        {
+            var surveySubjectValue = await _context.SurveySubject.FindAsync(surveySubjectId);
+            if (surveySubjectValue != null)
+            {
+                surveySubjectValue.DynamicSubjectValue = selectValueOptions.Select(c => new DynamicSubjectValue
+                {
+                    Name = c.Value?.Name,
+                    SelectValueOptions = c.Value?.SelectValueOptions
+                }).ToList();
+                await _context.SaveChangesAsync();
+                TempData["FeedbackMessage"] = "Update subject value options successfully";
+                return RedirectToAction(nameof(Index), new { id = surveySubjectValue.SurveyId });
+            }
+
+            TempData["FeedbackMessage"] = "Update subject value options failed";
+            return RedirectToAction(nameof(UpdateSubjectsFromWorkload), new { id = surveySubjectId });
+        }
+
+        public async Task<IActionResult> GetLecturerUnits(int? academicYearId, string courseIds, string semesterIds, int? surveySubjectId)
+        {
+            var httpClient = _httpClientFactory.CreateClient("Workman");
+            var semesterIdsArray = semesterIds?.Split(',');
+            var semesterIdsQuery = string.Join("", semesterIdsArray?.Select(c => $"&semesterId={c}") ?? new List<string>());
+            var courseIdsArray = courseIds?.Split(',');
+            var courseIdsQuery = string.Join("", courseIdsArray?.Select(c => $"&courseIds={c}") ?? new List<string>());
+            var httpResponseMessage = await httpClient.GetAsync($"api/Units/LecturerUnits?academicYearId={academicYearId}{semesterIdsQuery}{courseIdsQuery}");
+            if (!httpResponseMessage.IsSuccessStatusCode) return Json(false);
+            var lecUnits = await httpResponseMessage.Content.ReadFromJsonAsync<List<LecturerUnits>>();
+            var surveySubject = await _context.SurveySubject.FindAsync(surveySubjectId);
+            var surveySubjectDynamicSubjectValues = surveySubject?.DynamicSubjectValue? /*.Select(c => c.SelectValueOptions)*/.ToList();
+            //var surveySubjectValuesList = surveySubjectValues?.SelectMany(c => c).ToList();
+            //var surveySubjectValuesListDistinct = surveySubjectValuesList?.Distinct().ToList();
+            var groups = lecUnits?.SelectMany(c => c.semesterGroups.Select(v => new
+            {
+                course = v.programme,
+                v.semester,
+                v.school,
+                v.academicYear,
+                c.unit,
+                lecturers = c.lectures
+            }).SelectMany(d => d.lecturers.Select(v => new
+            {
+                d.course,
+                //d.school,
+                d.semester,
+                /*d.academicYear,
+                c.unit,*/
+                v.lecturer
+            }))).Distinct().ToList();
+            var semList = new List<string> { "jan-april", "may-aug", "sep-dec" };
+            var yearList = new List<string> { "first year", "second year", "third year", "fourth year", "fifth year", "sixth year", "seventh year" };
+            var courses = groups?.Select(c => c.course).Distinct().ToList();
+            var lecturers = groups?.Select(c => c.lecturer).Distinct().ToList();
+            var newDynamicValues = new List<DynamicSubjectValue>();
+            if (surveySubjectDynamicSubjectValues != null)
+            {
+                foreach (var surveySubjectDynamicSubjectValue in surveySubjectDynamicSubjectValues)
+                {
+                    if (surveySubjectDynamicSubjectValue.Name.Equals("Course", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        groups?.Select(c => c.course).Distinct().ToList().ForEach(c =>
+                        {
+                            if (surveySubjectDynamicSubjectValue.SelectValueOptions.All(v => v.Equals(c, StringComparison.CurrentCultureIgnoreCase))) return;
+                            surveySubjectDynamicSubjectValue.SelectValueOptions.Add(c);
+                        });
+                        //surveySubjectDynamicSubjectValue.SelectValueOptions = coursesList;
+                    }
+
+                    if (surveySubjectDynamicSubjectValue.Name.Equals("Lecturer", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        groups?.Select(c => c.lecturer).Distinct().ToList().ForEach(c =>
+                        {
+                            if (surveySubjectDynamicSubjectValue.SelectValueOptions.All(v => v.Equals(c, StringComparison.CurrentCultureIgnoreCase))) return;
+                            surveySubjectDynamicSubjectValue.SelectValueOptions.Add(c);
+                        });
+                        /*var lecturersList = groups?.Select(c => c.lecturer).Distinct().Select(c =>
+                            surveySubjectDynamicSubjectValue.SelectValueOptions?.Contains(c) == false && !string.IsNullOrEmpty(c) ? c : string.Empty).ToList();
+                        surveySubjectDynamicSubjectValue.SelectValueOptions = lecturersList;*/
+                    }
+
+                    if (surveySubjectDynamicSubjectValue.Name.Equals("semester", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        surveySubjectDynamicSubjectValue.SelectValueOptions = semList;
+                    }
+
+                    if (surveySubjectDynamicSubjectValue.Name.Equals("year of study", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        surveySubjectDynamicSubjectValue.SelectValueOptions = yearList;
+                    }
+
+                    newDynamicValues.Add(surveySubjectDynamicSubjectValue);
+                }
+
+                if (!surveySubjectDynamicSubjectValues.Any(c => c.Name.Equals("Course", StringComparison.CurrentCultureIgnoreCase)))
+                    newDynamicValues.Add(new DynamicSubjectValue
+                    {
+                        Name = "Course",
+                        SelectValueOptions = courses
+                    });
+                if (!surveySubjectDynamicSubjectValues.Any(c => c.Name.Equals("Lecturer", StringComparison.CurrentCultureIgnoreCase)))
+                    newDynamicValues.Add(new DynamicSubjectValue
+                    {
+                        Name = "Lecturer",
+                        SelectValueOptions = lecturers
+                    });
+                if (!surveySubjectDynamicSubjectValues.Any(c => c.Name.Equals("semester", StringComparison.CurrentCultureIgnoreCase)))
+                    newDynamicValues.Add(new DynamicSubjectValue
+                    {
+                        Name = "semester",
+                        SelectValueOptions = semList
+                    });
+                if (!surveySubjectDynamicSubjectValues.Any(c => c.Name.Equals("year of study", StringComparison.CurrentCultureIgnoreCase)))
+                    newDynamicValues.Add(new DynamicSubjectValue
+                    {
+                        Name = "year of study",
+                        SelectValueOptions = yearList
+                    });
+            }
+            else
+            {
+                newDynamicValues.Add(new DynamicSubjectValue
+                {
+                    Name = "Course",
+                    SelectValueOptions = courses
+                });
+                newDynamicValues.Add(new DynamicSubjectValue
+                {
+                    Name = "Lecturer",
+                    SelectValueOptions = lecturers
+                });
+                newDynamicValues.Add(new DynamicSubjectValue
+                {
+                    Name = "semester",
+                    SelectValueOptions = semList
+                });
+                newDynamicValues.Add(new DynamicSubjectValue
+                {
+                    Name = "year of study",
+                    SelectValueOptions = yearList
+                });
+            }
+
+            return Json(newDynamicValues);
+        }
+
+        public class DynamicSubjectValueViewModel
+        {
+            public string Name { get; set; }
+            public Dictionary<int, string> SelectValueOptions { get; set; }
+        }
+
+        public class LecturerUnits
+        {
+            public string unit { get; set; }
+            public List<Lecturers> lectures { get; set; }
+            public List<SemesterGroups> semesterGroups { get; set; }
+        }
+
+        public class SemesterGroups
+        {
+            public string semester { get; set; }
+            public int semesterId { get; set; }
+            public int academicYearId { get; set; }
+            public string academicYear { get; set; }
+            public string programme { get; set; }
+            public int programmeId { get; set; }
+            public string department { get; set; }
+            public int departmentId { get; set; }
+            public string school { get; set; }
+            public int schoolId { get; set; }
+        }
+
+        public class Lecturers
+        {
+            public string lecturer { get; set; }
+            public Guid lecturerId { get; set; }
+        }
+
+        public class AcademicYear
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public int? DepartmentId { get; set; }
+
+            public DateTime? StartDate { get; set; }
+
+            public DateTime? EndDate { get; set; }
+
+            //public PlanningDates PlanningDates { get; set; } = new PlanningDates();
+
+            public string OpenStatus { get; set; }
+        }
+
+        public enum AcademicyearStatus
+        {
+            Pending,
+            Open,
+            Closed,
+            [Display(Name = "Planning Stage")] PlaningStage
         }
     }
 
-    public class DynamicSubjectValueViewModel
+    public class Semester
     {
+        public int Id { get; set; }
+        public string SemesterTerm { get; set; }
         public string Name { get; set; }
-        public Dictionary<int, string> SelectValueOptions { get; set; }
-    }
-
-    public class LecturerUnits
-    {
-        public string unit { get; set; }
-        public List<Lecturers> lectures { get; set; }
-        public List<SemesterGroups> semesterGroups { get; set; }
-    }
-
-    public class SemesterGroups
-    {
-        public string semester { get; set; }
-        public int semesterId { get; set; }
-        public int academicYearId { get; set; }
-        public string academicYear { get; set; }
-        public string programme { get; set; }
-        public int programmeId { get; set; }
-        public string department { get; set; }
-        public int departmentId { get; set; }
-        public string school { get; set; }
-        public int schoolId { get; set; }
-    }
-
-    public class Lecturers
-    {
-        public string lecturer { get; set; }
-        public Guid lecturerId { get; set; }
+        public int AcademicyearId { get; set; }
+        public string OpenStatus { get; set; }
+        public DateTime? Startdate { get; set; } = DateTime.UtcNow;
+        public DateTime? EndDate { get; set; } = DateTime.UtcNow;
+        public string ReferenceName => $"{SemesterTerm} ({Startdate:MMMM}({Startdate:MM/dd/yyyy}) - {EndDate:MMMM}({EndDate:MM/dd/yyyy}) )";
     }
 }

@@ -1,0 +1,121 @@
+@model dynamic
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+<p>Please select the Active academic year, the semester(s) and the courses</p>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="AcademicYearId">Academic Year</label>
+            <select class="form-control" id="AcademicYearId" onchange="Semesters()" asp-items="ViewBag.academicYears">
+                <option value="">--Select--</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="CourseId">Courses</label>
+            <select multiple class="form-control" id="CourseId" data-allow-clear="true"  onchange="Semesters()" asp-items="ViewBag.Courses">
+            </select>
+            <input id="chkallCourseId" type="checkbox">Select All
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="SemesterId">semester</label>
+            <select multiple class="form-control" id="SemesterId" onchange="LecturerUnits()" name="SemesterId">
+                <option value="">--Select--</option>
+            </select>
+            <input id="chkallSemesterId" type="checkbox">Select All
+        </div>
+    </div>
+</div>
+<div class="lec-units-subject"></div>
+
+@section Scripts
+{
+    <script>
+        function Semesters() {
+            var academicYearId = $('#AcademicYearId').val();
+            var courseId = $('#CourseId').val();
+            $("#SemesterId").empty();
+            $("#SemesterId").append("<option selected value=''>Loading...</option>");
+            $.ajax({
+                url: "@Url.Action("GetYearSemesters")",
+                type: "GET",
+                data: { academicYearId: academicYearId, courseIds:courseId.toString() },
+                success: function (data) {
+                    if (data !== false){
+                        $("#SemesterId").empty();
+                        //$("#CourseId").append("<option value=''>--Select--</option>");
+                        $.each(data, function (key, value) {
+                            $("#SemesterId").append("<option value='" + value.value + "'>" + value.text + "</option>");
+                        });
+                    }else {
+                        $("#SemesterId").empty();
+                        $("#SemesterId").append("<option value=''>--Select--</option>");
+                    }
+                }
+            });
+        }
+        function LecturerUnits() {
+            var academicYearId = $('#AcademicYearId').val();
+            var courseId = $('#CourseId').val();
+            var SemesterId = $('#SemesterId').val();
+            $(".lec-units-subject").empty();
+            $(".lec-units-subject").append("<div class='text-center'><h3>Loading...</h3></div>");
+            $.ajax({
+              url: "@Url.Action("GetLecturerUnits")",
+              type: "GET",
+              data: { semesterIds:SemesterId.toString(), surveySubjectId:'@ViewBag.SurveySubjectId', courseIds:courseId.toString() },
+              success: function (data) {
+                  if (data !== false){
+                      var form = $("<form method='post' action='@Url.Action("UpdateSubjectValueOptions")'></form>");
+                      var input = $("<input type='hidden' name='SurveySubjectId' value='@ViewBag.SurveySubjectId'/>");
+                      var ul = $('<ul class="d-flex flex-row"/>');
+                      $(".lec-units-subject").empty();
+                      $.each(data, function (key, value) {
+                          console.log(value);
+                          var ul2 = $('<ul/>');
+                            $.each(value.selectValueOptions, function (key2, value2) {
+                                var input = $('<input/>', { type: 'checkbox', name: 'selectValueOptions['+key+'].SelectValueOptions', value: value2, checked: true });
+                                var input2 = $('<input/>', { type: 'hidden', name: 'selectValueOptions['+key+'].Name', value: value.name });
+                                var label = $('<label/>', { text: value2 });
+                                var li = $('<li/>').append(input2).append(input).append(label);
+                                ul2.append(li).addClass("shadow p-3 mb-5 bg-white rounded");
+                            });
+                            var li1 = $('<li/>').append(value.name).append(ul2).addClass("shadow p-3 mb-5 bg-white rounded");
+                            ul.append(li1);
+                      });
+                        form.append(input).append(ul).append("<button type='submit' class='btn btn-primary' style='position: fixed; bottom: 8%;right: 7%'>Update value options</button>");
+                      $(".lec-units-subject").append(form);
+                  }else {
+                      $(".lec-units-subject").empty();
+                  }
+              }
+          });
+        }
+        $(document).ready(function () {
+            $("#chkallSemesterId").click(function(){
+                if($("#chkallSemesterId").is(':checked')){
+                    $("#SemesterId > option").prop("selected", "selected");
+                    $("#SemesterId").trigger("change");
+                } else {
+                    $("#SemesterId > option").prop("selected",false);
+                    $("#SemesterId").trigger("change");
+                }
+            });
+            $("#chkallCourseId").click(function(){
+                if($("#chkallCourseId").is(':checked')){
+                    $("#CourseId > option").prop("selected", "selected");
+                    $("#CourseId").trigger("change");
+                } else {
+                    $("#CourseId > option").prop("selected",false);
+                    $("#CourseId").trigger("change");
+                }
+            });
+        });
+    </script>
+}
