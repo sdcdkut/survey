@@ -133,21 +133,21 @@
     <form asp-controller="SurveyResponses" asp-action="Create" id="SurveyResponses">
     <input type="hidden" name="dynamicSubjectValue" value="@newOtherProperties"/>
     <input type="hidden" name="addAnotherSubjectOnSurveyTake" value="@anotherSubjectOnSurveyTake"/>
-    <input type="hidden" name="subjectName" value="@surveySubject.Name">
+    <input type="hidden" name="subjectName" value="@surveySubject?.Name">
     <div class="col-md-12" style="width: 100%!important;">
         @if (surveySubject!.AddAnotherSubjectOnSurveyTake)
         {
             var counter = 0;
-            foreach (var subjectValue in surveySubject.DynamicSubjectValue)
+            foreach (var subjectValue in surveySubject.DynamicSubjectValue?.Where(c=>c?.SelectValueOptions?.Any() == true))
             {
                 counter++;
-                var subjectValueSelect = subjectValue.SelectValueOptions.Select(c => new SelectListItem
+                var subjectValueSelect = subjectValue?.SelectValueOptions?.Select(c => new SelectListItem
                 {
                     Value = c,
                     Text = c
                 });
-                <label>@subjectValue.Name</label>
-                <input type="hidden" name="dynamicSubjectValue[@counter].Name" value="@subjectValue.Name"/>
+                <label>@subjectValue?.Name</label>
+                <input type="hidden" name="dynamicSubjectValue[@counter].Name" value="@subjectValue?.Name"/>
                 <select style="width: 20%!important;" name="dynamicSubjectValue[@counter].Value" asp-items="subjectValueSelect" required="required"></select>
             }
         }

@@ -45,7 +45,7 @@ namespace Surveyapp.Controllers
         // GET: Departments/Create
         public IActionResult Create()
         {
-            ViewData["SchoolOrInstitutionId"] = new SelectList(_context.SchoolOrInstitutions, "Id", "Id");
+            ViewData["SchoolOrInstitutionId"] = new SelectList(_context.SchoolOrInstitutions, "Id", "Name");
             return View();
         }
 
@@ -62,7 +62,7 @@ namespace Surveyapp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["SchoolOrInstitutionId"] = new SelectList(_context.SchoolOrInstitutions, "Id", "Id", department.SchoolOrInstitutionId);
+            ViewData["SchoolOrInstitutionId"] = new SelectList(_context.SchoolOrInstitutions, "Id", "Name", department.SchoolOrInstitutionId);
             return View(department);
         }
 
@@ -79,7 +79,7 @@ namespace Surveyapp.Controllers
             {
                 return NotFound();
             }
-            ViewData["SchoolOrInstitutionId"] = new SelectList(_context.SchoolOrInstitutions, "Id", "Id", department.SchoolOrInstitutionId);
+            ViewData["SchoolOrInstitutionId"] = new SelectList(_context.SchoolOrInstitutions, "Id", "Name", department.SchoolOrInstitutionId);
             return View(department);
         }
 

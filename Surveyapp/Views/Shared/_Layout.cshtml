@@ -69,32 +69,13 @@
                             <a class="nav-link text-dark" asp-controller="Surveys" asp-action="ApproveSurveys">Manage Surveys</a>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink"
-                               data-toggle="dropdown" aria-haspopup="true"
-                               aria-expanded="false">
-                                Manage
-                            </a>
+                            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Manage</a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                                <a class="dropdown-item"
-                                   asp-controller="ManageUsers"
-                                   asp-action="ListRoles">
-                                    Roles
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-controller="ManageUsers"
-                                   asp-action="ListUsers">
-                                    Users
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-controller="ManageUsers"
-                                   asp-action="UserSurvey">
-                                    Surveys
-                                </a>
-                                <a class="dropdown-item"
-                                   asp-controller="Courses"
-                                   asp-action="Index">
-                                    Courses
-                                </a>
+                                <a class="dropdown-item" asp-controller="ManageUsers" asp-action="ListRoles">Role</a>
+                                <a class="dropdown-item" asp-controller="ManageUsers" asp-action="ListUsers">Users</a>
+                                <a class="dropdown-item" asp-controller="ManageUsers" asp-action="UserSurvey">Surveys</a>
+                                <a class="dropdown-item" asp-controller="Departments" asp-action="Index">Departments</a>
+                                <a class="dropdown-item" asp-controller="Courses" asp-action="Index">Courses</a>
                             </div>
                         </li>
                     }

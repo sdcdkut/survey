@@ -109,7 +109,7 @@
                                 <div class="form-group ">
                                     <label class="control-label">Select Value Options</label>
                                     <br/>
-                                    @if (Model.DynamicSubjectValue[i].SelectValueOptions.Any())
+                                    @if (Model?.DynamicSubjectValue[i]?.SelectValueOptions?.Any() ==true)
                                     {
                                         for (var i1 = 0; i1 < Model.DynamicSubjectValue[i].SelectValueOptions.Count; i1++)
                                         {
