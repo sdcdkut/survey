@@ -15,12 +15,14 @@
 </p>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-7">
         <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <div asp-validation-summary="All" class="text-danger"></div>
+            <input type="hidden" asp-for="Input.Email" />
             <div class="form-group">
-                <label asp-for="Input.Email"></label>
-                <input asp-for="Input.Email" class="form-control"/>
+                <label asp-for="Input.Email">Email:</label>
+                <label>@Model.Input?.Email</label>
+                @*<input asp-for="Input.Email" class="form-control"/>*@
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -29,12 +31,12 @@
                 <span asp-validation-for="Input.RegStaffNo" class="text-danger"></span>
             </div>
             <div class="d-flex flex-row">
-                <div class="form-group">
+                <div class="form-group" style="margin-left: 3%">
                     <label asp-for="Input.IsStudent"></label>
                     <input asp-for="Input.IsStudent" onchange="studentCheck(this)" class="form-control"/>
                     <span asp-validation-for="Input.IsStudent" class="text-danger"></span>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-left: 3%">
                     <label asp-for="Input.IsStaff"></label>
                     <input asp-for="Input.IsStaff" onchange="staffCheck(this)" class="form-control AsStaff"/>
                     <span asp-validation-for="Input.IsStaff" class="text-danger"></span>
