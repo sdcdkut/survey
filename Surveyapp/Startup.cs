@@ -49,7 +49,7 @@ namespace Surveyapp
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-            var LockOutOption = new LockoutOptions()
+            var lockOutOption = new LockoutOptions
             {
                 AllowedForNewUsers = true,
                 MaxFailedAccessAttempts = 13,
@@ -65,7 +65,7 @@ namespace Surveyapp
             });*/
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
                 {
-                    options.Lockout = LockOutOption;
+                    options.Lockout = lockOutOption;
                     options.SignIn.RequireConfirmedEmail = true;
                     options.User.AllowedUserNameCharacters = string.Empty
                         /*"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+'"*/;
