@@ -119,7 +119,7 @@ namespace Surveyapp
             services.AddAuthentication()
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, "University Account", config =>
                 {
-                    config.Authority = HostingEnvironment.IsDevelopment() ? Configuration["openIdAuthority:live"] : Configuration["openIdAuthority:liveHttp"];
+                    config.Authority = HostingEnvironment.IsDevelopment() ? Configuration["openIdAuthority:live"] : Configuration["openIdAuthority:live"];
                     config.ClientId = Configuration["Client:ClientId"];
                     config.ClientSecret = Configuration["Client:ClientSecret"];
                     config.SaveTokens = true;
@@ -342,7 +342,7 @@ namespace Surveyapp
             {
                 //app.UseDeveloperExceptionPage();
                 app.UseStatusCodePagesWithReExecute("/StatusCode/{0}");
-                app.UseExceptionHandler("/Home/Error");
+                //app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
