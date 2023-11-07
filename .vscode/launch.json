@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Surveyapp/bin/Debug/netcoreapp2.2/Surveyapp.dll",
+            "program": "${workspaceFolder}/Surveyapp/bin/Debug/net7.0/Surveyapp.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Surveyapp",
             "stopAtEntry": false,
