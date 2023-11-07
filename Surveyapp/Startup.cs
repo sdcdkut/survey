@@ -55,7 +55,7 @@ namespace Surveyapp
                 MaxFailedAccessAttempts = 13,
                 DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10)
             };
-            var connectionString = Configuration.GetConnectionString("Postgresdan"); //LiveConnection;DefaultConnection
+            var connectionString = Configuration.GetConnectionString("LiveConnection"); //Postgresdan;DefaultConnection
             services.AddDbContextPool<SurveyContext>(options => options.UseNpgsql(connectionString));
             /*services.AddIdentity<ApplicationUser, IdentityRole>(Options =>
             {
