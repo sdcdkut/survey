@@ -1,9 +1,12 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 using Surveyapp.Services;
 
 namespace Surveyapp
@@ -14,7 +17,7 @@ namespace Surveyapp
         {
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             AppContext.SetSwitch("Npgsql.EnableStoredProcedureCompatMode", true);
-            var host= CreateHostBuilder(args).Build();
+            var host = CreateHostBuilder(args).Build();
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -30,6 +33,11 @@ namespace Surveyapp
                     logger.LogError(exception, "An error occurred while creating roles");
                 }
             }
+            var configurationLogger = new ConfigurationBuilder()
+                .SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location)!)
+                .AddJsonFile("appsettings.json").Build();
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configurationLogger)
+                .Enrich.FromLogContext().CreateLogger();
             host.Run();
         }
 

@@ -55,7 +55,7 @@ namespace Surveyapp
                 MaxFailedAccessAttempts = 13,
                 DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10)
             };
-            var connectionString = Configuration.GetConnectionString("LiveConnection"); //LiveConnection;DefaultConnection
+            var connectionString = Configuration.GetConnectionString("Postgresdan"); //LiveConnection;DefaultConnection
             services.AddDbContextPool<SurveyContext>(options => options.UseNpgsql(connectionString));
             /*services.AddIdentity<ApplicationUser, IdentityRole>(Options =>
             {
@@ -89,32 +89,7 @@ namespace Surveyapp
                 setup.CreateInfrastructure = !string.IsNullOrWhiteSpace(Configuration["PgCache:CreateInfrastructure"]);
                 setup.ExpiredItemsDeletionInterval = TimeSpan.FromMinutes(5);
             });
-            //services.AddDataProtection().PersistKeysToDbContext<Infrastructure.DataProtectionDbContext>();
-            // OR .PersistKeysToStackExchangeRedis
-            //var configManager = new ConfigurationManager<OpenIdConnectConfiguration>("https://accounts.google.com/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever());
-            /*var configManager = new OpenIdConnectConfiguration
-            {
-                AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth",
-                EndSessionEndpoint = "https://accounts.google.com/o/oauth2/revoke",
-                Issuer = "https://accounts.google.com",
-                JwksUri = "https://www.googleapis.com/oauth2/v3/certs",
-                TokenEndpoint = "https://oauth2.googleapis.com/token",
-                UserInfoEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo",
-                ResponseTypesSupported = { "code", "token", "id_token", "code token", "code id_token", "token id_token", "code token id_token", "none" },
-                SubjectTypesSupported = { "public" },
-                IdTokenSigningAlgValuesSupported = { "RS256" },
-                ScopesSupported = { "openid", "email", "profile" },
-                TokenEndpointAuthMethodsSupported = { "client_secret_post", "client_secret_basic" },
-                ClaimsSupported = { "aud", "email", "email_verified", "exp", "family_name", "given_name", "iat", "iss", "locale", "name", "picture", "sub" },
-                RequestUriParameterSupported = false,
-                GrantTypesSupported =
-                {
-                    "authorization_code",
-                    "refresh_token",
-                    "urn:ietf:params:oauth:grant-type:device_code",
-                    "urn:ietf:params:oauth:grant-type:jwt-bearer"
-                },
-            };*/
+
 
             services.AddAuthentication()
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, "University Account", config =>

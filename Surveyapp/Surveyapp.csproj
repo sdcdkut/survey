@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+        <PackageReference Include="Serilog.AspNetCore" Version="6.0.1" />
+        <PackageReference Include="Serilog.Sinks.PostgreSQL" Version="2.3.0" />
+        <PackageReference Include="Serilog.Sinks.PostgreSQL.Configuration" Version="1.0.1" />
     <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="3.1.2" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.0-rc1" />
     <PackageReference Include="Hangfire.Core" Version="1.8.0-rc1" />
